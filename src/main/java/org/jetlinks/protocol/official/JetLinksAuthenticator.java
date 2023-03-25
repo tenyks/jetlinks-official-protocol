@@ -43,8 +43,8 @@ public class JetLinksAuthenticator implements Authenticator {
                 return deviceOperation.getConfigs("secureId", "secureKey")
                         .map(conf -> {
                             String secureId =  conf.getValue("secureId").map(Value::asString).orElse(null);
-
                             String secureKey = conf.getValue("secureKey").map(Value::asString).orElse(null);
+
                             //签名
                             String digest = DigestUtils.md5Hex(username + "|" + secureKey);
                             if (requestSecureId.equals(secureId) && digest.equals(password)) {

@@ -3,14 +3,15 @@ package org.jetlinks.protocol.official.udp;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import lombok.NonNull;
-import org.jetlinks.core.device.DeviceOperator;
 import org.jetlinks.core.message.*;
 import org.jetlinks.core.message.codec.*;
 import org.jetlinks.core.metadata.DefaultConfigMetadata;
 import org.jetlinks.core.metadata.types.PasswordType;
-import org.jetlinks.protocol.official.binary.*;
+import org.jetlinks.protocol.official.binary.AckCode;
+import org.jetlinks.protocol.official.binary.BinaryAcknowledgeDeviceMessage;
+import org.jetlinks.protocol.official.binary.BinaryMessageType;
+import org.jetlinks.protocol.official.binary.DataType;
 import org.reactivestreams.Publisher;
-import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.Objects;
@@ -51,11 +52,11 @@ public class UDPDeviceMessageCodec implements DeviceMessageCodec {
                         .getConfig(CONFIG_KEY_SECURE_KEY)
                         .flatMap(config -> {
                             if (Objects.equals(config.asString(), token)) {
-                                return ack(message, AckCode.ok, context)
-                                        .thenReturn(message);
+                                return ack(message, AckCode.ok, context).thenReturn(message);
                             }
                             return Mono.empty();
                         }))
+                //ISSUE 为什么在编解码内触发ACK，这应该是协议的职责
                 .switchIfEmpty(Mono.defer(() -> ack(message, AckCode.noAuth, context)));
     }
 
