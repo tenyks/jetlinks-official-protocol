@@ -9,7 +9,9 @@ import org.jetlinks.core.route.HttpRoute;
 import org.jetlinks.core.route.WebsocketRoute;
 import org.jetlinks.core.spi.ProtocolSupportProvider;
 import org.jetlinks.core.spi.ServiceContext;
+import org.jetlinks.protocol.official.coap.JetLinksCoapDeviceMessageCodec;
 import org.jetlinks.protocol.official.http.JetLinksHttpDeviceMessageCodec;
+import org.jetlinks.protocol.official.mqtt.JetLinksMqttDeviceMessageCodec;
 import org.jetlinks.protocol.official.tcp.TcpDeviceMessageCodec;
 import org.jetlinks.protocol.official.udp.UDPDeviceMessageCodec;
 import org.jetlinks.supports.official.JetLinksDeviceMetadataCodec;
@@ -24,16 +26,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider {
-
-    private static final DefaultConfigMetadata mqttConfig = new DefaultConfigMetadata(
-            "MQTT认证配置"
-            , "MQTT认证时需要的配置,mqtt用户名,密码算法:\n" +
-                    "username=secureId|timestamp\n" +
-                    "password=md5(secureId|timestamp|secureKey)\n" +
-                    "\n" +
-                    "timestamp为时间戳,与服务时间不能相差5分钟")
-            .add("secureId", "secureId", "密钥ID", new StringType())
-            .add("secureKey", "secureKey", "密钥KEY", new PasswordType());
 
     @Override
     public Mono<CompositeProtocolSupport> create(ServiceContext context) {
@@ -53,6 +45,10 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
             support.setDocument(DefaultTransport.MQTT,
                                 "document-mqtt.md",
                                 JetLinksProtocolSupportProvider.class.getClassLoader());
+
+            support.addAuthenticator(DefaultTransport.MQTT, new JetLinksAuthenticator());
+            support.addConfigMetadata(DefaultTransport.MQTT, JetLinksMqttDeviceMessageCodec.mqttConfig);
+
 
             support.addRoutes(DefaultTransport.HTTP, Stream
                     .of(TopicMessageCodec.reportProperty,
@@ -77,13 +73,7 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
                                 "document-http.md",
                                 JetLinksProtocolSupportProvider.class.getClassLoader());
 
-
-            support.addAuthenticator(DefaultTransport.MQTT, new JetLinksAuthenticator());
-
             support.setMetadataCodec(new JetLinksDeviceMetadataCodec());
-
-            support.addConfigMetadata(DefaultTransport.MQTT, mqttConfig);
-
 
             //TCP
             support.addConfigMetadata(DefaultTransport.TCP, TcpDeviceMessageCodec.tcpConfig);

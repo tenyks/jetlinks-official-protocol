@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.official;
+package org.jetlinks.protocol.official.coap;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +14,9 @@ import org.jetlinks.core.message.codec.MessageDecodeContext;
 import org.jetlinks.core.message.codec.Transport;
 import org.jetlinks.core.metadata.DefaultConfigMetadata;
 import org.jetlinks.core.metadata.types.PasswordType;
+import org.jetlinks.protocol.official.FunctionalTopicHandlers;
+import org.jetlinks.protocol.official.ObjectMappers;
+import org.jetlinks.protocol.official.TopicMessageCodec;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;

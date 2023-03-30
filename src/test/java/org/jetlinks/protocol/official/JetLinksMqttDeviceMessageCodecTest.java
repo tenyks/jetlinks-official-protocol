@@ -16,6 +16,7 @@ import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.property.*;
 import org.jetlinks.core.server.session.DeviceSession;
+import org.jetlinks.protocol.official.mqtt.JetLinksMqttDeviceMessageCodec;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

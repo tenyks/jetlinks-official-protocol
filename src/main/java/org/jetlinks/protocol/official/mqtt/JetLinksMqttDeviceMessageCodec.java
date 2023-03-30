@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.official;
+package org.jetlinks.protocol.official.mqtt;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -10,7 +10,14 @@ import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.DisconnectDeviceMessage;
 import org.jetlinks.core.message.Message;
 import org.jetlinks.core.message.codec.*;
+import org.jetlinks.core.metadata.DefaultConfigMetadata;
+import org.jetlinks.core.metadata.types.PasswordType;
+import org.jetlinks.core.metadata.types.StringType;
 import org.jetlinks.core.server.session.DeviceSession;
+import org.jetlinks.protocol.official.FunctionalTopicHandlers;
+import org.jetlinks.protocol.official.ObjectMappers;
+import org.jetlinks.protocol.official.TopicMessageCodec;
+import org.jetlinks.protocol.official.TopicPayload;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -54,6 +61,16 @@ import java.util.Map;
  */
 @Slf4j
 public class JetLinksMqttDeviceMessageCodec implements DeviceMessageCodec {
+
+    public static final DefaultConfigMetadata mqttConfig = new DefaultConfigMetadata(
+            "MQTT认证配置"
+            , "MQTT认证时需要的配置,mqtt用户名,密码算法:\n" +
+            "username=secureId|timestamp\n" +
+            "password=md5(secureId|timestamp|secureKey)\n" +
+            "\n" +
+            "timestamp为时间戳,与服务时间不能相差5分钟")
+            .add("secureId", "secureId", "密钥ID", new StringType())
+            .add("secureKey", "secureKey", "密钥KEY", new PasswordType());
 
     private final Transport transport;
 
