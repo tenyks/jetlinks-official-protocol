@@ -1,32 +1,20 @@
 package org.jetlinks.protocol.official.lwm2m;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.californium.core.coap.OptionNumberRegistry;
-import org.jetlinks.core.Value;
 import org.jetlinks.core.defaults.Authenticator;
 import org.jetlinks.core.device.*;
-import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.Message;
 import org.jetlinks.core.message.codec.*;
 import org.jetlinks.core.metadata.DefaultConfigMetadata;
 import org.jetlinks.core.metadata.DeviceConfigScope;
 import org.jetlinks.core.metadata.types.EnumType;
 import org.jetlinks.core.metadata.types.PasswordType;
-import org.jetlinks.protocol.official.coap.AbstractCoapDeviceMessageCodec;
-import org.jetlinks.protocol.official.FunctionalTopicHandlers;
-import org.jetlinks.protocol.official.ObjectMappers;
-import org.jetlinks.protocol.official.TopicMessageCodec;
-import org.jetlinks.protocol.official.cipher.Ciphers;
 import org.reactivestreams.Publisher;
-import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 @Slf4j
 public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Authenticator {
@@ -51,22 +39,13 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
         }
 
         LwM2MAuthenticationRequest req = ((LwM2MAuthenticationRequest) request);
-        String token = req
-                .getSocketSession()
-                .getQueryParameters()
-                .get("token");
 
-        if (StringUtils.isEmpty(token)) {
-            return Mono.just(AuthenticationResponse.error(401, "认证参数错误"));
+        String ep = req.getEndpoint();
+        if (device.getDeviceId().equals(ep)) {
+            return Mono.just(AuthenticationResponse.error(201, "设备认证通过"));
+        } else {
+            return Mono.just(AuthenticationResponse.error(403, "设备认证不通过"));
         }
-
-        return device
-                .getConfig("bearer_token")
-                //校验token
-                .filter(value -> Objects.equals(value.asString(), token))
-                .map(ignore -> AuthenticationResponse.success(device.getDeviceId()))
-                //未配置或者配置不对
-                .switchIfEmpty(Mono.fromSupplier(() -> AuthenticationResponse.error(401, "token错误")));
     }
 
     public Mono<AuthenticationResponse> authenticate(@Nonnull AuthenticationRequest request,
@@ -81,7 +60,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
                 .defaultIfEmpty(deviceNotFound);
     }
 
-    static AuthenticationResponse deviceNotFound = AuthenticationResponse.error(404, "设备不存在");
+    static AuthenticationResponse deviceNotFound = AuthenticationResponse.error(403, "设备不存在");
 
     @Nonnull
     @Override

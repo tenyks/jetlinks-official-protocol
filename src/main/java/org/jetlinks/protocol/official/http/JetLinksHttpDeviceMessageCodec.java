@@ -32,7 +32,7 @@ import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
- * Http 的消息编解码器
+ * Http消息的编解码器
  *
  * @author zhouhao
  * @since 3.0.0
@@ -40,8 +40,7 @@ import java.util.Objects;
 @Slf4j
 public class JetLinksHttpDeviceMessageCodec implements DeviceMessageCodec, Authenticator {
     public static final DefaultConfigMetadata httpConfig = new DefaultConfigMetadata(
-            "HTTP认证配置"
-            , "使用HTTP Bearer Token进行认证")
+            "HTTP认证配置", "使用HTTP Bearer Token进行认证")
             .add("bearer_token", "Token", "Token", new PasswordType());
 
     private final Transport transport;
