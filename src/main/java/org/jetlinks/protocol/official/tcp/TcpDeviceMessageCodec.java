@@ -21,8 +21,7 @@ public class TcpDeviceMessageCodec implements DeviceMessageCodec {
     public static final String CONFIG_KEY_SECURE_KEY = "secureKey";
 
     public static final DefaultConfigMetadata tcpConfig = new DefaultConfigMetadata(
-            "TCP认证配置"
-            , "")
+            "TCP认证配置", "")
             .add(CONFIG_KEY_SECURE_KEY, "secureKey", "密钥", new PasswordType());
 
 
@@ -36,6 +35,7 @@ public class TcpDeviceMessageCodec implements DeviceMessageCodec {
     public Publisher<? extends Message> decode(@NonNull MessageDecodeContext context) {
 
         ByteBuf payload = context.getMessage().getPayload();
+
         //read index
         payload.readInt();
 
@@ -73,7 +73,6 @@ public class TcpDeviceMessageCodec implements DeviceMessageCodec {
     }
 
     public static ByteBuf wrapByteByf(ByteBuf payload) {
-
         return Unpooled.wrappedBuffer(
                 Unpooled.buffer().writeInt(payload.writerIndex()),
                 payload);

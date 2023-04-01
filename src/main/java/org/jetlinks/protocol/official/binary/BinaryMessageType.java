@@ -48,6 +48,9 @@ public enum BinaryMessageType {
 
     private final Class<? extends DeviceMessage> forDevice;
 
+    /**
+     * ISSUE 名称有误？
+     */
     private final Supplier<BinaryMessage<DeviceMessage>> forTcp;
 
     private static final BinaryMessageType[] VALUES = values();

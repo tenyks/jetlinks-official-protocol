@@ -21,8 +21,7 @@ public class UDPDeviceMessageCodec implements DeviceMessageCodec {
     public static final String CONFIG_KEY_SECURE_KEY = "secureKey";
 
     public static final DefaultConfigMetadata udpConfig = new DefaultConfigMetadata(
-            "UDP认证配置"
-            , "")
+            "UDP认证配置", "")
             .add(CONFIG_KEY_SECURE_KEY, "secureKey", "密钥", new PasswordType());
 
 
@@ -37,7 +36,7 @@ public class UDPDeviceMessageCodec implements DeviceMessageCodec {
 
         ByteBuf payload = context.getMessage().getPayload();
 
-        //todo 认证类型, 0 token,1 sign
+        //todo 认证类型, 0 token, 1 sign
         byte authType = payload.readByte();
 
         //前面是token
@@ -61,7 +60,6 @@ public class UDPDeviceMessageCodec implements DeviceMessageCodec {
     }
 
     public static ByteBuf wrapByteByf(ByteBuf payload) {
-
         return payload;
     }
 
