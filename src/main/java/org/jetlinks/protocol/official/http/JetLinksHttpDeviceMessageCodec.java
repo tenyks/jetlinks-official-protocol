@@ -40,8 +40,8 @@ import java.util.Objects;
 @Slf4j
 public class JetLinksHttpDeviceMessageCodec implements DeviceMessageCodec, Authenticator {
     public static final DefaultConfigMetadata httpConfig = new DefaultConfigMetadata(
-            "HTTP认证配置", "使用HTTP Bearer Token进行认证")
-            .add("bearer_token", "Token", "Token", new PasswordType());
+            "HTTP认证配置", "使用HTTP Bearer Token进行认证"
+            ).add("bearer_token", "Token", "Token", new PasswordType());
 
     private final Transport transport;
 
@@ -60,7 +60,6 @@ public class JetLinksHttpDeviceMessageCodec implements DeviceMessageCodec, Authe
 
     @Nonnull
     public Mono<EncodedMessage> encode(@Nonnull MessageEncodeContext context) {
-
         JSONObject json = context.getMessage().toJson();
         //通过websocket下发
         return Mono.just(DefaultWebSocketMessage.of(
@@ -108,7 +107,6 @@ public class JetLinksHttpDeviceMessageCodec implements DeviceMessageCodec, Authe
                 .justOrEmpty(MessageType.convertMessage(msg.payloadAsJson()))
                 .cast(DeviceMessage.class)
                 .flux();
-
     }
 
     private Flux<DeviceMessage> decodeHttp(MessageDecodeContext context) {
@@ -228,6 +226,5 @@ public class JetLinksHttpDeviceMessageCodec implements DeviceMessageCodec, Authe
                 .getDevice(paths[1])
                 .flatMap(device -> authenticate(request, device))
                 .defaultIfEmpty(deviceNotFound);
-
     }
 }

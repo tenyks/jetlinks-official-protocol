@@ -1,7 +1,5 @@
 package org.jetlinks.protocol.official.mqtt;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.buffer.Unpooled;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +11,6 @@ import org.jetlinks.core.message.codec.*;
 import org.jetlinks.core.metadata.DefaultConfigMetadata;
 import org.jetlinks.core.metadata.types.PasswordType;
 import org.jetlinks.core.metadata.types.StringType;
-import org.jetlinks.core.server.session.DeviceSession;
 import org.jetlinks.protocol.official.FunctionalTopicHandlers;
 import org.jetlinks.protocol.official.ObjectMappers;
 import org.jetlinks.protocol.official.TopicMessageCodec;
@@ -22,7 +19,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
-import java.util.Map;
 
 /**
  * <pre>

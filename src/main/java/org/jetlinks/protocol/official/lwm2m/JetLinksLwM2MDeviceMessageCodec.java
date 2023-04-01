@@ -1,10 +1,14 @@
 package org.jetlinks.protocol.official.lwm2m;
 
+import com.alibaba.fastjson.JSONObject;
+import io.netty.buffer.Unpooled;
 import lombok.extern.slf4j.Slf4j;
 import org.jetlinks.core.defaults.Authenticator;
 import org.jetlinks.core.device.*;
 import org.jetlinks.core.message.Message;
 import org.jetlinks.core.message.codec.*;
+import org.jetlinks.core.message.codec.http.websocket.DefaultWebSocketMessage;
+import org.jetlinks.core.message.codec.http.websocket.WebSocketMessage;
 import org.jetlinks.core.metadata.DefaultConfigMetadata;
 import org.jetlinks.core.metadata.DeviceConfigScope;
 import org.jetlinks.core.metadata.types.EnumType;
@@ -70,7 +74,11 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
 
     @Nonnull
     @Override
-    public Publisher<? extends EncodedMessage> encode(@Nonnull MessageEncodeContext context) {
-        return null;
+    public Mono<EncodedMessage>     encode(@Nonnull MessageEncodeContext context) {
+        JSONObject json = context.getMessage().toJson();
+        //通过websocket下发
+        return Mono.just(DefaultWebSocketMessage.of(
+                WebSocketMessage.Type.TEXT,
+                Unpooled.wrappedBuffer(json.toJSONString().getBytes())));
     }
 }
