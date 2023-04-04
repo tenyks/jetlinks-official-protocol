@@ -163,7 +163,6 @@ public class JetLinksMqttDeviceMessageCodec implements DeviceMessageCodec {
                     .then();
         }
         return Mono.empty();
-
     }
 
 }
