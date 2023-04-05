@@ -334,12 +334,16 @@ public enum TopicMessageCodec {
     }
 
     public static TopicPayload encode(ObjectMapper mapper, DeviceMessage message) {
-
         return fromMessage(message)
                 .orElseThrow(() -> new UnsupportedOperationException("unsupported message:" + message.getMessageType()))
                 .doEncode(mapper, message);
     }
 
+    /**
+     * 根据Topic名称查找对应的Codec
+     * @param topic     topic名称
+     * @return  与指定Topic名称配套的Codec
+     */
     static Optional<TopicMessageCodec> fromTopic(String[] topic) {
         for (TopicMessageCodec value : values()) {
             if (TopicUtils.match(value.pattern, topic)) {
@@ -349,6 +353,11 @@ public enum TopicMessageCodec {
         return Optional.empty();
     }
 
+    /**
+     * 根据DeviceMessage类型查找对应的Codec
+     * @param message     （物模型）消息
+     * @return  与指定物模型消息配套的Codec
+     */
     static Optional<TopicMessageCodec> fromMessage(DeviceMessage message) {
         for (TopicMessageCodec value : values()) {
             if (value.type == message.getClass()) {
@@ -385,7 +394,7 @@ public enum TopicMessageCodec {
     }
 
     /**
-     * 移除topic中的产品信息,topic第一个层为产品ID，在解码时,不需要此信息,所以需要移除之.
+     * 移除topic中的产品信息, topic第一个层为产品ID，在解码时,不需要此信息,所以需要移除之.
      *
      * @param topic topic
      * @return 移除后的topic
