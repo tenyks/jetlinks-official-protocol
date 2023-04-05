@@ -14,11 +14,9 @@ import org.jetlinks.core.metadata.DeviceConfigScope;
 import org.jetlinks.core.metadata.types.EnumType;
 import org.jetlinks.core.metadata.types.PasswordType;
 import org.reactivestreams.Publisher;
-import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 @Slf4j
 public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Authenticator {
@@ -69,6 +67,9 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
     @Nonnull
     @Override
     public Publisher<? extends Message> decode(@Nonnull MessageDecodeContext context) {
+
+        context.getMessage();
+
         return null;
     }
 
