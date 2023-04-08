@@ -1,12 +1,12 @@
 package org.jetlinks.protocol.official;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jetlinks.core.codec.defaults.TopicPayloadCodec;
 import org.jetlinks.core.message.ChildDeviceMessage;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.event.EventMessage;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
 import org.jetlinks.core.route.Route;
+import org.jetlinks.protocol.official.core.TopicMessageCodec;
 import org.junit.Test;
 import reactor.test.StepVerifier;
 

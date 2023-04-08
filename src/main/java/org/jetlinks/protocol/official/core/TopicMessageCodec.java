@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.official;
+package org.jetlinks.protocol.official.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
@@ -11,8 +11,9 @@ import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.property.*;
 import org.jetlinks.core.message.state.DeviceStateCheckMessage;
 import org.jetlinks.core.message.state.DeviceStateCheckMessageReply;
-import org.jetlinks.core.route.LwM2MRoute;
+import org.jetlinks.core.route.MqttRoute;
 import org.jetlinks.core.utils.TopicUtils;
+import org.jetlinks.protocol.official.TopicPayload;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -24,11 +25,11 @@ import java.util.StringJoiner;
 import java.util.function.Function;
 
 /**
- * URI指示类型的消息编解码
+ * 基于主题指示的编解码
  */
-public enum UriIndicatedMessageCodec {
+public enum TopicMessageCodec {
     //上报属性数据
-    reportProperty("/19/0/0",
+    reportProperty("/*/properties/report",
                    ReportPropertyMessage.class,
                    route -> route
                            .upstream(true)
@@ -143,7 +144,7 @@ public enum UriIndicatedMessageCodec {
         public Publisher<DeviceMessage> doDecode(ObjectMapper mapper, String[] topic, byte[] payload) {
             String[] _topic = Arrays.copyOfRange(topic, 2, topic.length);
             _topic[0] = "";// topic以/开头所有第一位是空白
-            return UriIndicatedMessageCodec
+            return TopicMessageCodec
                     .decode(mapper, _topic, payload)
                     .map(childMsg -> {
                         ChildDeviceMessage msg = new ChildDeviceMessage();
@@ -161,7 +162,7 @@ public enum UriIndicatedMessageCodec {
 
             DeviceMessage childMessage = ((DeviceMessage) deviceMessage.getChildDeviceMessage());
 
-            TopicPayload payload = UriIndicatedMessageCodec.encode(mapper, childMessage);
+            TopicPayload payload = TopicMessageCodec.encode(mapper, childMessage);
             String[] childTopic = payload.getTopic().split("/");
             String[] topic = new String[topics.length + childTopic.length - 3];
             //合并topic
@@ -191,7 +192,7 @@ public enum UriIndicatedMessageCodec {
         public Publisher<DeviceMessage> doDecode(ObjectMapper mapper, String[] topic, byte[] payload) {
             String[] _topic = Arrays.copyOfRange(topic, 2, topic.length);
             _topic[0] = "";// topic以/开头所有第一位是空白
-            return UriIndicatedMessageCodec
+            return TopicMessageCodec
                     .decode(mapper, _topic, payload)
                     .map(childMsg -> {
                         ChildDeviceMessageReply msg = new ChildDeviceMessageReply();
@@ -209,7 +210,7 @@ public enum UriIndicatedMessageCodec {
 
             DeviceMessage childMessage = ((DeviceMessage) deviceMessage.getChildDeviceMessage());
 
-            TopicPayload payload = UriIndicatedMessageCodec.encode(mapper, childMessage);
+            TopicPayload payload = TopicMessageCodec.encode(mapper, childMessage);
             String[] childTopic = payload.getTopic().split("/");
             String[] topic = new String[topics.length + childTopic.length - 3];
             //合并topic
@@ -283,23 +284,23 @@ public enum UriIndicatedMessageCodec {
     stateCheckReply("/*/state-check/reply", DeviceStateCheckMessageReply.class),
     ;
 
-    UriIndicatedMessageCodec(String topic,
-                             Class<? extends DeviceMessage> type,
-                             Function<LwM2MRoute.Builder, LwM2MRoute.Builder> routeCustom) {
+    TopicMessageCodec(String topic,
+                      Class<? extends DeviceMessage> type,
+                      Function<MqttRoute.Builder, MqttRoute.Builder> routeCustom) {
         this.pattern = topic.split("/");
         this.type = type;
         this.route = routeCustom.apply(toRoute()).build();
     }
 
-    UriIndicatedMessageCodec(String topic,
-                             Class<? extends DeviceMessage> type) {
+    TopicMessageCodec(String topic,
+                      Class<? extends DeviceMessage> type) {
         this.pattern = topic.split("/");
         this.type = type;
         this.route = null;
     }
 
     private final String[] pattern;
-    private final LwM2MRoute route;
+    private final MqttRoute route;
     private final Class<? extends DeviceMessage> type;
 
     protected void transMqttTopic(String[] topic) {
@@ -307,7 +308,7 @@ public enum UriIndicatedMessageCodec {
     }
 
     @SneakyThrows
-    private LwM2MRoute.Builder toRoute() {
+    private MqttRoute.Builder toRoute() {
         String[] topics = new String[pattern.length];
         System.arraycopy(pattern, 0, topics, 0, pattern.length);
         topics[0] = "{productId:产品ID}";
@@ -317,11 +318,12 @@ public enum UriIndicatedMessageCodec {
         for (String topic : topics) {
             joiner.add(topic);
         }
-        return LwM2MRoute
-                .builder(joiner.toString());
+        return MqttRoute
+                .builder(joiner.toString())
+                .qos(1);
     }
 
-    public LwM2MRoute getRoute() {
+    public MqttRoute getRoute() {
         return route;
     }
 
@@ -346,8 +348,8 @@ public enum UriIndicatedMessageCodec {
      * @param topic     topic名称
      * @return  与指定Topic名称配套的Codec
      */
-    static Optional<UriIndicatedMessageCodec> fromTopic(String[] topic) {
-        for (UriIndicatedMessageCodec value : values()) {
+    static Optional<TopicMessageCodec> fromTopic(String[] topic) {
+        for (TopicMessageCodec value : values()) {
             if (TopicUtils.match(value.pattern, topic)) {
                 return Optional.of(value);
             }
@@ -360,8 +362,8 @@ public enum UriIndicatedMessageCodec {
      * @param message     （物模型）消息
      * @return  与指定物模型消息配套的Codec
      */
-    static Optional<UriIndicatedMessageCodec> fromMessage(DeviceMessage message) {
-        for (UriIndicatedMessageCodec value : values()) {
+    static Optional<TopicMessageCodec> fromMessage(DeviceMessage message) {
+        for (TopicMessageCodec value : values()) {
             if (value.type == message.getClass()) {
                 return Optional.of(value);
             }

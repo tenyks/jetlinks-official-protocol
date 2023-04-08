@@ -8,7 +8,7 @@ Authorization: Bearer {产品或者设备中配置的Token}
 Content-Type: application/json
 
 {
- "properties":{
+ "properties": {
    "temp":38.5
  }
 }

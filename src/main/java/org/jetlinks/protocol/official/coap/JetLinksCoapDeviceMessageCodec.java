@@ -15,7 +15,7 @@ import org.jetlinks.core.metadata.types.EnumType;
 import org.jetlinks.core.metadata.types.PasswordType;
 import org.jetlinks.protocol.official.FunctionalTopicHandlers;
 import org.jetlinks.protocol.official.ObjectMappers;
-import org.jetlinks.protocol.official.TopicMessageCodec;
+import org.jetlinks.protocol.official.core.TopicMessageCodec;
 import org.jetlinks.protocol.official.cipher.Ciphers;
 import org.springframework.http.MediaType;
 import reactor.core.publisher.Flux;

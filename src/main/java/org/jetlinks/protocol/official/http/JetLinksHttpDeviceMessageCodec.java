@@ -21,7 +21,7 @@ import org.jetlinks.core.metadata.types.PasswordType;
 import org.jetlinks.core.trace.DeviceTracer;
 import org.jetlinks.core.trace.FluxTracer;
 import org.jetlinks.protocol.official.ObjectMappers;
-import org.jetlinks.protocol.official.TopicMessageCodec;
+import org.jetlinks.protocol.official.core.TopicMessageCodec;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;

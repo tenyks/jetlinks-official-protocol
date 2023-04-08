@@ -16,7 +16,7 @@ import org.jetlinks.core.metadata.DefaultConfigMetadata;
 import org.jetlinks.core.metadata.types.PasswordType;
 import org.jetlinks.protocol.official.FunctionalTopicHandlers;
 import org.jetlinks.protocol.official.ObjectMappers;
-import org.jetlinks.protocol.official.TopicMessageCodec;
+import org.jetlinks.protocol.official.core.TopicMessageCodec;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;

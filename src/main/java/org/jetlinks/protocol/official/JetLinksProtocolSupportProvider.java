@@ -7,6 +7,7 @@ import org.jetlinks.core.route.WebsocketRoute;
 import org.jetlinks.core.spi.ProtocolSupportProvider;
 import org.jetlinks.core.spi.ServiceContext;
 import org.jetlinks.protocol.official.coap.JetLinksCoapDeviceMessageCodec;
+import org.jetlinks.protocol.official.core.TopicMessageCodec;
 import org.jetlinks.protocol.official.http.JetLinksHttpDeviceMessageCodec;
 import org.jetlinks.protocol.official.mqtt.JetLinksMqttDeviceMessageCodec;
 import org.jetlinks.protocol.official.tcp.TcpDeviceMessageCodec;

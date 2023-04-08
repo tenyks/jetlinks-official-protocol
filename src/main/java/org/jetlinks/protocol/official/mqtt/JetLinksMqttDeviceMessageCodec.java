@@ -15,7 +15,7 @@ import org.jetlinks.core.metadata.types.PasswordType;
 import org.jetlinks.core.metadata.types.StringType;
 import org.jetlinks.protocol.official.FunctionalTopicHandlers;
 import org.jetlinks.protocol.official.ObjectMappers;
-import org.jetlinks.protocol.official.TopicMessageCodec;
+import org.jetlinks.protocol.official.core.TopicMessageCodec;
 import org.jetlinks.protocol.official.TopicPayload;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

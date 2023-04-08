@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.californium.core.coap.CoAP;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.codec.*;
-import org.jetlinks.protocol.official.TopicMessageCodec;
+import org.jetlinks.protocol.official.core.TopicMessageCodec;
 import org.reactivestreams.Publisher;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
