@@ -5,12 +5,9 @@ import lombok.SneakyThrows;
 import org.hswebframework.web.bean.FastBeanCopier;
 import org.jetlinks.core.message.*;
 import org.jetlinks.core.message.event.EventMessage;
-import org.jetlinks.core.message.firmware.*;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
-import org.jetlinks.core.message.property.*;
-import org.jetlinks.core.message.state.DeviceStateCheckMessage;
-import org.jetlinks.core.message.state.DeviceStateCheckMessageReply;
+import org.jetlinks.core.message.property.ReportPropertyMessage;
 import org.jetlinks.core.route.LwM2MRoute;
 import org.jetlinks.core.utils.TopicUtils;
 import org.jetlinks.protocol.official.TopicPayload;
@@ -29,7 +26,7 @@ import java.util.function.Function;
  */
 public enum UriIndicatedMessageCodec {
     //上报属性数据
-    reportProperty("/19/0/0",
+    reportProperty("/19/0/0", 0,
                    ReportPropertyMessage.class,
                    route -> route
                            .upstream(true)
@@ -37,44 +34,9 @@ public enum UriIndicatedMessageCodec {
                            .group("属性上报")
                            .description("上报物模型属性数据")
                            .example("{\"properties\":{\"属性ID\":\"属性值\"}}")),
-    //读取属性
-    readProperty("/*/properties/read",
-                 ReadPropertyMessage.class,
-                 route -> route
-                         .upstream(false)
-                         .downstream(true)
-                         .group("读取属性")
-                         .description("平台下发读取物模型属性数据指令")
-                         .example("{\"messageId\":\"消息ID,回复时需要一致.\",\"properties\":[\"属性ID\"]}")),
-    //读取属性回复
-    readPropertyReply("/*/properties/read/reply",
-                      ReadPropertyMessageReply.class,
-                      route -> route
-                              .upstream(true)
-                              .downstream(false)
-                              .group("读取属性")
-                              .description("对平台下发的读取属性指令进行响应")
-                              .example("{\"messageId\":\"消息ID,与读取指令中的ID一致.\",\"properties\":{\"属性ID\":\"属性值\"}}")),
-    //修改属性
-    writeProperty("/*/properties/write",
-                  WritePropertyMessage.class,
-                  route -> route
-                          .upstream(false)
-                          .downstream(true)
-                          .group("修改属性")
-                          .description("平台下发修改物模型属性数据指令")
-                          .example("{\"messageId\":\"消息ID,回复时需要一致.\",\"properties\":{\"属性ID\":\"属性值\"}}")),
-    //修改属性回复
-    writePropertyReply("/*/properties/write/reply",
-                       WritePropertyMessageReply.class,
-                       route -> route
-                               .upstream(true)
-                               .downstream(false)
-                               .group("修改属性")
-                               .description("对平台下发的修改属性指令进行响应")
-                               .example("{\"messageId\":\"消息ID,与修改指令中的ID一致.\",\"properties\":{\"属性ID\":\"属性值\"}}")),
+
     //事件上报
-    event("/*/event/*",
+    event("/19/0/0", 0,
           EventMessage.class,
           route -> route
                   .upstream(true)
@@ -96,211 +58,70 @@ public enum UriIndicatedMessageCodec {
                        .doOnNext(e -> e.setEvent(event))
                        .cast(DeviceMessage.class);
         }
-
-        @Override
-        void refactorTopic(String[] topics, DeviceMessage message) {
-            super.refactorTopic(topics, message);
-            EventMessage event = ((EventMessage) message);
-            topics[topics.length - 1] = String.valueOf(event.getEvent());
-        }
     },
 
     //调用功能
-    functionInvoke("/*/function/invoke",
-                   FunctionInvokeMessage.class,
-                   route -> route
-                           .upstream(false)
-                           .downstream(true)
-                           .group("调用功能")
-                           .description("平台下发功能调用指令")
-                           .example("{\"messageId\":\"消息ID,回复时需要一致.\"," +
-                                            "\"functionId\":\"功能标识\"," +
-                                            "\"inputs\":[{\"name\":\"参数名\",\"value\":\"参数值\"}]}")),
+    functionInvoke("/19/1/0", 0,
+            FunctionInvokeMessage.class,
+            route -> route
+                    .upstream(false)
+                    .downstream(true)
+                    .group("调用功能")
+                    .description("平台下发功能调用指令")
+                    .example("{\"messageId\":\"消息ID,回复时需要一致.\"," +
+                            "\"functionId\":\"功能标识\"," +
+                            "\"inputs\":[{\"name\":\"参数名\",\"value\":\"参数值\"}]}")),
     //调用功能回复
-    functionInvokeReply("/*/function/invoke/reply",
-                        FunctionInvokeMessageReply.class,
-                        route -> route
-                                .upstream(true)
-                                .downstream(false)
-                                .group("调用功能")
-                                .description("设备响应平台下发的功能调用指令")
-                                .example("{\"messageId\":\"消息ID,与下发指令中的messageId一致.\"," +
-                                                 "\"output\":\"输出结果,格式与物模型中定义的类型一致\"")),
-    //子设备消息
-    child("/*/child/*/**",
-          ChildDeviceMessage.class,
-          route -> route
-                  .upstream(true)
-                  .downstream(true)
-                  .group("子设备消息")
-                  .description("网关上报或者平台下发子设备消息")) {
-        @Override
-        protected void transMqttTopic(String[] topic) {
-            topic[topic.length - 1] = "{#:子设备相应操作的topic}";
-            topic[topic.length - 2] = "{childDeviceId:子设备ID}";
-        }
-
-        @Override
-        public Publisher<DeviceMessage> doDecode(ObjectMapper mapper, String[] topic, byte[] payload) {
-            String[] _topic = Arrays.copyOfRange(topic, 2, topic.length);
-            _topic[0] = "";// topic以/开头所有第一位是空白
-            return UriIndicatedMessageCodec
-                    .decode(mapper, _topic, payload)
-                    .map(childMsg -> {
-                        ChildDeviceMessage msg = new ChildDeviceMessage();
-                        msg.setDeviceId(topic[1]);
-                        msg.setChildDeviceMessage(childMsg);
-                        msg.setTimestamp(childMsg.getTimestamp());
-                        msg.setMessageId(childMsg.getMessageId());
-                        return msg;
-                    });
-        }
-
-        @Override
-        protected TopicPayload doEncode(ObjectMapper mapper, String[] topics, DeviceMessage message) {
-            ChildDeviceMessage deviceMessage = ((ChildDeviceMessage) message);
-
-            DeviceMessage childMessage = ((DeviceMessage) deviceMessage.getChildDeviceMessage());
-
-            TopicPayload payload = UriIndicatedMessageCodec.encode(mapper, childMessage);
-            String[] childTopic = payload.getTopic().split("/");
-            String[] topic = new String[topics.length + childTopic.length - 3];
-            //合并topic
-            System.arraycopy(topics, 0, topic, 0, topics.length - 1);
-            System.arraycopy(childTopic, 1, topic, topics.length - 2, childTopic.length - 1);
-
-            refactorTopic(topic, message);
-            payload.setTopic(String.join("/", topic));
-            return payload;
-
-        }
-    }, //子设备消息回复
-    childReply("/*/child-reply/*/**",
-               ChildDeviceMessageReply.class,
-               route -> route
-                       .upstream(true)
-                       .downstream(true)
-                       .group("子设备消息")
-                       .description("网关回复平台下发给子设备的指令结果")) {
-        @Override
-        protected void transMqttTopic(String[] topic) {
-            topic[topic.length - 1] = "{#:子设备相应操作的topic}";
-            topic[topic.length - 2] = "{childDeviceId:子设备ID}";
-        }
-
-        @Override
-        public Publisher<DeviceMessage> doDecode(ObjectMapper mapper, String[] topic, byte[] payload) {
-            String[] _topic = Arrays.copyOfRange(topic, 2, topic.length);
-            _topic[0] = "";// topic以/开头所有第一位是空白
-            return UriIndicatedMessageCodec
-                    .decode(mapper, _topic, payload)
-                    .map(childMsg -> {
-                        ChildDeviceMessageReply msg = new ChildDeviceMessageReply();
-                        msg.setDeviceId(topic[1]);
-                        msg.setChildDeviceMessage(childMsg);
-                        msg.setTimestamp(childMsg.getTimestamp());
-                        msg.setMessageId(childMsg.getMessageId());
-                        return msg;
-                    });
-        }
-
-        @Override
-        protected TopicPayload doEncode(ObjectMapper mapper, String[] topics, DeviceMessage message) {
-            ChildDeviceMessageReply deviceMessage = ((ChildDeviceMessageReply) message);
-
-            DeviceMessage childMessage = ((DeviceMessage) deviceMessage.getChildDeviceMessage());
-
-            TopicPayload payload = UriIndicatedMessageCodec.encode(mapper, childMessage);
-            String[] childTopic = payload.getTopic().split("/");
-            String[] topic = new String[topics.length + childTopic.length - 3];
-            //合并topic
-            System.arraycopy(topics, 0, topic, 0, topics.length - 1);
-            System.arraycopy(childTopic, 1, topic, topics.length - 2, childTopic.length - 1);
-
-            refactorTopic(topic, message);
-            payload.setTopic(String.join("/", topic));
-            return payload;
-
-        }
-    },
-    //更新标签
-    updateTag("/*/tags",
-              UpdateTagMessage.class,
-              route -> route.upstream(true)
-                            .downstream(false)
-                            .group("更新标签")
-                            .description("更新标签数据")
-                            .example("{\"tags\":{\"key\",\"value\"}}")),
+    functionInvokeReply("/19/1/0", 0,
+            FunctionInvokeMessageReply.class,
+            route -> route
+                    .upstream(true)
+                    .downstream(false)
+                    .group("调用功能")
+                    .description("设备响应平台下发的功能调用指令")
+                    .example("{\"messageId\":\"消息ID,与下发指令中的messageId一致.\"," +
+                            "\"output\":\"输出结果,格式与物模型中定义的类型一致\"")),
     //注册
-    register("/*/register", DeviceRegisterMessage.class),
+    register("/rd", 0, DeviceRegisterMessage.class),
+
     //注销
-    unregister("/*/unregister", DeviceUnRegisterMessage.class),
-    //更新固件消息
-    upgradeFirmware("/*/firmware/upgrade", UpgradeFirmwareMessage.class),
-    //更新固件消息回复
-    upgradeFirmwareReply("/*/firmware/upgrade/reply", UpgradeFirmwareMessageReply.class),
-    //更新固件升级进度消息
-    upgradeProcessFirmware("/*/firmware/upgrade/progress", UpgradeFirmwareProgressMessage.class),
-    //拉取固件
-    requestFirmware("/*/firmware/pull", RequestFirmwareMessage.class),
-    //拉取固件更新回复
-    requestFirmwareReply("/*/firmware/pull/reply", RequestFirmwareMessageReply.class),
-    //上报固件版本
-    reportFirmware("/*/firmware/report", ReportFirmwareMessage.class),
-    //读取固件回复
-    readFirmware("/*/firmware/read", ReadFirmwareMessage.class),
-    //读取固件回复
-    readFirmwareReply("/*/firmware/read/reply", ReadFirmwareMessageReply.class),
-    //派生物模型上报
-    derivedMetadata("/*/metadata/derived", DerivedMetadataMessage.class),
-    //透传设备消息
-    direct("/*/direct", DirectDeviceMessage.class) {
-        @Override
-        public Publisher<DeviceMessage> doDecode(ObjectMapper mapper, String[] topic, byte[] payload) {
-            DirectDeviceMessage message = new DirectDeviceMessage();
-            message.setDeviceId(topic[1]);
-            message.setPayload(payload);
-            return Mono.just(message);
-        }
-    },
-    //断开连接消息
-    disconnect("/*/disconnect", DisconnectDeviceMessage.class),
-    //断开连接回复
-    disconnectReply("/*/disconnect/reply", DisconnectDeviceMessageReply.class),
+    unregister("/rd", 0, DeviceUnRegisterMessage.class),
+
     //上线
-    online("/*/online", DeviceOnlineMessage.class, builder -> builder
+    online("/rd", 0, DeviceOnlineMessage.class,
+            builder -> builder
             .upstream(true)
             .group("状态管理")
             .description("设备上线")),
+
     //离线
-    offline("/*/offline", DeviceOfflineMessage.class, builder -> builder
+    offline("/rd", 0, DeviceOfflineMessage.class,
+            builder -> builder
             .upstream(true)
             .group("状态管理")
             .description("设备离线")),
-    //日志
-    log("/*/log", DeviceLogMessage.class),
-    //状态检查
-    stateCheck("/*/state-check", DeviceStateCheckMessage.class),
-    stateCheckReply("/*/state-check/reply", DeviceStateCheckMessageReply.class),
     ;
 
-    UriIndicatedMessageCodec(String topic,
+    UriIndicatedMessageCodec(String uri, int code,
                              Class<? extends DeviceMessage> type,
                              Function<LwM2MRoute.Builder, LwM2MRoute.Builder> routeCustom) {
-        this.pattern = topic.split("/");
+        this.pattern = uri.split("/");
+        this.code = code;
         this.type = type;
         this.route = routeCustom.apply(toRoute()).build();
     }
 
-    UriIndicatedMessageCodec(String topic,
+    UriIndicatedMessageCodec(String topic, int code,
                              Class<? extends DeviceMessage> type) {
         this.pattern = topic.split("/");
+        this.code = code;
         this.type = type;
         this.route = null;
     }
 
-    private final String[] pattern;
-    private final LwM2MRoute route;
+    private final String[]      pattern;
+    private final int           code;
+    private final LwM2MRoute    route;
     private final Class<? extends DeviceMessage> type;
 
     protected void transMqttTopic(String[] topic) {
@@ -382,7 +203,6 @@ public enum UriIndicatedMessageCodec {
 
     @SneakyThrows
     TopicPayload doEncode(ObjectMapper mapper, String[] topics, DeviceMessage message) {
-        refactorTopic(topics, message);
         return TopicPayload.of(String.join("/", topics), mapper.writeValueAsBytes(message));
     }
 
@@ -392,24 +212,6 @@ public enum UriIndicatedMessageCodec {
         return doEncode(mapper, topics, message);
     }
 
-    void refactorTopic(String[] topics, DeviceMessage message) {
-        topics[1] = message.getDeviceId();
-    }
 
-    /**
-     * 移除topic中的产品信息, topic第一个层为产品ID，在解码时,不需要此信息,所以需要移除之.
-     *
-     * @param topic topic
-     * @return 移除后的topic
-     */
-    public static String[] removeProductPath(String topic) {
-        if (!topic.startsWith("/")) {
-            topic = "/" + topic;
-        }
-        String[] topicArr = topic.split("/");
-        String[] topics = Arrays.copyOfRange(topicArr, 1, topicArr.length);
-        topics[0] = "";
-        return topics;
-    }
 
 }

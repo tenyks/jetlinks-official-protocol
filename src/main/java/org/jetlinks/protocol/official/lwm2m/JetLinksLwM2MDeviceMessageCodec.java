@@ -67,7 +67,6 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
     @Nonnull
     @Override
     public Publisher<? extends Message> decode(@Nonnull MessageDecodeContext context) {
-
         context.getMessage();
 
         return null;
