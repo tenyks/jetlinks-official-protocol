@@ -212,6 +212,4 @@ public enum UriIndicatedMessageCodec {
         return doEncode(mapper, topics, message);
     }
 
-
-
 }
