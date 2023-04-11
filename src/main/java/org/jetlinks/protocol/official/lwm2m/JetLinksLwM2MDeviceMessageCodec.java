@@ -9,6 +9,7 @@ import org.jetlinks.core.message.Message;
 import org.jetlinks.core.message.codec.*;
 import org.jetlinks.core.message.codec.http.websocket.DefaultWebSocketMessage;
 import org.jetlinks.core.message.codec.http.websocket.WebSocketMessage;
+import org.jetlinks.core.message.codec.lwm2m.LwM2MDownlinkMessage;
 import org.jetlinks.core.metadata.DefaultConfigMetadata;
 import org.jetlinks.core.metadata.DeviceConfigScope;
 import org.jetlinks.core.metadata.types.EnumType;
@@ -69,13 +70,20 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
     public Publisher<? extends Message> decode(@Nonnull MessageDecodeContext context) {
         context.getMessage();
 
+
+
+
         return null;
     }
 
     @Nonnull
     @Override
-    public Mono<EncodedMessage>     encode(@Nonnull MessageEncodeContext context) {
+    public Mono<LwM2MDownlinkMessage>     encode(@Nonnull MessageEncodeContext context) {
         JSONObject json = context.getMessage().toJson();
+
+
+
+
         //通过websocket下发
         return Mono.just(DefaultWebSocketMessage.of(
                 WebSocketMessage.Type.TEXT,
