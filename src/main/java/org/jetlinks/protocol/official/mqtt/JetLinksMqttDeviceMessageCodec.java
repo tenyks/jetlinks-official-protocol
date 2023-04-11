@@ -50,7 +50,6 @@ import javax.annotation.Nonnull;
  *          调用子设备功能回复: /{productId}/{deviceId}/child/{childDeviceId}/function/invoke/reply
  *          上报子设备事件: /{productId}/{deviceId}/child/{childDeviceId}/event/{eventId}
  *          上报子设备派生物模型: /{productId}/{deviceId}/child/{childDeviceId}/metadata/derived
- *
  * </pre>
  * 基于jet links 的消息编解码器
  *
