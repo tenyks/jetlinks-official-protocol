@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.californium.core.coap.OptionNumberRegistry;
 import org.jetlinks.core.Value;
 import org.jetlinks.core.message.DeviceMessage;
-import org.jetlinks.core.message.codec.CoapMessage;
+import org.jetlinks.core.message.codec.coap.CoapMessage;
 import org.jetlinks.core.message.codec.DefaultTransport;
 import org.jetlinks.core.message.codec.MessageDecodeContext;
 import org.jetlinks.core.message.codec.Transport;

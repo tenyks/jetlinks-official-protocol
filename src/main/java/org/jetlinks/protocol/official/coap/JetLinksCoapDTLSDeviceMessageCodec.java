@@ -8,10 +8,11 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.OptionNumberRegistry;
 import org.hswebframework.web.id.IDGenerator;
 import org.jetlinks.core.message.DeviceMessage;
-import org.jetlinks.core.message.codec.CoapMessage;
+
 import org.jetlinks.core.message.codec.DefaultTransport;
 import org.jetlinks.core.message.codec.MessageDecodeContext;
 import org.jetlinks.core.message.codec.Transport;
+import org.jetlinks.core.message.codec.coap.CoapMessage;
 import org.jetlinks.core.metadata.DefaultConfigMetadata;
 import org.jetlinks.core.metadata.types.PasswordType;
 import org.jetlinks.protocol.official.FunctionalTopicHandlers;

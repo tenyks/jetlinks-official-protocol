@@ -2,7 +2,6 @@ package org.jetlinks.protocol.official.binary;
 
 import com.google.common.collect.Maps;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import org.jetlinks.protocol.official.ObjectMappers;
 
 import java.nio.charset.StandardCharsets;

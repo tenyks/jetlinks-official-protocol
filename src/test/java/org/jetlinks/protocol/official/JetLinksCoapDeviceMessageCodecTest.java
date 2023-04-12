@@ -16,7 +16,7 @@ import org.jetlinks.core.device.DeviceInfo;
 import org.jetlinks.core.device.DeviceOperator;
 import org.jetlinks.core.device.StandaloneDeviceMessageBroker;
 import org.jetlinks.core.message.Message;
-import org.jetlinks.core.message.codec.CoapExchangeMessage;
+import org.jetlinks.core.message.codec.coap.CoapExchangeMessage;
 import org.jetlinks.core.message.codec.EncodedMessage;
 import org.jetlinks.core.message.codec.MessageDecodeContext;
 import org.jetlinks.core.message.event.EventMessage;
