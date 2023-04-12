@@ -6,13 +6,14 @@ import org.jetlinks.core.route.HttpRoute;
 import org.jetlinks.core.route.WebsocketRoute;
 import org.jetlinks.core.spi.ProtocolSupportProvider;
 import org.jetlinks.core.spi.ServiceContext;
-import org.jetlinks.protocol.official.coap.JetLinksCoapDeviceMessageCodec;
 import org.jetlinks.protocol.official.core.TopicMessageCodec;
 import org.jetlinks.protocol.official.http.JetLinksHttpDeviceMessageCodec;
+import org.jetlinks.protocol.official.lwm2m.JetLinksLwM2MDeviceMessageCodec;
 import org.jetlinks.protocol.official.mqtt.JetLinksMqttDeviceMessageCodec;
 import org.jetlinks.protocol.official.tcp.TcpDeviceMessageCodec;
 import org.jetlinks.protocol.official.udp.UDPDeviceMessageCodec;
 import org.jetlinks.supports.official.JetLinksDeviceMetadataCodec;
+import org.jetlinks.supports.protocol.serial.*;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import reactor.core.publisher.Mono;
@@ -106,12 +107,27 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
                                     .build()
                     ));
 
-            //CoAP
-            support.addConfigMetadata(DefaultTransport.CoAP, JetLinksCoapDeviceMessageCodec.coapConfig);
-            support.addMessageCodecSupport(new JetLinksCoapDeviceMessageCodec());
-
+            //LwM2M
+            support.addConfigMetadata(DefaultTransport.LwM2M, JetLinksLwM2MDeviceMessageCodec.CONFIG);
+            support.addMessageCodecSupport(createL2M2MDeviceMessageCodec());
 
             return Mono.just(support);
         });
     }
+
+    public JetLinksLwM2MDeviceMessageCodec  createL2M2MDeviceMessageCodec() {
+        return new JetLinksLwM2MDeviceMessageCodec(
+                createJsonParserSuit(),
+                createJsonWriterSuit()
+        );
+    }
+
+    private PayloadParserSuit createJsonParserSuit() {
+        return new DefaultPayloadParserSuit().add("", new JsonPayloadParser(ObjectMappers.JSON_MAPPER));
+    }
+
+    private PayloadWriterSuit   createJsonWriterSuit() {
+        return new DefaultPayloadWriterSuit().add("", new JsonPayloadWriter(ObjectMappers.JSON_MAPPER));
+    }
+
 }
