@@ -79,7 +79,7 @@ public class RouteMessageCodec {
         msg.setResource(dcl.getRoute().getResource());
         msg.setPayload(Unpooled.wrappedBuffer(buf));
 
-        return null;
+        return Flux.just(msg);
     }
 
     protected Tuple2<JSONObject, PayloadParser> parseMessage(String uriOrTopic, byte[] payload) throws IOException {
@@ -107,6 +107,5 @@ public class RouteMessageCodec {
     protected void copyTo(JSONObject parsedMsg, DeviceMessage thingMsg) {
         FastBeanCopier.copy(parsedMsg, thingMsg);
     }
-
 
 }

@@ -123,11 +123,11 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
     }
 
     private PayloadParserSuit createJsonParserSuit() {
-        return new DefaultPayloadParserSuit().add("", new JsonPayloadParser(ObjectMappers.JSON_MAPPER));
+        return new DefaultPayloadParserSuit().add("*", new JsonPayloadParser(ObjectMappers.JSON_MAPPER));
     }
 
     private PayloadWriterSuit   createJsonWriterSuit() {
-        return new DefaultPayloadWriterSuit().add("", new JsonPayloadWriter(ObjectMappers.JSON_MAPPER));
+        return new DefaultPayloadWriterSuit().add("*", new JsonPayloadWriter(ObjectMappers.JSON_MAPPER));
     }
 
 }

@@ -49,7 +49,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
                         .upstream(true).downstream(false)
                         .group("属性上报").messageType("ReportPropertyMessage")
                         .description("上报物模型属性数据")
-                        .example("{\"properties\":{\"属性ID\":\"属性值\"}}").build())
+                        .example("{\"messageType\":\"ReportPropertyMessage\",\"properties\":{\"属性ID\":\"属性值\"}}").build())
                 .thingMessageType(ReportPropertyMessage.class)
                 .upstreamRoutePredict(this::isUpstreamRouteMatched)
         );
@@ -59,7 +59,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
                         .upstream(true).downstream(false)
                         .group("事件上报").messageType("EventMessage")
                         .description("上报物模型事件数据")
-                        .example("{\"data\":{\"key\":\"value\"}}").build())
+                        .example("{\"messageType\":\"EventMessage\",\"data\":{\"key\":\"value\"}}").build())
                 .thingMessageType(EventMessage.class)
                 .upstreamRoutePredict(this::isUpstreamRouteMatched)
         );
@@ -69,7 +69,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
                         .upstream(false).downstream(true)
                         .group("调用功能").messageType("FunctionInvokeMessage")
                         .description("平台下发功能调用指令")
-                        .example("{\"messageId\":\"消息ID,回复时需要一致.\"," +
+                        .example("{\"messageType\":\"FunctionInvokeMessage\",\"messageId\":\"消息ID,回复时需要一致.\"," +
                                 "\"functionId\":\"功能标识\"," +
                                 "\"inputs\":[{\"name\":\"参数名\",\"value\":\"参数值\"}]}").build())
                 .thingMessageType(FunctionInvokeMessage.class)
@@ -79,7 +79,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
                         .upstream(true).downstream(false)
                         .group("调用功能").messageType("FunctionInvokeMessageReply")
                         .description("设备响应平台下发的功能调用指令")
-                        .example("{\"messageId\":\"消息ID,与下发指令中的messageId一致.\"," +
+                        .example("{\"messageType\":\"FunctionInvokeMessageReply\",\"messageId\":\"消息ID,与下发指令中的messageId一致.\"," +
                                 "\"output\":\"输出结果,格式与物模型中定义的类型一致\"").build())
                 .thingMessageType(FunctionInvokeMessageReply.class)
                 .upstreamRoutePredict(this::isUpstreamRouteMatched)
@@ -90,15 +90,15 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
                         .upstream(false).downstream(true)
                         .group("读取属性").messageType("ReadPropertyMessage")
                         .description("平台下发读取物模型属性数据指令")
-                        .example("{\"messageId\":\"消息ID,回复时需要一致.\",\"properties\":[\"属性ID\"]}").build())
+                        .example("{\"messageType\":\"ReadPropertyMessage\",\"messageId\":\"消息ID,回复时需要一致.\",\"properties\":[\"属性ID\"]}").build())
                 .thingMessageType(ReadPropertyMessage.class)
         );
         dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
                 .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerCommand)
                         .upstream(true).downstream(false)
-                        .group("读取属性").messageType("ReadPropertyMessage")
+                        .group("读取属性").messageType("ReadPropertyMessageReply")
                         .description("对平台下发的读取属性指令进行响应")
-                        .example("{\"messageId\":\"消息ID,与读取指令中的ID一致.\",\"properties\":{\"属性ID\":\"属性值\"}}").build())
+                        .example("{\"messageType\":\"ReadPropertyMessageReply\",\"messageId\":\"消息ID,与读取指令中的ID一致.\",\"properties\":{\"属性ID\":\"属性值\"}}").build())
                 .thingMessageType(ReadPropertyMessageReply.class)
                 .upstreamRoutePredict(this::isUpstreamRouteMatched)
         );
@@ -108,7 +108,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
                         .upstream(false).downstream(true)
                         .group("修改属性").messageType("WritePropertyMessage")
                         .description("平台下发修改物模型属性数据指令")
-                        .example("{\"messageId\":\"消息ID,回复时需要一致.\",\"properties\":{\"属性ID\":\"属性值\"}}").build())
+                        .example("{\"messageType\":\"WritePropertyMessage\",\"messageId\":\"消息ID,回复时需要一致.\",\"properties\":{\"属性ID\":\"属性值\"}}").build())
                 .thingMessageType(WritePropertyMessage.class)
         );
         dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
@@ -116,7 +116,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
                         .upstream(true).downstream(false)
                         .group("修改属性").messageType("WritePropertyMessageReply")
                         .description("对平台下发的修改属性指令进行响应")
-                        .example("{\"messageId\":\"消息ID,与修改指令中的ID一致.\",\"properties\":{\"属性ID\":\"属性值\"}}").build())
+                        .example("{\"messageType\":\"WritePropertyMessageReply\",\"messageId\":\"消息ID,与修改指令中的ID一致.\",\"properties\":{\"属性ID\":\"属性值\"}}").build())
                 .thingMessageType(WritePropertyMessageReply.class)
                 .upstreamRoutePredict(this::isUpstreamRouteMatched)
         );
@@ -142,7 +142,6 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
         }
 
         LwM2MAuthenticationRequest req = ((LwM2MAuthenticationRequest) request);
-
         String ep = req.getEndpoint();
         if (device.getDeviceId().equals(ep)) {
             return Mono.just(AuthenticationResponse.error(201, "设备认证通过"));
