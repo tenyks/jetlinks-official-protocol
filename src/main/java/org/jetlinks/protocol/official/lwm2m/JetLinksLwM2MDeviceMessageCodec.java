@@ -126,7 +126,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
 
     protected boolean isUpstreamRouteMatched(LwM2MRoute route, LwM2MUplinkMessage msg, JSONObject parsedMsg) {
         String messageType = parsedMsg.getString("messageType");
-        return route.getResource().equals(msg.getObjectAndResource()) && messageType.equals(route.getMessageType());
+        return route.isUpstream() && route.getResource().equals(msg.getObjectAndResource()) && messageType.equals(route.getMessageType());
     }
 
     @Override

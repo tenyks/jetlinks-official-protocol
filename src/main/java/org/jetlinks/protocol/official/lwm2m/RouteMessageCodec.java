@@ -73,11 +73,18 @@ public class RouteMessageCodec {
         MessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage> dcl = findDownstreamRoute(thingMsg);
         if (dcl == null) return Flux.empty();
 
-        byte[] buf = writerSuit.buildPayload(dcl.getMessageType(), thingMsg.toJson());
+        byte[] buf = null;
+        try {
+            buf = writerSuit.buildPayload(dcl.getMessageType(), thingMsg.toJson());
+            if (buf == null) return Flux.empty();
+        } catch (IOException e) {
+            return Flux.error(e);
+        }
 
         SimpleLwM2MDownlinkMessage msg = new SimpleLwM2MDownlinkMessage();
         msg.setResource(dcl.getRoute().getResource());
         msg.setPayload(Unpooled.wrappedBuffer(buf));
+//        msg.setMessageId(thingMsg.getMessageId());
 
         return Flux.just(msg);
     }
