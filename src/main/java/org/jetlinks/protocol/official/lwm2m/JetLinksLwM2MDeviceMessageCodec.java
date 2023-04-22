@@ -144,7 +144,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
         LwM2MAuthenticationRequest req = ((LwM2MAuthenticationRequest) request);
         String ep = req.getEndpoint();
         if (device.getDeviceId().equals(ep)) {
-            return Mono.just(AuthenticationResponse.error(201, "设备认证通过"));
+            return Mono.just(AuthenticationResponse.success(device.getDeviceId()));
         } else {
             return Mono.just(AuthenticationResponse.error(403, "设备认证不通过"));
         }

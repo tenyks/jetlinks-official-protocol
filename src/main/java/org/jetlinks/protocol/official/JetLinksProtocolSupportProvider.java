@@ -108,8 +108,10 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
                     ));
 
             //LwM2M
+            JetLinksLwM2MDeviceMessageCodec l2M2MDeviceMessageCodec = createL2M2MDeviceMessageCodec();
             support.addConfigMetadata(DefaultTransport.LwM2M, JetLinksLwM2MDeviceMessageCodec.CONFIG);
-            support.addMessageCodecSupport(createL2M2MDeviceMessageCodec());
+            support.addMessageCodecSupport(l2M2MDeviceMessageCodec);
+            support.addAuthenticator(DefaultTransport.LwM2M, l2M2MDeviceMessageCodec);
 
             return Mono.just(support);
         });
