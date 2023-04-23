@@ -12,6 +12,8 @@ import org.jetlinks.supports.protocol.codec.MessageCodecDeclaration;
 import org.jetlinks.supports.protocol.serial.PayloadParser;
 import org.jetlinks.supports.protocol.serial.PayloadParserSuit;
 import org.jetlinks.supports.protocol.serial.PayloadWriterSuit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
@@ -25,6 +27,8 @@ import java.util.Map;
  * @date 2023/4/11 21:21
  */
 public class RouteMessageCodec {
+
+    private static final Logger log = LoggerFactory.getLogger(RouteMessageCodec.class);
 
     private PayloadParserSuit parserSuit;
 
@@ -49,6 +53,7 @@ public class RouteMessageCodec {
         try {
             parsedRst = parseMessage(message.getPath(), message.payloadAsBytes());
         } catch (IOException e) {
+            log.error("[LwM2M][CodecPlugin]解码消息异常失败：msg={}", message, e);
             return Flux.error(e);
         }
         if (parsedRst == null) return Flux.empty();
@@ -62,6 +67,7 @@ public class RouteMessageCodec {
         try {
             thingMsg = dcl.createThingMessage();
         } catch (IllegalAccessException | InstantiationException e) {
+            log.error("[LwM2M][CodecPlugin]创建物模型消息异常失败：dcl={}", dcl, e);
             return Flux.error(e);
         }
         copyTo(parsedRst.getT1(), thingMsg);
