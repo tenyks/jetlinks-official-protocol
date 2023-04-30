@@ -8,7 +8,7 @@ import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.codec.*;
 import org.jetlinks.core.message.codec.lwm2m.LwM2MDownlinkMessage;
 import org.jetlinks.core.message.codec.lwm2m.LwM2MOperation;
-import org.jetlinks.core.message.codec.lwm2m.LwM2MResources;
+import org.jetlinks.core.message.codec.lwm2m.LwM2MResource;
 import org.jetlinks.core.message.codec.lwm2m.LwM2MUplinkMessage;
 import org.jetlinks.core.message.event.EventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
@@ -49,7 +49,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
         List<MessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>> dclList = new ArrayList<>();
 
         dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder(LwM2MResources.BinaryAppDataContainerReport.getPath())
+                .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerReport.getPath())
                         .upstreamResponse()
                         .group("属性上报").messageType("ReportPropertyMessage")
                         .description("上报物模型属性数据")
@@ -59,7 +59,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
         );
 
         dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder(LwM2MResources.BinaryAppDataContainerReport.getPath())
+                .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerReport.getPath())
                         .upstreamResponse()
                         .group("事件上报").messageType("EventMessage")
                         .description("上报物模型事件数据")
@@ -69,7 +69,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
         );
 
         dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder(LwM2MResources.BinaryAppDataContainerCommand.getPath())
+                .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerCommand.getPath())
                         .downstreamRequest(LwM2MOperation.Write)
                         .group("调用功能").messageType("FunctionInvokeMessage")
                         .description("平台下发功能调用指令")
@@ -79,7 +79,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
                 .thingMessageType(FunctionInvokeMessage.class)
         );
         dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder(LwM2MResources.BinaryAppDataContainerCommand.getPath())
+                .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerCommand.getPath())
                         .upstreamResponse()
                         .group("调用功能").messageType("FunctionInvokeMessageReply")
                         .description("设备响应平台下发的功能调用指令")
@@ -90,7 +90,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
         );
 
         dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder(LwM2MResources.BinaryAppDataContainerCommand.getPath())
+                .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerCommand.getPath())
                         .downstreamRequest(LwM2MOperation.Write)
                         .group("读取属性").messageType("ReadPropertyMessage")
                         .description("平台下发读取物模型属性数据指令")
@@ -98,7 +98,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
                 .thingMessageType(ReadPropertyMessage.class)
         );
         dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder(LwM2MResources.BinaryAppDataContainerCommand.getPath())
+                .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerCommand.getPath())
                         .upstreamResponse()
                         .group("读取属性").messageType("ReadPropertyMessageReply")
                         .description("对平台下发的读取属性指令进行响应")
@@ -108,7 +108,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
         );
 
         dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder(LwM2MResources.BinaryAppDataContainerCommand.getPath())
+                .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerCommand.getPath())
                         .downstreamRequest(LwM2MOperation.Write)
                         .group("修改属性").messageType("WritePropertyMessage")
                         .description("平台下发修改物模型属性数据指令")
@@ -116,7 +116,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
                 .thingMessageType(WritePropertyMessage.class)
         );
         dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder(LwM2MResources.BinaryAppDataContainerCommand.getPath())
+                .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerCommand.getPath())
                         .upstreamResponse()
                         .group("修改属性").messageType("WritePropertyMessageReply")
                         .description("对平台下发的修改属性指令进行响应")

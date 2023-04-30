@@ -35,7 +35,7 @@ public class JetLinksLwM2MDeviceMessageCodecTest {
     public void decodeReportPropertiesMessage() {
         SimpleLwM2MUplinkMessage message =  new SimpleLwM2MUplinkMessage();
         message.setMessageId(1001);
-        message.setResource(LwM2MResource.BinaryAppDataContainerReport);
+        message.setPath(LwM2MResource.BinaryAppDataContainerReport.getPath());
         message.setRegistrationId("2001");
         message.setPayload(Unpooled.wrappedBuffer("{\"messageType\":\"ReportPropertyMessage\",\"properties\":{\"属性ID\":\"属性值\"}}".getBytes(StandardCharsets.UTF_8)));
 
@@ -52,7 +52,7 @@ public class JetLinksLwM2MDeviceMessageCodecTest {
     public void decodeReportEventMessage() {
         SimpleLwM2MUplinkMessage message =  new SimpleLwM2MUplinkMessage();
         message.setMessageId(1001);
-        message.setResource(LwM2MResource.BinaryAppDataContainerReport);
+        message.setPath(LwM2MResource.BinaryAppDataContainerReport.getPath());
         message.setRegistrationId("2001");
         message.setPayload(Unpooled.wrappedBuffer("{\"messageType\":\"EventMessage\",\"data\":{\"key\":\"value\"}}".getBytes(StandardCharsets.UTF_8)));
 
