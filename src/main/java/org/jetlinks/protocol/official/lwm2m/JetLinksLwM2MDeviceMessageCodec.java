@@ -79,7 +79,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
                 .thingMessageType(FunctionInvokeMessage.class)
         );
         dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerCommand.getPath())
+                .route(LwM2MRoute.builder("/19/*/0")
                         .upstreamResponse()
                         .group("调用功能").messageType("FunctionInvokeMessageReply")
                         .description("设备响应平台下发的功能调用指令")
@@ -130,7 +130,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
 
     protected boolean isUpstreamRouteMatched(LwM2MRoute route, LwM2MUplinkMessage msg, JSONObject parsedMsg) {
         String messageType = parsedMsg.getString("messageType");
-        return route.isUpstream() && route.getPath().equals(msg.getPath()) && messageType.equals(route.getMessageType());
+        return route.isUpstream() && messageType.equals(route.getMessageType()) && route.acceptPath(msg.getPath());
     }
 
     @Override
