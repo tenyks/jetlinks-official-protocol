@@ -28,7 +28,7 @@ public class BinaryReadPropertyMessage implements BinaryMessage<ReadPropertyMess
     public void read(ByteBuf buf) {
         message = new ReadPropertyMessage();
         @SuppressWarnings("all")
-        List<String> list = (List<String>)  DataType.ARRAY.read(buf);
+        List<String> list = (List<String>) DataType.ARRAY.read(buf);
         message.setProperties(list);
     }
 

@@ -33,7 +33,6 @@ public class TcpDeviceMessageCodec implements DeviceMessageCodec {
     @NonNull
     @Override
     public Publisher<? extends Message> decode(@NonNull MessageDecodeContext context) {
-
         ByteBuf payload = context.getMessage().getPayload();
 
         //read index
@@ -43,6 +42,7 @@ public class TcpDeviceMessageCodec implements DeviceMessageCodec {
         if (context.getDevice() == null) {
             return handleLogin(payload, context);
         }
+
         return Mono.justOrEmpty(BinaryMessageType.read(payload, context.getDevice().getDeviceId()));
     }
 
@@ -117,6 +117,4 @@ public class TcpDeviceMessageCodec implements DeviceMessageCodec {
                 )
         ));
     }
-
-
 }
