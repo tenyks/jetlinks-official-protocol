@@ -8,17 +8,13 @@ import org.jetlinks.protocol.official.binary.DataType;
  */
 public class FieldDeclaration {
 
-    private int         seqNo;
-
     private String      code;
 
     private String      name;
 
     private DataType    dataType;
 
-    private boolean     asType = false;
+    private int         length;
 
-    private boolean     asMessageId = false;
 
-    private boolean     asHeader = false;
 }
