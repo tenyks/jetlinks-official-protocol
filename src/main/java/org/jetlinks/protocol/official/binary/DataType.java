@@ -14,14 +14,13 @@ public enum DataType {
     //0x00
     NULL {
         @Override
-        public Object read(ByteBuf buf) {
-            return null;
-        }
+        public Object read(ByteBuf buf) { return null; }
 
         @Override
-        public void write(ByteBuf buf, Object value) {
+        public void write(ByteBuf buf, Object value) { }
 
-        }
+        @Override
+        public short size() { return 0; }
     },
     //0x01
     BOOLEAN {
@@ -34,6 +33,9 @@ public enum DataType {
         public void write(ByteBuf buf, Object value) {
             buf.writeBoolean((Boolean) value);
         }
+
+        @Override
+        public short size() { return 1; }
     },
     //0x02
     INT8 {
@@ -46,6 +48,9 @@ public enum DataType {
         public void write(ByteBuf buf, Object value) {
             buf.writeByte((Byte) value);
         }
+
+        @Override
+        public short size() { return 1; }
     },
     //0x03
     INT16 {
@@ -58,6 +63,9 @@ public enum DataType {
         public void write(ByteBuf buf, Object value) {
             buf.writeShort((Short) value);
         }
+
+        @Override
+        public short size() { return 2; }
     },
     //0x04
     INT32 {
@@ -70,6 +78,9 @@ public enum DataType {
         public void write(ByteBuf buf, Object value) {
             buf.writeInt((Integer) value);
         }
+
+        @Override
+        public short size() { return 4; }
     },
     //0x05
     INT64 {
@@ -82,6 +93,9 @@ public enum DataType {
         public void write(ByteBuf buf, Object value) {
             buf.writeLong((Long) value);
         }
+
+        @Override
+        public short size() { return 8; }
     },
     //0x06
     UINT8 {
@@ -94,6 +108,9 @@ public enum DataType {
         public void write(ByteBuf buf, Object value) {
             buf.writeByte((Byte) value);
         }
+
+        @Override
+        public short size() { return 1; }
     },
     //0x07
     UINT16 {
@@ -106,6 +123,9 @@ public enum DataType {
         public void write(ByteBuf buf, Object value) {
             buf.writeShort((Short) value);
         }
+
+        @Override
+        public short size() { return 2; }
     },
     //0x08
     UINT32 {
@@ -118,6 +138,9 @@ public enum DataType {
         public void write(ByteBuf buf, Object value) {
             buf.writeInt((Integer) value);
         }
+
+        @Override
+        public short size() { return 4; }
     },
     //0x09
     FLOAT {
@@ -130,6 +153,9 @@ public enum DataType {
         public void write(ByteBuf buf, Object value) {
             buf.writeFloat((Float) value);
         }
+
+        @Override
+        public short size() { return 4; }
     },
     //0x0A
     DOUBLE {
@@ -142,6 +168,9 @@ public enum DataType {
         public void write(ByteBuf buf, Object value) {
             buf.writeDouble((Double) value);
         }
+
+        @Override
+        public short size() { return 8; }
     },
     //0x0B
     STRING {
@@ -160,6 +189,9 @@ public enum DataType {
             buf.writeShort(bytes.length);
             buf.writeBytes(bytes);
         }
+
+        @Override
+        public short size() { return 0; }
     },
     //0x0C
     BINARY {
@@ -177,6 +209,9 @@ public enum DataType {
             buf.writeShort(bytes.length);
             buf.writeBytes(bytes);
         }
+
+        @Override
+        public short size() { return 0; }
     },
     //0x0D
     ARRAY {
@@ -198,6 +233,9 @@ public enum DataType {
                 writeTo(o, buf);
             }
         }
+
+        @Override
+        public short size() { return 0; }
     },
     //0x0E
     OBJECT {
@@ -221,6 +259,9 @@ public enum DataType {
                 writeTo(entry.getValue(), buf);
             }
         }
+
+        @Override
+        public short size() { return 0; }
     };
 
     private final static DataType[] VALUES = values();
@@ -228,6 +269,8 @@ public enum DataType {
     public abstract Object read(ByteBuf buf);
 
     public abstract void write(ByteBuf buf, Object value);
+
+    public abstract short size();
 
     public static Object readFrom(ByteBuf buf) {
         return VALUES[buf.readUnsignedByte()].read(buf);

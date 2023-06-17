@@ -1,19 +1,20 @@
 package org.jetlinks.protocol.official.binary2;
 
+import javax.annotation.Nullable;
+
 /**
  * 结构体实例
  *
  * @author v-lizy81
  * @date 2023/6/16 21:38
  */
-public class StructInstance {
+public interface StructInstance {
 
-    public FieldInstance getFieldInstance(FieldDeclaration fieldDcl) {
-        return null;
-    }
+    @Nullable
+    StructDeclaration    getDeclaration();
 
-    public void putFieldInstance(FieldDeclaration dcl, FieldInstance inst) {
+    FieldInstance getFieldInstance(FieldDeclaration fieldDcl);
 
-    }
+    void addFieldInstance(FieldInstance inst);
 
 }
