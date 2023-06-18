@@ -1,16 +1,16 @@
 package org.jetlinks.protocol.official.binary2;
 
-import com.google.common.collect.Maps;
 import io.netty.buffer.ByteBuf;
-import org.jetlinks.protocol.official.ObjectMappers;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
-public enum DirectDataType {
+/**
+ * 基础数据类型
+ * @author tenyks
+ * @since 3.1
+ * @version 1.0
+ */
+public enum BaseDataType {
     //0x00
     NULL {
         @Override
@@ -197,7 +197,6 @@ public enum DirectDataType {
         public short write(ByteBuf buf, Object value) {
 
             byte[] bytes = ((String) value).getBytes();
-            buf.writeShort(bytes.length);
             buf.writeBytes(bytes);
 
             return 8;
@@ -206,6 +205,7 @@ public enum DirectDataType {
         @Override
         public short size() { return 0; }
     },
+
     //0x0C
     BINARY {
         @Override
@@ -219,62 +219,7 @@ public enum DirectDataType {
         @Override
         public short write(ByteBuf buf, Object value) {
             byte[] bytes = (byte[]) value;
-            buf.writeShort(bytes.length);
             buf.writeBytes(bytes);
-
-            return 0;
-        }
-
-        @Override
-        public short size() { return 0; }
-    },
-    //0x0D
-    ARRAY {
-        @Override
-        public Object read(ByteBuf buf) {
-            int len = buf.readUnsignedShort();
-            List<Object> array = new ArrayList<>(len);
-            for (int i = 0; i < len; i++) {
-                array.add(readFrom(buf));
-            }
-            return array;
-        }
-
-        @Override
-        public short write(ByteBuf buf, Object value) {
-            Collection<Object> array = (Collection<Object>) value;
-            buf.writeShort(array.size());
-            for (Object o : array) {
-                writeTo(o, buf);
-            }
-
-            return 0;
-        }
-
-        @Override
-        public short size() { return 0; }
-    },
-    //0x0E
-    OBJECT {
-        @Override
-        public Object read(ByteBuf buf) {
-            int len = buf.readUnsignedShort();
-            Map<String, Object> data = Maps.newLinkedHashMapWithExpectedSize(len);
-            for (int i = 0; i < len; i++) {
-                data.put((String) STRING.read(buf), readFrom(buf));
-            }
-            return data;
-        }
-
-        @Override
-        public short write(ByteBuf buf, Object value) {
-            Map<String, Object> data = value instanceof Map ? ((Map) value) : ObjectMappers.JSON_MAPPER.convertValue(value, Map.class);
-            buf.writeShort(data.size());
-
-            for (Map.Entry<String, Object> entry : data.entrySet()) {
-                STRING.write(buf, entry.getKey());
-                writeTo(entry.getValue(), buf);
-            }
 
             return 0;
         }
@@ -283,7 +228,7 @@ public enum DirectDataType {
         public short size() { return 0; }
     };
 
-    private final static DirectDataType[] VALUES = values();
+    private final static BaseDataType[] VALUES = values();
 
     public abstract Object read(ByteBuf buf);
 
@@ -296,12 +241,12 @@ public enum DirectDataType {
     }
 
     public static void writeTo(Object data, ByteBuf buf) {
-        DirectDataType type = loopUpType(data);
+        BaseDataType type = loopUpType(data);
         buf.writeByte(type.ordinal());
         type.write(buf, data);
     }
 
-    private static DirectDataType loopUpType(Object data) {
+    private static BaseDataType loopUpType(Object data) {
         if (data == null) {
             return NULL;
         } else if (data instanceof Boolean) {
@@ -322,10 +267,6 @@ public enum DirectDataType {
             return STRING;
         } else if (data instanceof byte[]) {
             return BINARY;
-        } else if (data instanceof Collection) {
-            return ARRAY;
-        } else if (data instanceof Map) {
-            return OBJECT;
         } else {
             throw new IllegalArgumentException("Unsupported data type: " + data.getClass());
         }

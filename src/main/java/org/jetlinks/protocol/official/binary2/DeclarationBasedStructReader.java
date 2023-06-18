@@ -40,4 +40,7 @@ public class DeclarationBasedStructReader implements StructReader {
         return sInst;
     }
 
+    public StructDeclaration getStructDeclaration() {
+        return structDcl;
+    }
 }

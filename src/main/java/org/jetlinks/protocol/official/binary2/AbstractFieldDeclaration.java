@@ -23,6 +23,8 @@ public abstract class AbstractFieldDeclaration implements FieldDeclaration {
 
     private short               sizeMask;
 
+    private boolean             isPayloadField;
+
     protected AbstractFieldDeclaration(String code, DataType dataType, Short absOffset) {
         this.code = code;
         this.dataType = dataType;
@@ -93,5 +95,14 @@ public abstract class AbstractFieldDeclaration implements FieldDeclaration {
 
     public DynamicSize getDynamicSize() {
         return refSize;
+    }
+
+    @Override
+    public boolean isPayloadField() {
+        return isPayloadField;
+    }
+
+    public void setPayloadField(boolean payloadField) {
+        isPayloadField = payloadField;
     }
 }

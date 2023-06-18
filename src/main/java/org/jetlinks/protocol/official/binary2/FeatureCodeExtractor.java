@@ -1,5 +1,7 @@
 package org.jetlinks.protocol.official.binary2;
 
+import io.netty.buffer.ByteBuf;
+
 /**
  * 字节流中特征码提取器
  *
@@ -8,6 +10,6 @@ package org.jetlinks.protocol.official.binary2;
  */
 public interface FeatureCodeExtractor {
 
-    
+    String extract(ByteBuf buf);
 
 }

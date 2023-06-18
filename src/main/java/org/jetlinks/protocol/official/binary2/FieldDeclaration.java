@@ -6,6 +6,8 @@ public interface FieldDeclaration {
 
     String          getCode();
 
+    boolean         isPayloadField();
+
     DataType        getDataType();
 
     short           getSize();
@@ -15,4 +17,5 @@ public interface FieldDeclaration {
     DynamicAnchor   getDynamicAnchor();
 
     DynamicSize     getDynamicSize();
+
 }
