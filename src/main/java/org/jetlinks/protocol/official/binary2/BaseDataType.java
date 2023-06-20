@@ -253,6 +253,12 @@ public enum BaseDataType {
 
     public abstract Object read(ByteBuf buf);
 
+    /**
+     *
+     * @param buf       输出BUF，（非空）；
+     * @param value     取值，（可空），空值时补为0的字节
+     * @return  写入的字节数
+     */
     public abstract short write(ByteBuf buf, Object value);
 
     public abstract short size();

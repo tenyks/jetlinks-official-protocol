@@ -17,5 +17,7 @@ public interface StructDeclaration {
 
     Iterable<FieldDeclaration>  fields();
 
+    boolean     isEnableEncode();
 
+    boolean     isEnableDecode();
 }

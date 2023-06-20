@@ -29,6 +29,8 @@ public class DefaultFieldDeclaration implements FieldDeclaration, Serializable {
 
     private boolean             isPayloadField;
 
+    private Object              defaultValue;
+
     public DefaultFieldDeclaration(String name, String code, BaseDataType dataType) {
         this(name, code, dataType, null);
     }
@@ -65,6 +67,11 @@ public class DefaultFieldDeclaration implements FieldDeclaration, Serializable {
         this.refSize = refSize;
         this.sizeMask = mask;
 
+        return this;
+    }
+
+    public DefaultFieldDeclaration setDefaultValue(Object defaultValue) {
+        this.defaultValue = defaultValue;
         return this;
     }
 
@@ -110,6 +117,11 @@ public class DefaultFieldDeclaration implements FieldDeclaration, Serializable {
     @Override
     public boolean isPayloadField() {
         return isPayloadField;
+    }
+
+    @Override
+    public Object getDefaultValue() {
+        return defaultValue;
     }
 
     public DefaultFieldDeclaration setPayloadField(boolean payloadField) {

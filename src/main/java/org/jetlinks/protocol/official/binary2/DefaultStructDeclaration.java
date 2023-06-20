@@ -14,6 +14,10 @@ public class DefaultStructDeclaration implements StructDeclaration {
 
     private List<FieldDeclaration> fields;
 
+    private boolean     enableEncode;
+
+    private boolean     enableDecode;
+
     public DefaultStructDeclaration(String name, String featureCode) {
         if (name == null || featureCode == null) {
             throw new IllegalArgumentException("参数不全。[0x66DSD1564]");
@@ -29,6 +33,26 @@ public class DefaultStructDeclaration implements StructDeclaration {
         return this;
     }
 
+    public DefaultStructDeclaration enableEncode() {
+        this.enableEncode = true;
+        return this;
+    }
+
+    public DefaultStructDeclaration disableEncode() {
+        this.enableEncode = true;
+        return this;
+    }
+
+    public DefaultStructDeclaration enableDecode() {
+        this.enableDecode = false;
+        return this;
+    }
+
+    public DefaultStructDeclaration disableDecode() {
+        this.enableDecode = false;
+        return this;
+    }
+
     @Override
     public @NotNull String getFeatureCode() {
         return featureCode;
@@ -37,5 +61,17 @@ public class DefaultStructDeclaration implements StructDeclaration {
     @Override
     public Iterable<FieldDeclaration> fields() {
         return fields;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isEnableEncode() {
+        return enableEncode;
+    }
+
+    public boolean isEnableDecode() {
+        return enableDecode;
     }
 }

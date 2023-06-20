@@ -4,6 +4,6 @@ import io.netty.buffer.ByteBuf;
 
 public interface FieldWriter {
 
-    int write(FieldInstance instance, ByteBuf outputBuf);
+    short write(FieldInstance instance, ByteBuf outputBuf);
 
 }

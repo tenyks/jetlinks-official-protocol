@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,6 +30,8 @@ public class StructSuit {
 
     private Map<String, DeclarationBasedStructWriter>  idxByFcWriterMap;
 
+    private DeclarationBasedStructReader    defaultReader;
+
     public StructSuit(String name, String version, String description,
                       FeatureCodeExtractor featureCodeExtractor,
                       CRCCalculator crcCal) {
@@ -45,17 +46,33 @@ public class StructSuit {
     }
 
     public void addStructDeclaration(StructDeclaration structDcl) {
-        idxByFcReaderMap.put(structDcl.getFeatureCode(), new DeclarationBasedStructReader(structDcl));
-        idxByFcWriterMap.put(structDcl.getFeatureCode(), new DeclarationBasedStructWriter(structDcl));
+        if (structDcl.isEnableDecode()) {
+            idxByFcReaderMap.put(structDcl.getFeatureCode(), new DeclarationBasedStructReader(structDcl));
+        }
+        if (structDcl.isEnableEncode()) {
+            idxByFcWriterMap.put(structDcl.getFeatureCode(), new DeclarationBasedStructWriter(structDcl));
+        }
+    }
+
+    public void setDefaultACKStructDeclaration(StructDeclaration structDcl) {
+        if (structDcl.isEnableDecode()) {
+            this.defaultReader = new DeclarationBasedStructReader(structDcl);
+        }
     }
 
     public StructInstance deserialize(ByteBuf buf) {
         String fc = fcExtractor.extract(buf);
         StructReader reader = idxByFcReaderMap.get(fc);
         if (reader == null) {
-            log.warn("[StructSuit]缺少FC={}的解码Reader.", fc);
-            return null;
+            if (defaultReader == null) {
+                log.warn("[StructSuit]缺少FC={}的解码Reader.", fc);
+                return null;
+            } else {
+                reader = defaultReader;
+            }
         }
+
+        //TODO 增加CRC校验
 
         return reader.read(buf);
     }
@@ -74,7 +91,11 @@ public class StructSuit {
             writer = writerImpl;
         }
 
-        return writer.write(structInst);
+        ByteBuf rst = writer.write(structInst);
+        int crcVal = crcCal.apply(rst);
+        rst.writeByte(crcVal);
+
+        return rst;
     }
 
     public String getName() {

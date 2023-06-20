@@ -22,4 +22,5 @@ public interface FieldDeclaration {
 
     DynamicSize     getDynamicSize();
 
+    Object          getDefaultValue();
 }
