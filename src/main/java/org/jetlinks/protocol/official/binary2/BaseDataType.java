@@ -205,7 +205,6 @@ public enum BaseDataType {
         @Override
         public short size() { return 0; }
     },
-
     //0x0C
     BINARY {
         @Override
@@ -226,7 +225,29 @@ public enum BaseDataType {
 
         @Override
         public short size() { return 0; }
-    };
+    },
+    //0x0D
+    HEX_STR {
+        @Override
+        public Object read(ByteBuf buf) {
+            int len = buf.readUnsignedShort();
+            byte[] bytes = new byte[len];
+            buf.readBytes(bytes);
+            return bytes;
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            byte[] bytes = (byte[]) value;
+            buf.writeBytes(bytes);
+
+            return 0;
+        }
+
+        @Override
+        public short size() { return 0; }
+    }
+    ;
 
     private final static BaseDataType[] VALUES = values();
 

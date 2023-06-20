@@ -1,14 +1,18 @@
 package org.jetlinks.protocol.official.binary2;
 
-import org.jetlinks.protocol.official.binary.DataType;
-
+/**
+ * 字段结构声明
+ * @author tenyks
+ * @since 3.1
+ * @version 1.0
+ */
 public interface FieldDeclaration {
 
     String          getCode();
 
     boolean         isPayloadField();
 
-    DataType        getDataType();
+    BaseDataType    getDataType();
 
     short           getSize();
 

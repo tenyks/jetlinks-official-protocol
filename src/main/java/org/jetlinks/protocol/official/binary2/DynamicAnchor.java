@@ -8,7 +8,7 @@ package org.jetlinks.protocol.official.binary2;
  */
 public interface DynamicAnchor {
 
-    short getAbsoluteOffset(int relativeOffset);
+    short getAbsoluteOffset(short relativeOffset);
 
     void bind(StructInstance structInst);
 

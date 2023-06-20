@@ -59,3 +59,7 @@ UDP无需发送认证包,但是需要每个报文中都包含密钥信息.
 ### 测试
 
 可以使用[模拟器](http://github.com/jetlinks/device-simulator)进行模拟测试
+
+
+### 私有协议
+* 雪暴娃娃机协议：XueBaoWaWaStructSuitBuilder

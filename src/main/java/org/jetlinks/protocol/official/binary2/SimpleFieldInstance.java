@@ -10,7 +10,6 @@ public class SimpleFieldInstance implements FieldInstance {
 
     private Object  value;
 
-
     public SimpleFieldInstance(FieldDeclaration fieldDcl, short offset, short size, Object value) {
         this.fieldDcl = fieldDcl;
         this.offset = offset;
