@@ -28,4 +28,10 @@ public class SimpleStructInstance implements StructInstance {
     public void addFieldInstance(FieldInstance inst) {
         fieldInstMap.put(inst.getDeclaration(), inst);
     }
+
+    @Override
+    public void addFieldInstance(String fieldCode, Object value) {
+        FieldDeclaration fieldDcl = structDcl.getField(fieldCode);
+        addFieldInstance(new SimpleFieldInstance(fieldDcl, value));
+    }
 }

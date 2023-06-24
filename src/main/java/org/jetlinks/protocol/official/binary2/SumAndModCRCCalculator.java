@@ -10,6 +10,12 @@ public class SumAndModCRCCalculator implements CRCCalculator {
 
     private int mod;
 
+    /**
+     *
+     * @param beginIdx      开始索引，从0开始
+     * @param endIdx        结束索引，（不包含结束），大于0时标识数组位置，小于等0时表示array.length - endIdx位置
+     * @param mod
+     */
     public SumAndModCRCCalculator(int beginIdx, int endIdx, int mod) {
         this.beginIdx = beginIdx;
         this.endIdx = endIdx;

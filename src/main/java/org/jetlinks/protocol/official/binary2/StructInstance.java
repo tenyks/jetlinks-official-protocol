@@ -17,4 +17,5 @@ public interface StructInstance {
 
     void addFieldInstance(FieldInstance inst);
 
+    void addFieldInstance(String fieldCode, Object value);
 }

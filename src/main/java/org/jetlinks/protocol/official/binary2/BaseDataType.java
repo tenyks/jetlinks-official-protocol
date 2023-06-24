@@ -32,7 +32,11 @@ public enum BaseDataType {
 
         @Override
         public short write(ByteBuf buf, Object value) {
-            buf.writeBoolean((Boolean) value);
+            if (value == null) {
+                buf.writeByte(0);
+            } else {
+                buf.writeBoolean((Boolean) value);
+            }
             return 1;
         }
 
@@ -48,7 +52,11 @@ public enum BaseDataType {
 
         @Override
         public short write(ByteBuf buf, Object value) {
-            buf.writeByte((Byte) value);
+            if (value == null) {
+                buf.writeByte(0);
+            } else {
+                buf.writeByte((Byte) value);
+            }
             return 1;
         }
 
@@ -64,7 +72,11 @@ public enum BaseDataType {
 
         @Override
         public short write(ByteBuf buf, Object value) {
-            buf.writeShort((Short) value);
+            if (value == null) {
+                buf.writeShort(0);
+            } else {
+                buf.writeShort((Short) value);
+            }
             return 2;
         }
 
@@ -80,7 +92,11 @@ public enum BaseDataType {
 
         @Override
         public short write(ByteBuf buf, Object value) {
-            buf.writeInt((Integer) value);
+            if (value == null) {
+                buf.writeInt(0);
+            } else {
+                buf.writeInt((Integer) value);
+            }
             return 4;
         }
 
@@ -96,7 +112,11 @@ public enum BaseDataType {
 
         @Override
         public short write(ByteBuf buf, Object value) {
-            buf.writeLong((Long) value);
+            if (value == null) {
+                buf.writeLong(0);
+            } else {
+                buf.writeLong((Long) value);
+            }
             return 8;
         }
 
@@ -112,7 +132,11 @@ public enum BaseDataType {
 
         @Override
         public short write(ByteBuf buf, Object value) {
-            buf.writeByte((Byte) value);
+            if (value == null) {
+                buf.writeByte(0);
+            } else {
+                buf.writeByte(((Number) value).byteValue());
+            }
             return 1;
         }
 
@@ -128,7 +152,11 @@ public enum BaseDataType {
 
         @Override
         public short write(ByteBuf buf, Object value) {
-            buf.writeShort((Short) value);
+            if (value == null) {
+                buf.writeShort(0);
+            } else {
+                buf.writeShort((Short) value);
+            }
             return 2;
         }
 
@@ -144,7 +172,11 @@ public enum BaseDataType {
 
         @Override
         public short write(ByteBuf buf, Object value) {
-            buf.writeInt((Integer) value);
+            if (value == null) {
+                buf.writeInt(0);
+            } else {
+                buf.writeInt((Integer) value);
+            }
             return 4;
         }
 
@@ -160,7 +192,11 @@ public enum BaseDataType {
 
         @Override
         public short write(ByteBuf buf, Object value) {
-            buf.writeFloat((Float) value);
+            if (value == null) {
+                buf.writeFloat(0);
+            } else {
+                buf.writeFloat((Float) value);
+            }
             return 4;
         }
 
@@ -176,7 +212,11 @@ public enum BaseDataType {
 
         @Override
         public short write(ByteBuf buf, Object value) {
-            buf.writeDouble((Double) value);
+            if (value == null) {
+                buf.writeDouble(0);
+            } else {
+                buf.writeDouble((Double) value);
+            }
             return 8;
         }
 
@@ -195,11 +235,11 @@ public enum BaseDataType {
 
         @Override
         public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
 
             byte[] bytes = ((String) value).getBytes();
             buf.writeBytes(bytes);
-
-            return 8;
+            return (short)bytes.length;
         }
 
         @Override
@@ -217,10 +257,12 @@ public enum BaseDataType {
 
         @Override
         public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
             byte[] bytes = (byte[]) value;
             buf.writeBytes(bytes);
 
-            return 0;
+            return (short) bytes.length;
         }
 
         @Override
@@ -238,10 +280,12 @@ public enum BaseDataType {
 
         @Override
         public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
             byte[] bytes = (byte[]) value;
             buf.writeBytes(bytes);
 
-            return 0;
+            return (short)(bytes.length * 2);
         }
 
         @Override

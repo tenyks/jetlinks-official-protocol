@@ -24,8 +24,6 @@ public class StructSuit {
 
     private FeatureCodeExtractor    fcExtractor;
 
-    private CRCCalculator           crcCal;
-
     private Map<String, DeclarationBasedStructReader> idxByFcReaderMap;
 
     private Map<String, DeclarationBasedStructWriter>  idxByFcWriterMap;
@@ -33,13 +31,11 @@ public class StructSuit {
     private DeclarationBasedStructReader    defaultReader;
 
     public StructSuit(String name, String version, String description,
-                      FeatureCodeExtractor featureCodeExtractor,
-                      CRCCalculator crcCal) {
+                      FeatureCodeExtractor featureCodeExtractor) {
         this.name = name;
         this.version = version;
         this.description = description;
         this.fcExtractor = featureCodeExtractor;
-        this.crcCal = crcCal;
 
         this.idxByFcReaderMap = new HashMap<>();
         this.idxByFcWriterMap = new HashMap<>();
@@ -58,6 +54,11 @@ public class StructSuit {
         if (structDcl.isEnableDecode()) {
             this.defaultReader = new DeclarationBasedStructReader(structDcl);
         }
+    }
+
+    public StructInstance createStructInstance(String featureCode) {
+        DeclarationBasedStructWriter dcl = idxByFcWriterMap.get(featureCode);
+        return (dcl != null ? new SimpleStructInstance(dcl.getStructDeclaration()) : null);
     }
 
     public StructInstance deserialize(ByteBuf buf) {
@@ -91,11 +92,7 @@ public class StructSuit {
             writer = writerImpl;
         }
 
-        ByteBuf rst = writer.write(structInst);
-        int crcVal = crcCal.apply(rst);
-        rst.writeByte(crcVal);
-
-        return rst;
+        return writer.write(structInst);
     }
 
     public String getName() {

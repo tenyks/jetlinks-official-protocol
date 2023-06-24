@@ -1,6 +1,7 @@
 package org.jetlinks.protocol.official.binary2;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,27 @@ public class DeclarationBasedStructWriter implements StructWriter {
 
     @Override
     public ByteBuf write(StructInstance instance) {
-        return null;
+        ByteBuf rst = Unpooled.buffer();
+
+        for (FieldDeclaration fDcl : structDcl.fields()) {
+            FieldInstance fInst = instance.getFieldInstance(fDcl);
+
+            BaseDataType dataType = fDcl.getDataType();
+            if (fInst == null || fInst.getValue() == null) {
+                dataType.write(rst, fDcl.getDefaultValue());
+            }else {
+                dataType.write(rst, fInst.getValue());
+            }
+        }
+
+        //TODO 优化CRC字段
+        CRCCalculator crcCal = structDcl.getCRCCalculator();
+        if (crcCal != null) {
+            int crcVal = structDcl.getCRCCalculator().apply(rst);
+            rst.writeByte(crcVal);
+        }
+
+        return rst;
     }
 
     public StructDeclaration getStructDeclaration() {

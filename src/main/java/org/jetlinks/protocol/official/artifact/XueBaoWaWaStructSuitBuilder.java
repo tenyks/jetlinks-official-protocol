@@ -11,8 +11,7 @@ public class XueBaoWaWaStructSuitBuilder {
                 "雪暴网络娃娃机协议",
                 "2.6",
                 "协议文件《网络娃娃机主板对接协议4.0》",
-                new V26FeatureCodeExtractor(),
-                new SumAndModCRCCalculator(7, 0, 100)
+                new V26FeatureCodeExtractor()
         );
 
         suit.addStructDeclaration(buildStartGameStructDcl());
@@ -26,7 +25,7 @@ public class XueBaoWaWaStructSuitBuilder {
 
         suit.setDefaultACKStructDeclaration(buildACKDefaultStructDcl());
 
-        return null;
+        return suit;
     }
 
     /**
@@ -34,11 +33,13 @@ public class XueBaoWaWaStructSuitBuilder {
      */
     private static DefaultStructDeclaration buildStartGameStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开局指令", "CMD:0x31");
+        structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
+        structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte)20));
-        structDcl.addField(buildCmdFieldDcl());
+        structDcl.addField(buildCmdFieldDcl((byte)0x31));
 
         structDcl.addField(new DefaultFieldDeclaration("超时时间", "timeOut", BaseDataType.UINT8, (short) 9));
         structDcl.addField(new DefaultFieldDeclaration("抓到结果", "result", BaseDataType.UINT8, (short) 10));
@@ -62,11 +63,13 @@ public class XueBaoWaWaStructSuitBuilder {
      */
     private static DefaultStructDeclaration buildGameOverStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("游戏结束返回", "CMD:0x33");
+        structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
+        structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte)12));
-        structDcl.addField(buildCmdFieldDcl());
+        structDcl.addField(buildCmdFieldDcl((byte)0x33));
 
         structDcl.addField(new DefaultFieldDeclaration("保留字节1", "reversed1", BaseDataType.UINT8, (short) 9));
         structDcl.addField(new DefaultFieldDeclaration("保留字节2", "reversed1", BaseDataType.UINT8, (short) 10));
@@ -80,12 +83,14 @@ public class XueBaoWaWaStructSuitBuilder {
      * 控制电机命令：服务器 -> 机器
      */
     private static DefaultStructDeclaration buildCtrlMotorStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("控制电机命令", "CMD:0x31");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("控制电机命令", "CMD:0x32");
+        structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
+        structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte) 12));
-        structDcl.addField(buildCmdFieldDcl());
+        structDcl.addField(buildCmdFieldDcl((byte)0x32));
 
         structDcl.addField(new DefaultFieldDeclaration("运动动作", "action", BaseDataType.UINT8, (short) 9));
         structDcl.addField(new DefaultFieldDeclaration("时长（毫秒）", "duration", BaseDataType.UINT16, (short) 10));
@@ -100,11 +105,13 @@ public class XueBaoWaWaStructSuitBuilder {
      */
     private static DefaultStructDeclaration buildCheckOnlineStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("查询机台是否上线命令", "CMD:0x34");
+        structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
+        structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte) 9));
-        structDcl.addField(buildCmdFieldDcl());
+        structDcl.addField(buildCmdFieldDcl((byte)0x34));
 
 //        structDcl.addField(buildCRCFieldDcl((short) 9));
 
@@ -116,11 +123,13 @@ public class XueBaoWaWaStructSuitBuilder {
      */
     private static DefaultStructDeclaration buildCheckOnlineReplyStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("查询机台是否上线命令的返回", "CMD:0x34");
+        structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
+        structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte)14));
-        structDcl.addField(buildCmdFieldDcl());
+        structDcl.addField(buildCmdFieldDcl((byte)0x34));
 
         structDcl.addField(new DefaultFieldDeclaration("机台状态", "machineStatus", BaseDataType.UINT8, (short) 9));
         structDcl.addField(new DefaultFieldDeclaration("抓起爪力", "pickupCF", BaseDataType.UINT8, (short) 10));
@@ -138,11 +147,13 @@ public class XueBaoWaWaStructSuitBuilder {
      */
     private static DefaultStructDeclaration buildReportMachineErrorStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("错误上报", "CMD:0x37");
+        structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
+        structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte)10));
-        structDcl.addField(buildCmdFieldDcl());
+        structDcl.addField(buildCmdFieldDcl((byte)0x37));
 
         structDcl.addField(new DefaultFieldDeclaration("机台错误代码", "machineErrorCode", BaseDataType.UINT8, (short) 9));
 
@@ -155,12 +166,14 @@ public class XueBaoWaWaStructSuitBuilder {
      * PING指令：服务器 -> 机器
      */
     private static DefaultStructDeclaration buildPingStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("PING心跳", "CMD:0x42");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("PING心跳", "CMD:0x35");
+        structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
+        structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte)9));
-        structDcl.addField(buildCmdFieldDcl());
+        structDcl.addField(buildCmdFieldDcl((byte)0x42));
 
 //        structDcl.addField(buildCRCFieldDcl((short) 8));
 
@@ -172,11 +185,13 @@ public class XueBaoWaWaStructSuitBuilder {
      */
     private static DefaultStructDeclaration buildReportPongStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("心跳上报", "CMD:0x35");
+        structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
+        structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte) 21));
-        structDcl.addField(buildCmdFieldDcl());
+        structDcl.addField(buildCmdFieldDcl((byte)0x35));
 
         structDcl.addField(new DefaultFieldDeclaration("MAC码", "machineMAC", BaseDataType.BINARY, (short) 9,  (short) 12));
 
@@ -190,15 +205,21 @@ public class XueBaoWaWaStructSuitBuilder {
      */
     private static DefaultStructDeclaration buildACKDefaultStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("默认的ACK响应", "CMD:ACK_DEFAULT");
+        structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
+        structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte) 0));
-        structDcl.addField(buildCmdFieldDcl());
+        structDcl.addField(buildCmdFieldDcl(null));
 
 //        structDcl.addField(buildCRCFieldDcl((short) 21));
 
         return structDcl;
+    }
+
+    private static DefaultFieldDeclaration buildMagicFieldDcl() {
+        return new DefaultFieldDeclaration("标识字段", "magicId", BaseDataType.UINT8, (short)0).setDefaultValue((byte)0xFE);
     }
 
     private static DefaultFieldDeclaration buildMessageIdFieldDcl() {
@@ -210,12 +231,16 @@ public class XueBaoWaWaStructSuitBuilder {
                 .setDefaultValue(defaultValue);
     }
 
-    private static DefaultFieldDeclaration buildCmdFieldDcl() {
-        return new DefaultFieldDeclaration("CMD字段", "functionId", BaseDataType.UINT8, (short) 7);
+    private static DefaultFieldDeclaration buildCmdFieldDcl(Byte defaultVal) {
+        return new DefaultFieldDeclaration("CMD字段", "functionId", BaseDataType.UINT8, (short) 7).setDefaultValue(defaultVal);
     }
 
     private static DefaultFieldDeclaration buildCRCFieldDcl(short offset) {
-        return new DefaultFieldDeclaration("CRC校验", "crc", BaseDataType.UINT8, (short) offset);
+        return new DefaultFieldDeclaration("CRC校验", "crc", BaseDataType.UINT8, offset);
+    }
+
+    private static CRCCalculator    buildCRCCalculatorInst() {
+        return new SumAndModCRCCalculator(0, -1, 100);
     }
 
     private static class V26FeatureCodeExtractor implements FeatureCodeExtractor {

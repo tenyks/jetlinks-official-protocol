@@ -12,8 +12,8 @@ public interface FieldInstance {
 
     String getCode();
 
-    short getOffset();
+    Short getOffset();
 
-    short getSize();
+    Short getSize();
 
 }

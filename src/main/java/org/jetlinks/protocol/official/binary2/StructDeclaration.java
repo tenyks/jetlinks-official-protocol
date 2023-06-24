@@ -12,10 +12,14 @@ public interface StructDeclaration {
 
     StructDeclaration addField(FieldDeclaration field);
 
+    FieldDeclaration    getField(String code);
+
     @NotNull
     String  getFeatureCode();
 
     Iterable<FieldDeclaration>  fields();
+
+    CRCCalculator   getCRCCalculator();
 
     boolean     isEnableEncode();
 
