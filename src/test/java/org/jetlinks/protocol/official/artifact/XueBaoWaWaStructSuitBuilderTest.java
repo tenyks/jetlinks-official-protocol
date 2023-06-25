@@ -31,4 +31,7 @@ public class XueBaoWaWaStructSuitBuilderTest {
         rst.readBytes(buf);
         System.out.println(Hex.encodeHex(buf));
     }
+
+
+
 }
