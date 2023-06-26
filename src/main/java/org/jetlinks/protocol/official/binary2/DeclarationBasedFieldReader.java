@@ -13,14 +13,19 @@ public class DeclarationBasedFieldReader implements FieldReader {
     @Override
     public FieldInstance read(ByteBuf buf) {
         //TODO 补充边界情况处理
-        int offset = fieldDcl.getOffset();
-        int size = fieldDcl.getSize();
-        if (offset > 0) {
+        short offset = fieldDcl.getOffset();
+        short size = fieldDcl.getSize();
 
+        int wi = buf.writerIndex();
+
+        if (offset >= 0) {
+            buf.readerIndex(offset);
         }
-        
 
-        return null;
+        Object val = fieldDcl.getDataType().read(buf, size);
+        buf.writerIndex(wi);
+
+        return new SimpleFieldInstance(fieldDcl, offset, size, val);
     }
 
     public FieldDeclaration getFieldDeclaration() {

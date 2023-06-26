@@ -57,12 +57,12 @@ public class DefaultStructDeclaration implements StructDeclaration {
     }
 
     public DefaultStructDeclaration disableEncode() {
-        this.enableEncode = true;
+        this.enableEncode = false;
         return this;
     }
 
     public DefaultStructDeclaration enableDecode() {
-        this.enableDecode = false;
+        this.enableDecode = true;
         return this;
     }
 

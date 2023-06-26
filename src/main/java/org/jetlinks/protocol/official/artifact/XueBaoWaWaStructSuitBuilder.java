@@ -22,6 +22,7 @@ public class XueBaoWaWaStructSuitBuilder {
         suit.addStructDeclaration(buildReportMachineErrorStructDcl());
         suit.addStructDeclaration(buildPingStructDcl());
         suit.addStructDeclaration(buildReportPongStructDcl());
+        suit.addStructDeclaration(buildReportPongStructDcl());
 
         suit.setDefaultACKStructDeclaration(buildACKDefaultStructDcl());
 
@@ -193,7 +194,7 @@ public class XueBaoWaWaStructSuitBuilder {
         structDcl.addField(buildPackageLengthFieldDcl((byte) 21));
         structDcl.addField(buildCmdFieldDcl((byte)0x35));
 
-        structDcl.addField(new DefaultFieldDeclaration("MAC码", "machineMAC", BaseDataType.BINARY, (short) 9,  (short) 12));
+        structDcl.addField(new DefaultFieldDeclaration("MAC码", "machineMAC", BaseDataType.HEX_STR, (short) 8,  (short) 12));
 
 //        structDcl.addField(buildCRCFieldDcl((short) 21));
 
@@ -227,7 +228,7 @@ public class XueBaoWaWaStructSuitBuilder {
     }
 
     private static DefaultFieldDeclaration buildPackageLengthFieldDcl(byte defaultValue) {
-        return new DefaultFieldDeclaration("包长度", "packageLength", BaseDataType.UINT8, (short) 7)
+        return new DefaultFieldDeclaration("包长度", "packageLength", BaseDataType.UINT8, (short) 6)
                 .setDefaultValue(defaultValue);
     }
 
@@ -262,7 +263,7 @@ public class XueBaoWaWaStructSuitBuilder {
                 return "~NOT_EQ:" + Hex.encodeHexString(headerBuf);
             }
 
-            return "CMD:" + Integer.toHexString(headerBuf[7]);
+            return "CMD:0x" + Integer.toHexString(headerBuf[7]);
         }
     }
 

@@ -34,4 +34,27 @@ public class SimpleStructInstance implements StructInstance {
         FieldDeclaration fieldDcl = structDcl.getField(fieldCode);
         addFieldInstance(new SimpleFieldInstance(fieldDcl, value));
     }
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.append(structDcl.getFeatureCode()).append('[');
+        boolean isFirst = true;
+        for (FieldInstance fInst : fieldInstMap.values()) {
+            if (!isFirst) buf.append(',');
+
+            buf.append(fInst.getDeclaration().getCode()).append('=');
+            if (fInst.getValue() instanceof Byte) {
+                buf.append(Integer.toHexString((Byte)fInst.getValue()));
+            } else {
+                buf.append(fInst.getValue());
+            }
+
+            isFirst = false;
+        }
+
+        buf.append(']');
+
+        return buf.toString();
+    }
 }

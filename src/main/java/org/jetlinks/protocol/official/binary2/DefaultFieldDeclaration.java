@@ -136,4 +136,21 @@ public class DefaultFieldDeclaration implements FieldDeclaration, Serializable {
     public DynamicSize      asSize() {
         return new PreviousFieldValueAsSize(this);
     }
+
+    @Override
+    public String toString() {
+        return "DefaultFieldDeclaration{" +
+                "name='" + name + '\'' +
+                ", code='" + code + '\'' +
+                ", dataType=" + dataType +
+                ", size=" + size +
+                ", absOffset=" + absOffset +
+                ", refAnchor=" + refAnchor +
+                ", offsetToAnchor=" + offsetToAnchor +
+                ", refSize=" + refSize +
+                ", sizeMask=" + sizeMask +
+                ", isPayloadField=" + isPayloadField +
+                ", defaultValue=" + defaultValue +
+                '}';
+    }
 }

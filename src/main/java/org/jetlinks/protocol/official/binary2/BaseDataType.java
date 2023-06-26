@@ -1,6 +1,7 @@
 package org.jetlinks.protocol.official.binary2;
 
 import io.netty.buffer.ByteBuf;
+import org.apache.commons.codec.binary.Hex;
 
 import java.nio.charset.StandardCharsets;
 
@@ -14,7 +15,7 @@ public enum BaseDataType {
     //0x00
     NULL {
         @Override
-        public Object read(ByteBuf buf) { return null; }
+        public Object read(ByteBuf buf, short size) { return null; }
 
         @Override
         public short write(ByteBuf buf, Object value) { return 0; }
@@ -26,7 +27,7 @@ public enum BaseDataType {
     //0x01
     BOOLEAN {
         @Override
-        public Object read(ByteBuf buf) {
+        public Object read(ByteBuf buf, short size) {
             return buf.readBoolean();
         }
 
@@ -46,7 +47,7 @@ public enum BaseDataType {
     //0x02
     INT8 {
         @Override
-        public Object read(ByteBuf buf) {
+        public Object read(ByteBuf buf, short size) {
             return buf.readByte();
         }
 
@@ -66,7 +67,7 @@ public enum BaseDataType {
     //0x03
     INT16 {
         @Override
-        public Object read(ByteBuf buf) {
+        public Object read(ByteBuf buf, short size) {
             return buf.readShort();
         }
 
@@ -86,7 +87,7 @@ public enum BaseDataType {
     //0x04
     INT32 {
         @Override
-        public Object read(ByteBuf buf) {
+        public Object read(ByteBuf buf, short size) {
             return buf.readInt();
         }
 
@@ -106,7 +107,7 @@ public enum BaseDataType {
     //0x05
     INT64 {
         @Override
-        public Object read(ByteBuf buf) {
+        public Object read(ByteBuf buf, short size) {
             return buf.readLong();
         }
 
@@ -126,7 +127,7 @@ public enum BaseDataType {
     //0x06
     UINT8 {
         @Override
-        public Object read(ByteBuf buf) {
+        public Object read(ByteBuf buf, short size) {
             return buf.readUnsignedByte();
         }
 
@@ -146,7 +147,7 @@ public enum BaseDataType {
     //0x07
     UINT16 {
         @Override
-        public Object read(ByteBuf buf) {
+        public Object read(ByteBuf buf, short size) {
             return buf.readUnsignedShort();
         }
 
@@ -166,7 +167,7 @@ public enum BaseDataType {
     //0x08
     UINT32 {
         @Override
-        public Object read(ByteBuf buf) {
+        public Object read(ByteBuf buf, short size) {
             return buf.readUnsignedInt();
         }
 
@@ -186,7 +187,7 @@ public enum BaseDataType {
     //0x09
     FLOAT {
         @Override
-        public Object read(ByteBuf buf) {
+        public Object read(ByteBuf buf, short size) {
             return buf.readFloat();
         }
 
@@ -206,7 +207,7 @@ public enum BaseDataType {
     //0x0A
     DOUBLE {
         @Override
-        public Object read(ByteBuf buf) {
+        public Object read(ByteBuf buf, short size) {
             return buf.readDouble();
         }
 
@@ -226,9 +227,8 @@ public enum BaseDataType {
     //0x0B
     STRING {
         @Override
-        public Object read(ByteBuf buf) {
-            int len = buf.readUnsignedShort();
-            byte[] bytes = new byte[len];
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size];
             buf.readBytes(bytes);
             return new String(bytes, StandardCharsets.UTF_8);
         }
@@ -248,9 +248,8 @@ public enum BaseDataType {
     //0x0C
     BINARY {
         @Override
-        public Object read(ByteBuf buf) {
-            int len = buf.readUnsignedShort();
-            byte[] bytes = new byte[len];
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size];
             buf.readBytes(bytes);
             return bytes;
         }
@@ -271,11 +270,10 @@ public enum BaseDataType {
     //0x0D
     HEX_STR {
         @Override
-        public Object read(ByteBuf buf) {
-            int len = buf.readUnsignedShort();
-            byte[] bytes = new byte[len];
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size];
             buf.readBytes(bytes);
-            return bytes;
+            return Hex.encodeHexString(bytes);
         }
 
         @Override
@@ -295,7 +293,7 @@ public enum BaseDataType {
 
     private final static BaseDataType[] VALUES = values();
 
-    public abstract Object read(ByteBuf buf);
+    public abstract Object read(ByteBuf buf, short size);
 
     /**
      *
@@ -307,15 +305,6 @@ public enum BaseDataType {
 
     public abstract short size();
 
-    public static Object readFrom(ByteBuf buf) {
-        return VALUES[buf.readUnsignedByte()].read(buf);
-    }
-
-    public static void writeTo(Object data, ByteBuf buf) {
-        BaseDataType type = loopUpType(data);
-        buf.writeByte(type.ordinal());
-        type.write(buf, data);
-    }
 
     private static BaseDataType loopUpType(Object data) {
         if (data == null) {
