@@ -29,6 +29,13 @@ public class XueBaoWaWaStructSuitBuilder {
         return suit;
     }
 
+    public static StructAndMessageMapper    buildMapper() {
+
+
+
+        return null;
+    }
+
     /**
      * 开局指令：服务器 -> 机器
      */
