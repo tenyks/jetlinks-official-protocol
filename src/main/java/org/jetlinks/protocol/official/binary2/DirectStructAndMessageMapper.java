@@ -7,8 +7,20 @@ import org.jetlinks.core.message.DeviceMessage;
  * @date 2023/6/27 22:28
  */
 public class DirectStructAndMessageMapper implements StructAndMessageMapper {
+
+    private StructAndThingMapping   structAndThingMapping;
+
+    private FieldAndPropertyMapping fieldAndPropertyMapping;
+
+
     @Override
-    public StructInstance fromDeviceMessage(DeviceMessage message) {
+    public StructInstance toStructInstance(DeviceMessage message) {
+
+        StructDeclaration   structDcl = structAndThingMapping.map(message);
+
+
+
+
         return null;
     }
 
@@ -16,4 +28,5 @@ public class DirectStructAndMessageMapper implements StructAndMessageMapper {
     public DeviceMessage toDeviceMessage(StructInstance structInst) {
         return null;
     }
+
 }

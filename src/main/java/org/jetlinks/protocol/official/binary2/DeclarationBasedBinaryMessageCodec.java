@@ -14,12 +14,21 @@ public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
     private StructAndMessageMapper  mapper;
 
     @Override
-    public <T extends DeviceMessage> T decode(ByteBuf buf) {
-        return null;
+    public DeviceMessage decode(ByteBuf buf) {
+        StructInstance structInst = structSuit.deserialize(buf);
+
+        DeviceMessage deviceMsg = mapper.toDeviceMessage(structInst);
+
+        return deviceMsg;
     }
 
     @Override
     public ByteBuf encode(DeviceMessage message) {
+
+        StructInstance structInst = mapper.toStructInstance(message);
+
+        structSuit.serialize(structInst);
+
         return null;
     }
 }

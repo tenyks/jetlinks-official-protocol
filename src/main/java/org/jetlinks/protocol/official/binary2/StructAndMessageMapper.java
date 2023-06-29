@@ -13,7 +13,7 @@ import org.jetlinks.core.message.DeviceMessage;
  */
 public interface StructAndMessageMapper {
 
-    StructInstance fromDeviceMessage(DeviceMessage message);
+    StructInstance toStructInstance(DeviceMessage message);
 
     DeviceMessage toDeviceMessage(StructInstance structInst);
 

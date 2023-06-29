@@ -8,6 +8,8 @@ package org.jetlinks.protocol.official.binary2;
  */
 public interface FieldAndPropertyMapping {
 
+    String toProperty(FieldDeclaration fieldDcl);
 
+    FieldDeclaration toField(String property);
 
 }
