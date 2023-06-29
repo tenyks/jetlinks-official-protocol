@@ -20,6 +20,11 @@ public class SimpleStructInstance implements StructInstance {
     }
 
     @Override
+    public Iterable<FieldInstance> filedInstances() {
+        return fieldInstMap.values();
+    }
+
+    @Override
     public FieldInstance getFieldInstance(FieldDeclaration fieldDcl) {
         return fieldInstMap.get(fieldDcl);
     }

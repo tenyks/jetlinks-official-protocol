@@ -9,7 +9,7 @@ import org.jetlinks.core.message.DeviceMessageReply;
  */
 public interface StructAndThingMapping  {
 
-    <T extends DeviceMessageReply> T map(StructDeclaration structDcl);
+    DeviceMessageReply map(StructDeclaration structDcl) throws IllegalAccessException, InstantiationException;
 
     StructDeclaration map(DeviceMessage message);
 

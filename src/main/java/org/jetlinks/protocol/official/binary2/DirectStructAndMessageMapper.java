@@ -1,5 +1,6 @@
 package org.jetlinks.protocol.official.binary2;
 
+import com.alibaba.fastjson.JSONObject;
 import org.jetlinks.core.message.DeviceMessage;
 
 /**
@@ -12,21 +13,41 @@ public class DirectStructAndMessageMapper implements StructAndMessageMapper {
 
     private FieldAndPropertyMapping fieldAndPropertyMapping;
 
+    private FieldValueAndPropertyMapping    fieldValueAndPropertyMapping;
 
     @Override
     public StructInstance toStructInstance(DeviceMessage message) {
 
         StructDeclaration   structDcl = structAndThingMapping.map(message);
+        StructInstance structInst = new SimpleStructInstance(structDcl);
 
+        JSONObject jsonObj = message.toJson();
+        for (String pro : jsonObj.keySet()) {
+            Object proVal = jsonObj.get(pro);
+            FieldDeclaration fieldDcl = fieldAndPropertyMapping.toField(pro);
 
+            Object fieldVal = fieldValueAndPropertyMapping.toFieldValue(fieldDcl, proVal);
+            FieldInstance fieldInst = new SimpleFieldInstance(fieldDcl, fieldVal);
+            structInst.addFieldInstance(fieldInst);
+        }
 
-
-        return null;
+        return structInst;
     }
 
     @Override
     public DeviceMessage toDeviceMessage(StructInstance structInst) {
-        return null;
+        JSONObject jsonObj = new JSONObject();
+
+        for (FieldInstance fieldInst : structInst.filedInstances()) {
+            Object proVal = fieldValueAndPropertyMapping.toPropertyValue(fieldInst);
+            String pro = fieldAndPropertyMapping.toProperty(fieldInst.getDeclaration());
+
+            jsonObj.put(pro, proVal);
+        }
+
+        DeviceMessage msg = structAndThingMapping.map(structInst.getDeclaration());
+        msg.fromJson(jsonObj);
+        return msg;
     }
 
 }

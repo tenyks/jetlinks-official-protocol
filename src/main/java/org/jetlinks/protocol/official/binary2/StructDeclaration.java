@@ -10,12 +10,14 @@ import javax.validation.constraints.NotNull;
  */
 public interface StructDeclaration {
 
-    StructDeclaration addField(FieldDeclaration field);
+    StructDeclaration   addField(FieldDeclaration field);
 
     FieldDeclaration    getField(String code);
 
     @NotNull
     String  getFeatureCode();
+
+    String  getCode();
 
     Iterable<FieldDeclaration>  fields();
 

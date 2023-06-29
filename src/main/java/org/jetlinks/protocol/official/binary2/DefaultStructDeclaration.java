@@ -77,6 +77,11 @@ public class DefaultStructDeclaration implements StructDeclaration {
     }
 
     @Override
+    public String getCode() {
+        return featureCode;
+    }
+
+    @Override
     public Iterable<FieldDeclaration> fields() {
         return fields;
     }

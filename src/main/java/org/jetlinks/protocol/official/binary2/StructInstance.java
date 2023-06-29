@@ -13,6 +13,8 @@ public interface StructInstance {
     @Nullable
     StructDeclaration    getDeclaration();
 
+    Iterable<FieldInstance> filedInstances();
+
     FieldInstance getFieldInstance(FieldDeclaration fieldDcl);
 
     void addFieldInstance(FieldInstance inst);
