@@ -77,8 +77,8 @@ public class DefaultStructDeclaration implements StructDeclaration {
     }
 
     @Override
-    public String getCode() {
-        return featureCode;
+    public String getName() {
+        return name;
     }
 
     @Override
@@ -89,10 +89,6 @@ public class DefaultStructDeclaration implements StructDeclaration {
     @Override
     public CRCCalculator getCRCCalculator() {
         return crcCalculator;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public boolean isEnableEncode() {

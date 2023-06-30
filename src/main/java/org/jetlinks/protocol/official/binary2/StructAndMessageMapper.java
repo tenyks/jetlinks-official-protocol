@@ -1,6 +1,7 @@
 package org.jetlinks.protocol.official.binary2;
 
 import org.jetlinks.core.message.DeviceMessage;
+import org.jetlinks.core.message.DeviceMessageReply;
 
 /**
  * 结构体与物模型消息的映射器<br>

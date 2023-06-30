@@ -17,7 +17,7 @@ public interface StructDeclaration {
     @NotNull
     String  getFeatureCode();
 
-    String  getCode();
+    String getName();
 
     Iterable<FieldDeclaration>  fields();
 

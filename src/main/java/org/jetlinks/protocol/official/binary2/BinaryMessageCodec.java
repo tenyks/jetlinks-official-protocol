@@ -8,7 +8,7 @@ import org.jetlinks.core.message.DeviceMessage;
  */
 public interface BinaryMessageCodec {
 
-    DeviceMessage  decode(ByteBuf buf);
+    DeviceMessage decode(ByteBuf buf);
 
     ByteBuf encode(DeviceMessage message);
 

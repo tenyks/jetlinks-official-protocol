@@ -2,11 +2,25 @@ package org.jetlinks.protocol.official.artifact;
 
 import io.netty.buffer.ByteBuf;
 import org.apache.commons.codec.binary.Hex;
+import org.jetlinks.core.message.event.EventMessage;
+import org.jetlinks.core.message.function.FunctionInvokeMessage;
+import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.protocol.official.binary2.*;
 
-public class XueBaoWaWaStructSuitBuilder {
+import java.util.Map;
 
-    public static StructSuit buildV26() {
+/**
+ * 雪暴娃娃机协议支持类
+ */
+public class XueBaoWaWaProtocolSupport {
+
+    public static BinaryMessageCodec    buildCodec(Map<String, Object> config) {
+        StructSuit structSuit = buildStructSuitV26();
+        StructAndMessageMapper mapper = buildMapper(structSuit);
+        return new DeclarationBasedBinaryMessageCodec(structSuit, mapper);
+    }
+
+    public static StructSuit buildStructSuitV26() {
         StructSuit suit = new StructSuit(
                 "雪暴网络娃娃机协议",
                 "2.6",
@@ -29,18 +43,34 @@ public class XueBaoWaWaStructSuitBuilder {
         return suit;
     }
 
-    public static StructAndMessageMapper    buildMapper() {
+    public static StructAndMessageMapper    buildMapper(StructSuit structSuit) {
+        DefaultStructAndThingMapping structAndThingMapping = new DefaultStructAndThingMapping();
 
+        //Encode
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, structSuit.getStructDeclaration("开局指令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, structSuit.getStructDeclaration("游戏结束返回"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, structSuit.getStructDeclaration("控制电机命令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, structSuit.getStructDeclaration("查询机台是否上线命令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, structSuit.getStructDeclaration("PING指令结构"));
 
+        //Decode
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("游戏结束返回结构"), FunctionInvokeMessageReply.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("查询机台是否上线命令的返回结构"), FunctionInvokeMessageReply.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("错误上报结构"), EventMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("心跳上报结构"), EventMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("默认的ACK响应结构"), FunctionInvokeMessageReply.class);
 
-        return null;
+        DefaultFieldAndPropertyMapping fieldAndPropertyMapping = new DefaultFieldAndPropertyMapping();
+        DefaultFieldValueAndPropertyMapping fieldValueAndPropertyMapping = new DefaultFieldValueAndPropertyMapping();
+
+        return new SimpleStructAndMessageMapper(structAndThingMapping, fieldAndPropertyMapping, fieldValueAndPropertyMapping);
     }
 
     /**
-     * 开局指令：服务器 -> 机器
+     * 开局指令结构：服务器 -> 机器
      */
     private static DefaultStructDeclaration buildStartGameStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开局指令", "CMD:0x31");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开局指令结构", "CMD:0x31");
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
@@ -67,10 +97,10 @@ public class XueBaoWaWaStructSuitBuilder {
     }
 
     /**
-     * 游戏结束返回命令：机器 -> 服务器
+     * 游戏结束返回结构：机器 -> 服务器
      */
     private static DefaultStructDeclaration buildGameOverStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("游戏结束返回", "CMD:0x33");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("游戏结束返回结构", "CMD:0x33");
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
@@ -88,10 +118,10 @@ public class XueBaoWaWaStructSuitBuilder {
     }
 
     /**
-     * 控制电机命令：服务器 -> 机器
+     * 控制电机命令结构：服务器 -> 机器
      */
     private static DefaultStructDeclaration buildCtrlMotorStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("控制电机命令", "CMD:0x32");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("控制电机命令结构", "CMD:0x32");
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
@@ -109,10 +139,10 @@ public class XueBaoWaWaStructSuitBuilder {
     }
 
     /**
-     * 查询机台是否上线命令：服务器 -> 机器
+     * 查询机台是否上线命令结构：服务器 -> 机器
      */
     private static DefaultStructDeclaration buildCheckOnlineStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("查询机台是否上线命令", "CMD:0x34");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("查询机台是否上线命令结构", "CMD:0x34");
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
@@ -127,7 +157,7 @@ public class XueBaoWaWaStructSuitBuilder {
     }
 
     /**
-     * 查询机台是否上线命令的返回：机器 -> 服务器
+     * 查询机台是否上线命令的返回结构：机器 -> 服务器
      */
     private static DefaultStructDeclaration buildCheckOnlineReplyStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("查询机台是否上线命令的返回", "CMD:0x34");
@@ -151,10 +181,10 @@ public class XueBaoWaWaStructSuitBuilder {
     }
 
     /**
-     * 错误上报：机器 -> 服务器
+     * 错误上报结构：机器 -> 服务器
      */
     private static DefaultStructDeclaration buildReportMachineErrorStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("错误上报", "CMD:0x37");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("错误上报结构", "CMD:0x37");
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
@@ -171,10 +201,10 @@ public class XueBaoWaWaStructSuitBuilder {
     }
 
     /**
-     * PING指令：服务器 -> 机器
+     * PING指令结构：服务器 -> 机器
      */
     private static DefaultStructDeclaration buildPingStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("PING心跳", "CMD:0x35");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("PING指令结构", "CMD:0x35");
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
@@ -189,10 +219,10 @@ public class XueBaoWaWaStructSuitBuilder {
     }
 
     /**
-     * 心跳上报：机器 -> 服务器
+     * 心跳上报结构：机器 -> 服务器
      */
     private static DefaultStructDeclaration buildReportPongStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("心跳上报", "CMD:0x35");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("心跳上报结构", "CMD:0x35");
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
@@ -209,7 +239,7 @@ public class XueBaoWaWaStructSuitBuilder {
     }
 
     /**
-     * 默认的ACK响应：机器 -> 服务器
+     * 默认的ACK响应结构：机器 -> 服务器
      */
     private static DefaultStructDeclaration buildACKDefaultStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("默认的ACK响应", "CMD:ACK_DEFAULT");

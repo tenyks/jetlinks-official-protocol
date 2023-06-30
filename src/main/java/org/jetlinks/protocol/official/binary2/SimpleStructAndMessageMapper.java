@@ -2,18 +2,28 @@ package org.jetlinks.protocol.official.binary2;
 
 import com.alibaba.fastjson.JSONObject;
 import org.jetlinks.core.message.DeviceMessage;
+import org.jetlinks.core.message.DeviceMessageReply;
 
 /**
  * @author v-lizy81
  * @date 2023/6/27 22:28
  */
-public class DirectStructAndMessageMapper implements StructAndMessageMapper {
+public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
 
     private StructAndThingMapping   structAndThingMapping;
 
     private FieldAndPropertyMapping fieldAndPropertyMapping;
 
     private FieldValueAndPropertyMapping    fieldValueAndPropertyMapping;
+
+
+    public SimpleStructAndMessageMapper(StructAndThingMapping structAndThingMapping,
+                                        FieldAndPropertyMapping fieldAndPropertyMapping,
+                                        FieldValueAndPropertyMapping fieldValueAndPropertyMapping) {
+        this.structAndThingMapping = structAndThingMapping;
+        this.fieldAndPropertyMapping = fieldAndPropertyMapping;
+        this.fieldValueAndPropertyMapping = fieldValueAndPropertyMapping;
+    }
 
     @Override
     public StructInstance toStructInstance(DeviceMessage message) {
@@ -24,7 +34,7 @@ public class DirectStructAndMessageMapper implements StructAndMessageMapper {
         JSONObject jsonObj = message.toJson();
         for (String pro : jsonObj.keySet()) {
             Object proVal = jsonObj.get(pro);
-            FieldDeclaration fieldDcl = fieldAndPropertyMapping.toField(pro);
+            FieldDeclaration fieldDcl = fieldAndPropertyMapping.toField(structDcl, pro);
 
             Object fieldVal = fieldValueAndPropertyMapping.toFieldValue(fieldDcl, proVal);
             FieldInstance fieldInst = new SimpleFieldInstance(fieldDcl, fieldVal);

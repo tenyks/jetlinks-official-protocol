@@ -4,8 +4,7 @@ import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 一套结构
@@ -28,6 +27,8 @@ public class StructSuit {
 
     private Map<String, DeclarationBasedStructWriter>  idxByFcWriterMap;
 
+    private Map<String, StructDeclaration> idxByNameMap;
+
     private DeclarationBasedStructReader    defaultReader;
 
     public StructSuit(String name, String version, String description,
@@ -39,9 +40,12 @@ public class StructSuit {
 
         this.idxByFcReaderMap = new HashMap<>();
         this.idxByFcWriterMap = new HashMap<>();
+        this.idxByNameMap = new HashMap<>();
     }
 
     public void addStructDeclaration(StructDeclaration structDcl) {
+        idxByNameMap.put(structDcl.getName(), structDcl);
+
         if (structDcl.isEnableDecode()) {
             idxByFcReaderMap.put(structDcl.getFeatureCode(), new DeclarationBasedStructReader(structDcl));
         }
@@ -51,9 +55,29 @@ public class StructSuit {
     }
 
     public void setDefaultACKStructDeclaration(StructDeclaration structDcl) {
+        idxByNameMap.put(structDcl.getName(), structDcl);
+
         if (structDcl.isEnableDecode()) {
             this.defaultReader = new DeclarationBasedStructReader(structDcl);
         }
+    }
+
+    public StructDeclaration    getStructDeclarationOfEncode(String featureCode) {
+        DeclarationBasedStructWriter writer = idxByFcWriterMap.get(featureCode);
+        return (writer != null ? writer.getStructDeclaration() : null);
+    }
+
+    public StructDeclaration    getStructDeclarationOfDecode(String featureCode) {
+        DeclarationBasedStructReader reader = idxByFcReaderMap.get(featureCode);
+        return (reader != null ? reader.getStructDeclaration() : null);
+    }
+
+    public StructDeclaration getStructDeclaration(String name) {
+        return idxByNameMap.get(name);
+    }
+
+    public Iterable<StructDeclaration>  structDeclarations() {
+        return idxByNameMap.values();
     }
 
     public StructInstance createStructInstance(String featureCode) {
