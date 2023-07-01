@@ -1,6 +1,8 @@
 package org.jetlinks.protocol.official.binary2;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DefaultFieldDeclaration implements FieldDeclaration, Serializable {
 
@@ -31,6 +33,8 @@ public class DefaultFieldDeclaration implements FieldDeclaration, Serializable {
 
     private Object              defaultValue;
 
+    private List<ThingAnnotation> thingAnnotations;
+
     public DefaultFieldDeclaration(String name, String code, BaseDataType dataType) {
         this(name, code, dataType, null);
     }
@@ -41,6 +45,7 @@ public class DefaultFieldDeclaration implements FieldDeclaration, Serializable {
         this.dataType = dataType;
         this.size = (dataType.size() >0 ? dataType.size() : null);
         this.absOffset = absOffset;
+        this.thingAnnotations = new ArrayList<>();
     }
 
     public DefaultFieldDeclaration(String name, String code, BaseDataType dataType, Short absOffset, Short size) {
@@ -49,6 +54,7 @@ public class DefaultFieldDeclaration implements FieldDeclaration, Serializable {
         this.dataType = dataType;
         this.absOffset = absOffset;
         this.size = size;
+        this.thingAnnotations = new ArrayList<>();
     }
 
     /**
@@ -75,10 +81,6 @@ public class DefaultFieldDeclaration implements FieldDeclaration, Serializable {
         return this;
     }
 
-    public BaseDataType  getDataType() {
-        return dataType;
-    }
-
     @Override
     public short getSize() {
         if (size != null) return size;
@@ -99,6 +101,10 @@ public class DefaultFieldDeclaration implements FieldDeclaration, Serializable {
         }
 
         return refAnchor.getAbsoluteOffset(offsetToAnchor);
+    }
+
+    public BaseDataType  getDataType() {
+        return dataType;
     }
 
     @Override
@@ -135,6 +141,16 @@ public class DefaultFieldDeclaration implements FieldDeclaration, Serializable {
 
     public DynamicSize      asSize() {
         return new PreviousFieldValueAsSize(this);
+    }
+
+    @Override
+    public Iterable<ThingAnnotation> thingAnnotations() {
+        return thingAnnotations;
+    }
+
+    public DefaultFieldDeclaration addMeta(ThingAnnotation tAnn) {
+        this.thingAnnotations.add(tAnn);
+        return this;
     }
 
     @Override

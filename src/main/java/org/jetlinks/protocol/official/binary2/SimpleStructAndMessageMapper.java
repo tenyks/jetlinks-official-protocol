@@ -1,8 +1,8 @@
 package org.jetlinks.protocol.official.binary2;
 
-import com.alibaba.fastjson.JSONObject;
 import org.jetlinks.core.message.DeviceMessage;
-import org.jetlinks.core.message.DeviceMessageReply;
+
+import javax.annotation.Nullable;
 
 /**
  * @author v-lizy81
@@ -26,37 +26,54 @@ public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
     }
 
     @Override
-    public StructInstance toStructInstance(DeviceMessage message) {
-
+    public StructInstance toStructInstance(@Nullable MapperContext context, DeviceMessage message) {
         StructDeclaration   structDcl = structAndThingMapping.map(message);
         StructInstance structInst = new SimpleStructInstance(structDcl);
 
-        JSONObject jsonObj = message.toJson();
-        for (String pro : jsonObj.keySet()) {
-            Object proVal = jsonObj.get(pro);
-            FieldDeclaration fieldDcl = fieldAndPropertyMapping.toField(structDcl, pro);
+        for (FieldDeclaration fieldDcl : structDcl.fields()) {
+            if (fieldDcl.thingAnnotations() == null) continue;
 
-            Object fieldVal = fieldValueAndPropertyMapping.toFieldValue(fieldDcl, proVal);
-            FieldInstance fieldInst = new SimpleFieldInstance(fieldDcl, fieldVal);
-            structInst.addFieldInstance(fieldInst);
+            String itemKey = fieldAndPropertyMapping.toProperty(fieldDcl);
+
+            for (ThingAnnotation tAnn : fieldDcl.thingAnnotations()) {
+                Object itemVal = tAnn.invokeGetter(null, message, itemKey);
+
+                Object fieldVal = fieldValueAndPropertyMapping.toFieldValue(context, fieldDcl, itemVal);
+                FieldInstance fieldInst = new SimpleFieldInstance(fieldDcl, fieldVal);
+                structInst.addFieldInstance(fieldInst);
+            }
         }
 
         return structInst;
     }
 
     @Override
-    public DeviceMessage toDeviceMessage(StructInstance structInst) {
-        JSONObject jsonObj = new JSONObject();
+    public DeviceMessage toDeviceMessage(@Nullable MapperContext context, StructInstance structInst) {
+        DeviceMessage msg = structAndThingMapping.map(structInst.getDeclaration());
 
-        for (FieldInstance fieldInst : structInst.filedInstances()) {
-            Object proVal = fieldValueAndPropertyMapping.toPropertyValue(fieldInst);
-            String pro = fieldAndPropertyMapping.toProperty(fieldInst.getDeclaration());
-
-            jsonObj.put(pro, proVal);
+        if (context != null && context.getDeviceId() != null) {
+            msg.messageId(context.getDeviceId());
         }
 
-        DeviceMessage msg = structAndThingMapping.map(structInst.getDeclaration());
-        msg.fromJson(jsonObj);
+        Iterable<ThingAnnotation> structThAnns = structInst.getDeclaration().thingAnnotations();
+        if (structThAnns != null) {
+            for (ThingAnnotation tAnn : structThAnns) {
+                tAnn.invokeSetter(null, msg);
+            }
+        }
+
+        for (FieldInstance fieldInst : structInst.filedInstances()) {
+            if (fieldInst.getDeclaration().thingAnnotations() == null) continue;
+
+            Object itemVal = fieldValueAndPropertyMapping.toPropertyValue(context, fieldInst);
+
+            for (ThingAnnotation tAnn : fieldInst.getDeclaration().thingAnnotations()) {
+                String itemKey = fieldAndPropertyMapping.toProperty(fieldInst.getDeclaration());
+
+                tAnn.invokeSetter(null, msg, itemKey, itemVal);
+            }
+        }
+
         return msg;
     }
 

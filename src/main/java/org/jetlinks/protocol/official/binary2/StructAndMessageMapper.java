@@ -3,6 +3,8 @@ package org.jetlinks.protocol.official.binary2;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.DeviceMessageReply;
 
+import javax.annotation.Nullable;
+
 /**
  * 结构体与物模型消息的映射器<br>
  * 负责：
@@ -14,8 +16,8 @@ import org.jetlinks.core.message.DeviceMessageReply;
  */
 public interface StructAndMessageMapper {
 
-    StructInstance toStructInstance(DeviceMessage message);
+    StructInstance toStructInstance(@Nullable MapperContext context, DeviceMessage message);
 
-    DeviceMessage toDeviceMessage(StructInstance structInst);
+    DeviceMessage toDeviceMessage(@Nullable MapperContext context, StructInstance structInst);
 
 }

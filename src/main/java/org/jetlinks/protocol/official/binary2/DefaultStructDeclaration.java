@@ -12,7 +12,9 @@ public class DefaultStructDeclaration implements StructDeclaration {
     private String      name;
 
     @NotNull
-    private String     featureCode;
+    private String      featureCode;
+
+    private List<ThingAnnotation> thingAnnotations;
 
     private List<FieldDeclaration> fields;
 
@@ -32,6 +34,7 @@ public class DefaultStructDeclaration implements StructDeclaration {
         this.featureCode = featureCode;
         this.fields = new ArrayList<>();
         this.idxByCodeMap = new HashMap<>();
+        this.thingAnnotations = new ArrayList<>();
     }
 
     @Override
@@ -97,5 +100,15 @@ public class DefaultStructDeclaration implements StructDeclaration {
 
     public boolean isEnableDecode() {
         return enableDecode;
+    }
+
+    public DefaultStructDeclaration addThingAnnotation(ThingAnnotation tAnn) {
+        this.thingAnnotations.add(tAnn);
+        return this;
+    }
+
+    @Override
+    public Iterable<ThingAnnotation> thingAnnotations() {
+        return this.thingAnnotations;
     }
 }

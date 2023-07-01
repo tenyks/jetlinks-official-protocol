@@ -1,6 +1,9 @@
 package org.jetlinks.protocol.official.binary2;
 
 import org.jetlinks.core.message.DeviceMessage;
+import org.jetlinks.core.message.event.EventMessage;
+import org.jetlinks.core.message.function.FunctionInvokeMessage;
+import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +20,7 @@ public class DefaultStructAndThingMapping implements StructAndThingMapping {
 
     private Map<StructDeclaration, Class<? extends DeviceMessage>>    struct2ClassMap;
 
-    private Map<Class<? extends DeviceMessage>, StructDeclaration>  class2StructMap;
+    private Map<String, StructDeclaration>  class2StructMap;
 
     public DefaultStructAndThingMapping() {
         this.struct2ClassMap = new HashMap<>();
@@ -28,8 +31,19 @@ public class DefaultStructAndThingMapping implements StructAndThingMapping {
         this.struct2ClassMap.put(structDcl, msgClazz);
     }
 
-    public void addMapping(Class<? extends DeviceMessage> msgClazz, StructDeclaration structDcl) {
-        this.class2StructMap.put(msgClazz, structDcl);
+    public void addMapping(Class<? extends DeviceMessage> msgClazz, String subKey, StructDeclaration structDcl) {
+        if (structDcl == null) return ;
+
+        String key = buildMappingKey(msgClazz, subKey);
+        this.class2StructMap.put(key, structDcl);
+    }
+
+    private String buildMappingKey(Class<? extends DeviceMessage> msgClazz, String subKey) {
+        if (subKey != null) {
+            return String.format("%s:%s", msgClazz.getName(), subKey);
+        } else {
+            return msgClazz.getName();
+        }
     }
 
     @Override
@@ -48,6 +62,21 @@ public class DefaultStructAndThingMapping implements StructAndThingMapping {
 
     @Override
     public StructDeclaration map(DeviceMessage message) {
-        return class2StructMap.get(message.getClass());
+        String key = buildMappingKey(message);
+
+        return class2StructMap.get(key);
+    }
+
+    private String buildMappingKey(DeviceMessage message) {
+        String subKey = null;
+        if (message instanceof FunctionInvokeMessage) {
+            subKey = ((FunctionInvokeMessage) message).getFunctionId();
+        } else if (message instanceof EventMessage) {
+            subKey = ((EventMessage) message).getEvent();
+        } else if (message instanceof FunctionInvokeMessageReply) {
+            subKey = ((FunctionInvokeMessageReply) message).getFunctionId();
+        }
+
+        return buildMappingKey(message.getClass(), subKey);
     }
 }

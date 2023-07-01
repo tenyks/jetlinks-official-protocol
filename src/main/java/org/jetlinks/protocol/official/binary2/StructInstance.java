@@ -1,6 +1,6 @@
 package org.jetlinks.protocol.official.binary2;
 
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 
 /**
  * 结构体实例
@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
  */
 public interface StructInstance {
 
-    @Nullable
+    @NotNull
     StructDeclaration    getDeclaration();
 
     Iterable<FieldInstance> filedInstances();

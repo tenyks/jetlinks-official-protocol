@@ -36,8 +36,8 @@ public class XueBaoWaWaProtocolSupport {
         suit.addStructDeclaration(buildReportMachineErrorStructDcl());
         suit.addStructDeclaration(buildPingStructDcl());
         suit.addStructDeclaration(buildReportPongStructDcl());
-        suit.addStructDeclaration(buildReportPongStructDcl());
 
+        suit.setSigner(new V26EncodeSigner());
         suit.setDefaultACKStructDeclaration(buildACKDefaultStructDcl());
 
         return suit;
@@ -47,17 +47,16 @@ public class XueBaoWaWaProtocolSupport {
         DefaultStructAndThingMapping structAndThingMapping = new DefaultStructAndThingMapping();
 
         //Encode
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, structSuit.getStructDeclaration("开局指令结构"));
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, structSuit.getStructDeclaration("游戏结束返回"));
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, structSuit.getStructDeclaration("控制电机命令结构"));
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, structSuit.getStructDeclaration("查询机台是否上线命令结构"));
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, structSuit.getStructDeclaration("PING指令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "startGame", structSuit.getStructDeclaration("开局指令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "controlMotor", structSuit.getStructDeclaration("控制电机命令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "checkOnline", structSuit.getStructDeclaration("查询机台是否上线命令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "ping", structSuit.getStructDeclaration("PING指令结构"));
 
         //Decode
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("游戏结束返回结构"), FunctionInvokeMessageReply.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("游戏结束返回结构【事件】"), EventMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("查询机台是否上线命令的返回结构"), FunctionInvokeMessageReply.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("错误上报结构"), EventMessage.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("心跳上报结构"), EventMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("错误上报结构【事件】"), EventMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("心跳上报结构【事件】"), EventMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("默认的ACK响应结构"), FunctionInvokeMessageReply.class);
 
         DefaultFieldAndPropertyMapping fieldAndPropertyMapping = new DefaultFieldAndPropertyMapping();
@@ -74,22 +73,35 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("startGame"));
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildSignatureFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte)20));
         structDcl.addField(buildCmdFieldDcl((byte)0x31));
 
-        structDcl.addField(new DefaultFieldDeclaration("超时时间", "timeOut", BaseDataType.UINT8, (short) 9));
-        structDcl.addField(new DefaultFieldDeclaration("抓到结果", "result", BaseDataType.UINT8, (short) 10));
-        structDcl.addField(new DefaultFieldDeclaration("抓起爪力", "pickUpCF", BaseDataType.UINT8, (short) 11));
-        structDcl.addField(new DefaultFieldDeclaration("到顶爪力", "toTopCF", BaseDataType.UINT8, (short) 12));
-        structDcl.addField(new DefaultFieldDeclaration("移动爪力", "moveCF", BaseDataType.UINT8, (short) 13));
-        structDcl.addField(new DefaultFieldDeclaration("大爪力", "bigCF", BaseDataType.UINT8, (short) 14));
-        structDcl.addField(new DefaultFieldDeclaration("抓起高度", "pickupHeight", BaseDataType.UINT8, (short) 15));
-        structDcl.addField(new DefaultFieldDeclaration("下线长度", "letDownLength", BaseDataType.UINT8, (short) 16));
-        structDcl.addField(new DefaultFieldDeclaration("前后电机的速度", "fbMotorSpeed", BaseDataType.UINT8, (short) 17));
-        structDcl.addField(new DefaultFieldDeclaration("左右电机的速度", "lrMotorSpeed", BaseDataType.UINT8, (short) 18));
-        structDcl.addField(new DefaultFieldDeclaration("上下电机的速度", "udMotorSpeed", BaseDataType.UINT8, (short) 19));
+        structDcl.addField(new DefaultFieldDeclaration("超时时间", "timeOut", BaseDataType.UINT8, (short) 9)
+                                    .addMeta(ThingAnnotation.FuncInput()));
+        structDcl.addField(new DefaultFieldDeclaration("抓到结果", "result", BaseDataType.UINT8, (short) 10)
+                                    .addMeta(ThingAnnotation.FuncInput()));
+        structDcl.addField(new DefaultFieldDeclaration("抓起爪力", "pickUpCF", BaseDataType.UINT8, (short) 11)
+                                    .addMeta(ThingAnnotation.FuncInput()));
+        structDcl.addField(new DefaultFieldDeclaration("到顶爪力", "toTopCF", BaseDataType.UINT8, (short) 12)
+                                    .addMeta(ThingAnnotation.FuncInput()));
+        structDcl.addField(new DefaultFieldDeclaration("移动爪力", "moveCF", BaseDataType.UINT8, (short) 13)
+                                    .addMeta(ThingAnnotation.FuncInput()));
+        structDcl.addField(new DefaultFieldDeclaration("大爪力", "bigCF", BaseDataType.UINT8, (short) 14)
+                                    .addMeta(ThingAnnotation.FuncInput()));
+        structDcl.addField(new DefaultFieldDeclaration("抓起高度", "pickupHeight", BaseDataType.UINT8, (short) 15)
+                                    .addMeta(ThingAnnotation.FuncInput()));
+        structDcl.addField(new DefaultFieldDeclaration("下线长度", "letDownLength", BaseDataType.UINT8, (short) 16)
+                                    .addMeta(ThingAnnotation.FuncInput()));
+        structDcl.addField(new DefaultFieldDeclaration("前后电机的速度", "fbMotorSpeed", BaseDataType.UINT8, (short) 17)
+                                    .addMeta(ThingAnnotation.FuncInput()));
+        structDcl.addField(new DefaultFieldDeclaration("左右电机的速度", "lrMotorSpeed", BaseDataType.UINT8, (short) 18)
+                                    .addMeta(ThingAnnotation.FuncInput()));
+        structDcl.addField(new DefaultFieldDeclaration("上下电机的速度", "udMotorSpeed", BaseDataType.UINT8, (short) 19)
+                                    .addMeta(ThingAnnotation.FuncInput()));
 
 //        structDcl.addField(buildCRCFieldDcl((short) 20));
 
@@ -97,15 +109,17 @@ public class XueBaoWaWaProtocolSupport {
     }
 
     /**
-     * 游戏结束返回结构：机器 -> 服务器
+     * 游戏结束返回结构【事件】：机器 -> 服务器
      */
     private static DefaultStructDeclaration buildGameOverStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("游戏结束返回结构", "CMD:0x33");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("游戏结束返回结构【事件】", "CMD:0x33");
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("gameOver"));
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildSignatureFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte)12));
         structDcl.addField(buildCmdFieldDcl((byte)0x33));
 
@@ -125,13 +139,18 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.FuncId("controlMotor"));
+
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildSignatureFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte) 12));
         structDcl.addField(buildCmdFieldDcl((byte)0x32));
 
-        structDcl.addField(new DefaultFieldDeclaration("运动动作", "action", BaseDataType.UINT8, (short) 9));
-        structDcl.addField(new DefaultFieldDeclaration("时长（毫秒）", "duration", BaseDataType.UINT16, (short) 10));
+        structDcl.addField(new DefaultFieldDeclaration("运动动作", "action", BaseDataType.UINT8, (short) 9)
+                            .addMeta(ThingAnnotation.FuncInput()));
+        structDcl.addField(new DefaultFieldDeclaration("时长（毫秒）", "duration", BaseDataType.UINT16, (short) 10)
+                            .addMeta(ThingAnnotation.FuncInput()));
 
 //        structDcl.addField(buildCRCFieldDcl((short) 12));
 
@@ -146,8 +165,11 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.FuncId("checkOnline"));
+
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildSignatureFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte) 9));
         structDcl.addField(buildCmdFieldDcl((byte)0x34));
 
@@ -160,20 +182,28 @@ public class XueBaoWaWaProtocolSupport {
      * 查询机台是否上线命令的返回结构：机器 -> 服务器
      */
     private static DefaultStructDeclaration buildCheckOnlineReplyStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("查询机台是否上线命令的返回", "CMD:0x34");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("查询机台是否上线命令的返回结构", "CMD:0x34");
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.FuncId("checkOnlineReply"));
+
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildSignatureFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte)14));
         structDcl.addField(buildCmdFieldDcl((byte)0x34));
 
-        structDcl.addField(new DefaultFieldDeclaration("机台状态", "machineStatus", BaseDataType.UINT8, (short) 9));
-        structDcl.addField(new DefaultFieldDeclaration("抓起爪力", "pickupCF", BaseDataType.UINT8, (short) 10));
-        structDcl.addField(new DefaultFieldDeclaration("到顶爪力", "toTopCF", BaseDataType.UINT8, (short) 11));
-        structDcl.addField(new DefaultFieldDeclaration("移动爪力", "moveCF", BaseDataType.UINT8, (short) 12));
-        structDcl.addField(new DefaultFieldDeclaration("大爪力", "bigCF", BaseDataType.UINT8, (short) 13));
+        structDcl.addField(new DefaultFieldDeclaration("机台状态", "machineStatus", BaseDataType.UINT8, (short) 9)
+                                .addMeta(ThingAnnotation.FuncOutput()));
+        structDcl.addField(new DefaultFieldDeclaration("抓起爪力", "pickupCF", BaseDataType.UINT8, (short) 10)
+                                .addMeta(ThingAnnotation.FuncOutput()));
+        structDcl.addField(new DefaultFieldDeclaration("到顶爪力", "toTopCF", BaseDataType.UINT8, (short) 11)
+                                .addMeta(ThingAnnotation.FuncOutput()));
+        structDcl.addField(new DefaultFieldDeclaration("移动爪力", "moveCF", BaseDataType.UINT8, (short) 12)
+                                .addMeta(ThingAnnotation.FuncOutput()));
+        structDcl.addField(new DefaultFieldDeclaration("大爪力", "bigCF", BaseDataType.UINT8, (short) 13)
+                                .addMeta(ThingAnnotation.FuncOutput()));
 
 //        structDcl.addField(buildCRCFieldDcl((short) 14));
 
@@ -181,19 +211,23 @@ public class XueBaoWaWaProtocolSupport {
     }
 
     /**
-     * 错误上报结构：机器 -> 服务器
+     * 错误上报结构【事件】：机器 -> 服务器
      */
     private static DefaultStructDeclaration buildReportMachineErrorStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("错误上报结构", "CMD:0x37");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("错误上报结构【事件】", "CMD:0x37");
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("machineErrorEvent"));
+
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildSignatureFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte)10));
         structDcl.addField(buildCmdFieldDcl((byte)0x37));
 
-        structDcl.addField(new DefaultFieldDeclaration("机台错误代码", "machineErrorCode", BaseDataType.UINT8, (short) 9));
+        structDcl.addField(new DefaultFieldDeclaration("机台错误代码", "machineErrorCode", BaseDataType.UINT8, (short) 9)
+                                .addMeta(ThingAnnotation.EventData()));
 
         structDcl.addField(buildCRCFieldDcl((short) 10));
 
@@ -208,8 +242,11 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.FuncId("ping"));
+
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildSignatureFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte)9));
         structDcl.addField(buildCmdFieldDcl((byte)0x42));
 
@@ -219,19 +256,24 @@ public class XueBaoWaWaProtocolSupport {
     }
 
     /**
-     * 心跳上报结构：机器 -> 服务器
+     * 心跳上报结构【事件】：机器 -> 服务器
      */
     private static DefaultStructDeclaration buildReportPongStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("心跳上报结构", "CMD:0x35");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("心跳上报结构【事件】", "CMD:0x35");
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("heartbeat"));
+
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildSignatureFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte) 21));
         structDcl.addField(buildCmdFieldDcl((byte)0x35));
 
-        structDcl.addField(new DefaultFieldDeclaration("MAC码", "machineMAC", BaseDataType.HEX_STR, (short) 8,  (short) 12));
+        structDcl.addField(new DefaultFieldDeclaration("MAC码", "machineMAC", BaseDataType.HEX_STR, (short) 8,  (short) 12)
+                                .addMeta(ThingAnnotation.EventData())
+                                .addMeta(ThingAnnotation.DeviceId()));
 
 //        structDcl.addField(buildCRCFieldDcl((short) 21));
 
@@ -246,8 +288,10 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
+
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildSignatureFieldDcl());
         structDcl.addField(buildPackageLengthFieldDcl((byte) 0));
         structDcl.addField(buildCmdFieldDcl(null));
 
@@ -257,11 +301,12 @@ public class XueBaoWaWaProtocolSupport {
     }
 
     private static DefaultFieldDeclaration buildMagicFieldDcl() {
-        return new DefaultFieldDeclaration("标识字段", "magicId", BaseDataType.UINT8, (short)0).setDefaultValue((byte)0xFE);
+        return new DefaultFieldDeclaration("结构类型标识字段", "magicId", BaseDataType.INT8, (short)0).setDefaultValue((byte)0xFE);
     }
 
     private static DefaultFieldDeclaration buildMessageIdFieldDcl() {
-        return new DefaultFieldDeclaration("消息ID", "messageId", BaseDataType.UINT16, (short) 1);
+        return new DefaultFieldDeclaration("消息ID", "messageId", BaseDataType.INT16, (short) 1)
+                        .addMeta(ThingAnnotation.MsgId());
     }
 
     private static DefaultFieldDeclaration buildPackageLengthFieldDcl(byte defaultValue) {
@@ -270,11 +315,16 @@ public class XueBaoWaWaProtocolSupport {
     }
 
     private static DefaultFieldDeclaration buildCmdFieldDcl(Byte defaultVal) {
-        return new DefaultFieldDeclaration("CMD字段", "functionId", BaseDataType.UINT8, (short) 7).setDefaultValue(defaultVal);
+        return new DefaultFieldDeclaration("CMD字段", "functionId", BaseDataType.INT8, (short) 7).setDefaultValue(defaultVal);
     }
 
     private static DefaultFieldDeclaration buildCRCFieldDcl(short offset) {
         return new DefaultFieldDeclaration("CRC校验", "crc", BaseDataType.UINT8, offset);
+    }
+
+    private static DefaultFieldDeclaration buildSignatureFieldDcl() {
+        return new DefaultFieldDeclaration("签名字段", "signature", BaseDataType.BINARY, (short) 3, (short) 3)
+                .setDefaultValue(new byte[]{0x00, 0x00, 0x00});
     }
 
     private static CRCCalculator    buildCRCCalculatorInst() {
@@ -302,6 +352,26 @@ public class XueBaoWaWaProtocolSupport {
 
             return "CMD:0x" + Integer.toHexString(headerBuf[7]);
         }
+    }
+
+    private static class V26EncodeSigner implements EncodeSigner {
+
+        @Override
+        public ByteBuf apply(ByteBuf buf) {
+            //buf[3]=~buf[0],buf[4]=~buf[1],buf[5]=~buf[6]
+
+            int saveWriterIdx = buf.writerIndex();
+
+            buf.readerIndex(0).writerIndex(3);
+            buf.writeByte((byte)(~(buf.readByte())));
+            buf.writeByte((byte)(~(buf.readByte())));
+            buf.writeByte((byte)(~(buf.readByte())));
+
+            buf.writerIndex(saveWriterIdx);
+
+            return buf;
+        }
+
     }
 
 }

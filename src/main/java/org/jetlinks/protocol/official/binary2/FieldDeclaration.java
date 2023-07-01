@@ -23,4 +23,6 @@ public interface FieldDeclaration {
     DynamicSize     getDynamicSize();
 
     Object          getDefaultValue();
+
+    Iterable<ThingAnnotation> thingAnnotations();
 }

@@ -23,6 +23,8 @@ public class StructSuit {
 
     private FeatureCodeExtractor    fcExtractor;
 
+    private EncodeSigner            signer;
+
     private Map<String, DeclarationBasedStructReader> idxByFcReaderMap;
 
     private Map<String, DeclarationBasedStructWriter>  idxByFcWriterMap;
@@ -117,6 +119,15 @@ public class StructSuit {
         }
 
         return writer.write(structInst);
+    }
+
+    public EncodeSigner getSigner() {
+        return signer;
+    }
+
+    public StructSuit setSigner(EncodeSigner signer) {
+        this.signer = signer;
+        return this;
     }
 
     public String getName() {
