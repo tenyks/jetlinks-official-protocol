@@ -19,7 +19,7 @@ public class DeclarationBasedBinaryMessageCodecTest {
 
     @Before
     public void setUp() {
-        codec = XueBaoWaWaProtocolSupport.buildCodec(null);
+        codec = XueBaoWaWaProtocolSupport.buildBinaryMessageCodec(null);
     }
 
     @Test

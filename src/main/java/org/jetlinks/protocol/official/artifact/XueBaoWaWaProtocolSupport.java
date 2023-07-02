@@ -2,10 +2,17 @@ package org.jetlinks.protocol.official.artifact;
 
 import io.netty.buffer.ByteBuf;
 import org.apache.commons.codec.binary.Hex;
+import org.jetlinks.core.message.DeviceMessage;
+import org.jetlinks.core.message.DeviceOnlineMessage;
+import org.jetlinks.core.message.codec.DeviceMessageCodec;
 import org.jetlinks.core.message.event.EventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
+import org.jetlinks.protocol.official.PluginConfig;
 import org.jetlinks.protocol.official.binary2.*;
+import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
+import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
+import org.jetlinks.protocol.official.tcp.StrategyTcpDeviceMessageCodec;
 
 import java.util.Map;
 
@@ -14,10 +21,37 @@ import java.util.Map;
  */
 public class XueBaoWaWaProtocolSupport {
 
-    public static BinaryMessageCodec    buildCodec(Map<String, Object> config) {
+    public static final String NAME = "XueBaoWaWa_V2.6";
+
+    public static DeviceMessageCodec buildDeviceMessageCodec(PluginConfig config) {
+        IntercommunicateStrategy strategy = buildIntercommunicateStrategy(config);
+        BinaryMessageCodec bmCodec = buildBinaryMessageCodec(config);
+
+        StrategyTcpDeviceMessageCodec devMsgCodec = new StrategyTcpDeviceMessageCodec(bmCodec, strategy);
+        return devMsgCodec;
+    }
+
+    public static BinaryMessageCodec buildBinaryMessageCodec(PluginConfig config) {
         StructSuit structSuit = buildStructSuitV26();
         StructAndMessageMapper mapper = buildMapper(structSuit);
         return new DeclarationBasedBinaryMessageCodec(structSuit, mapper);
+    }
+
+    public static IntercommunicateStrategy  buildIntercommunicateStrategy(PluginConfig config) {
+        return new AbstractIntercommunicateStrategy() {
+            @Override
+            public boolean canFireLogin(DeviceMessage msg) {
+                // 心跳事件
+                if (msg instanceof EventMessage) {
+                    EventMessage eMsg = (EventMessage) msg;
+                    if (eMsg.getEvent().equals("heartbeat")) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        };
     }
 
     public static StructSuit buildStructSuitV26() {
