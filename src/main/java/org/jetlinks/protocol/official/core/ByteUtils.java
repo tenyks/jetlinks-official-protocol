@@ -8,9 +8,14 @@ public class ByteUtils {
     public static String toHexStr(ByteBuf buf) {
         if (buf == null) return null;
 
+        int originReaderIdx = buf.readerIndex();
+
         buf.readerIndex(0);
         byte[] tmp = new byte[buf.writerIndex()];
         buf.readBytes(tmp);
+
+        buf.readerIndex(originReaderIdx);
+
         return Hex.encodeHexString(tmp);
     }
 

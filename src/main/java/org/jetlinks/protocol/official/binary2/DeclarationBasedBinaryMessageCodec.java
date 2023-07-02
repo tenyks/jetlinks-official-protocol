@@ -30,7 +30,7 @@ public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
     }
 
     @Override
-    public DeviceMessage decode(MessageDecodeContext context, ByteBuf buf) {
+    public DeviceMessage decode(MessageCodecContext context, ByteBuf buf) {
         StructInstance structInst = structSuit.deserialize(buf);
 
         MapperContext mapperContext = getOrCreateContext(context);
@@ -40,7 +40,7 @@ public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
     }
 
     @Override
-    public ByteBuf encode(MessageEncodeContext context, DeviceMessage message) {
+    public ByteBuf encode(MessageCodecContext context, DeviceMessage message) {
         MapperContext mapperContext = getOrCreateContext(context);
 
         StructInstance structInst = mapper.toStructInstance(mapperContext, message);
