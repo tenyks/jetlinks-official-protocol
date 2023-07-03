@@ -62,6 +62,9 @@ public class StrategyTcpDeviceMessageCodec implements DeviceMessageCodec {
                 return Mono.empty();
             } else {
                 DeviceOnlineMessage onlineMsg = itcmncStrategy.buildLoginMessage(msg);
+                if (onlineMsg == null) {
+
+                }
 
                 return handleLogin(context, onlineMsg);
             }
