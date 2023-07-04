@@ -136,7 +136,11 @@ public class StrategyTcpDeviceMessageCodec implements DeviceMessageCodec {
         }
 
         ByteBuf payload = codec.encode(context, deviceMessage);
+        if (log.isDebugEnabled()) {
+            log.debug("[TCPCodec]编码结果：msg={}, payload={}", deviceMessage.toJson(), ByteUtils.toHexStr(payload));
+        }
 
+        payload.readerIndex(0);
         return Mono.just(EncodedMessage.simple(payload));
     }
 }
