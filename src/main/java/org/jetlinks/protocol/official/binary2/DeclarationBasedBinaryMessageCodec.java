@@ -58,7 +58,8 @@ public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
         if (deviceOperator == null) return null;
 
         String deviceId = deviceOperator.getDeviceId();
-        String sessionId = deviceOperator.getSessionId().block(Duration.ofSeconds(30));
+//        String sessionId = deviceOperator.getSessionId().block(Duration.ofSeconds(30));
+        String sessionId = "";
 
         MapperContext ctx = contextMap.get(sessionId);
         if (ctx != null){

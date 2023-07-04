@@ -52,30 +52,32 @@ public class StrategyTcpDeviceMessageCodec implements DeviceMessageCodec {
 
         // 设备未登录
         if (context.getDevice() == null) {
-            DeviceMessage msg = codec.decode(context, payload);
+            DeviceMessage devMsg = codec.decode(context, payload);
+            if (devMsg == null) {
+                log.warn("[TCPCodec]消息无法解码：{}", ByteUtils.toHexStr(payload));
+                return Mono.empty();
+            }
 
-            boolean fireLogin = itcmncStrategy.canFireLogin(msg);
+            boolean fireLogin = itcmncStrategy.canFireLogin(devMsg);
             if (!fireLogin) {
                 if (log.isInfoEnabled()) {
-                    log.info("[TCPCodec]忽略登录前的消息：raw={}, msg={}", ByteUtils.toHexStr(payload), msg.toJson());
+                    log.info("[TCPCodec]忽略登录前的消息：raw={}, devMsg={}", ByteUtils.toHexStr(payload), devMsg.toJson());
                 }
                 return Mono.empty();
-            } else {
-                DeviceOnlineMessage onlineMsg = itcmncStrategy.buildLoginMessage(msg);
-                if (onlineMsg == null) {
-
-                }
-
-                return handleLogin(context, onlineMsg);
             }
+
+            DeviceOnlineMessage onlineMsg = itcmncStrategy.buildLoginMessage(devMsg);
+            return handleLogin(context, onlineMsg);
         }
 
-        DeviceMessage msg = codec.decode(context, payload);
-
-        return Mono.justOrEmpty(msg);
+        return Mono.just(payload).map(v -> codec.decode(context, v));
     }
 
     private Mono<DeviceMessage> handleLogin(MessageDecodeContext context, DeviceOnlineMessage message) {
+        if (log.isInfoEnabled()) {
+            log.info("[TCPCodec]发现设备上线消息：{}", message.toJson());
+        }
+
         String deviceId = message.getDeviceId();
         return context
                 .getDevice(deviceId)
