@@ -70,6 +70,11 @@ public class XueBaoWaWaProtocolSupport {
         suit.addStructDeclaration(buildReportMachineErrorStructDcl());
         suit.addStructDeclaration(buildPingStructDcl());
         suit.addStructDeclaration(buildReportPongStructDcl());
+        suit.addStructDeclaration(buildRestartStructDcl());
+        suit.addStructDeclaration(buildMachineAlarmStructDcl());
+        suit.addStructDeclaration(buildAddCoinStructDcl());
+        suit.addStructDeclaration(buildReadResultAndStatusStructDcl());
+        suit.addStructDeclaration(buildReadResultAndStatusReplyStructDcl());
 
         suit.setSigner(new V26EncodeSigner());
         suit.setDefaultACKStructDeclaration(buildACKDefaultStructDcl());
@@ -85,10 +90,15 @@ public class XueBaoWaWaProtocolSupport {
         structAndThingMapping.addMapping(FunctionInvokeMessage.class, "controlMotor", structSuit.getStructDeclaration("控制电机命令结构"));
         structAndThingMapping.addMapping(FunctionInvokeMessage.class, "checkOnline", structSuit.getStructDeclaration("查询机台是否上线命令结构"));
         structAndThingMapping.addMapping(FunctionInvokeMessage.class, "ping", structSuit.getStructDeclaration("PING指令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "restart", structSuit.getStructDeclaration("复位命令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "machineAlarm", structSuit.getStructDeclaration("机器报警命令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "addCoin", structSuit.getStructDeclaration("线上投币命令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "readResultAndStatus", structSuit.getStructDeclaration("读取出奖结果和状态命令结构"));
 
         //Decode
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("游戏结束返回结构【事件】"), EventMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("查询机台是否上线命令的返回结构"), FunctionInvokeMessageReply.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("读取出奖结果和状态命令的返回结构"), FunctionInvokeMessageReply.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("错误上报结构【事件】"), EventMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("心跳上报结构【事件】"), EventMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("默认的ACK响应结构"), FunctionInvokeMessageReply.class);
@@ -116,9 +126,9 @@ public class XueBaoWaWaProtocolSupport {
 
         structDcl.addField(new DefaultFieldDeclaration("超时时间", "timeOut", BaseDataType.UINT8, (short) 9)
                                     .addMeta(ThingAnnotation.FuncInput()));
-        structDcl.addField(new DefaultFieldDeclaration("抓到结果", "result", BaseDataType.UINT8, (short) 10)
+        structDcl.addField(new DefaultFieldDeclaration("抓到结果", "result", BaseDataType.BOOLEAN, (short) 10)
                                     .addMeta(ThingAnnotation.FuncInput()));
-        structDcl.addField(new DefaultFieldDeclaration("抓起爪力", "pickUpCF", BaseDataType.UINT8, (short) 11)
+        structDcl.addField(new DefaultFieldDeclaration("抓起爪力", "pickupCF", BaseDataType.UINT8, (short) 11)
                                     .addMeta(ThingAnnotation.FuncInput()));
         structDcl.addField(new DefaultFieldDeclaration("到顶爪力", "toTopCF", BaseDataType.UINT8, (short) 12)
                                     .addMeta(ThingAnnotation.FuncInput()));
@@ -157,8 +167,9 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.addField(buildPackageLengthFieldDcl((byte)12));
         structDcl.addField(buildCmdFieldDcl((byte)0x33));
 
-        structDcl.addField(new DefaultFieldDeclaration("保留字节1", "reversed1", BaseDataType.UINT8, (short) 9));
-        structDcl.addField(new DefaultFieldDeclaration("保留字节2", "reversed1", BaseDataType.UINT8, (short) 10));
+        structDcl.addField(new DefaultFieldDeclaration("是否抓到", "result", BaseDataType.BOOLEAN, (short) 9));
+        structDcl.addField(new DefaultFieldDeclaration("保留字节1", "reversed1", BaseDataType.UINT8, (short) 10));
+        structDcl.addField(new DefaultFieldDeclaration("保留字节2", "reversed2", BaseDataType.UINT8, (short) 11));
 
 //        structDcl.addField(buildCRCFieldDcl((short) 12));
 
@@ -183,7 +194,7 @@ public class XueBaoWaWaProtocolSupport {
 
         structDcl.addField(new DefaultFieldDeclaration("运动动作", "action", BaseDataType.UINT8, (short) 9)
                             .addMeta(ThingAnnotation.FuncInput()));
-        structDcl.addField(new DefaultFieldDeclaration("时长（毫秒）", "duration", BaseDataType.UINT16, (short) 10)
+        structDcl.addField(new DefaultFieldDeclaration("运动时长（毫秒）", "moveDuration", BaseDataType.UINT16, (short) 10)
                             .addMeta(ThingAnnotation.FuncInput()));
 
 //        structDcl.addField(buildCRCFieldDcl((short) 12));
@@ -269,6 +280,120 @@ public class XueBaoWaWaProtocolSupport {
     }
 
     /**
+     * 复位命令结构：服务器 -> 机器
+     */
+    private static DefaultStructDeclaration buildRestartStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("复位命令结构", "CMD:0x38");
+        structDcl.setCRCCalculator(buildCRCCalculatorInst());
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.FuncId("restart"));
+
+        structDcl.addField(buildMagicFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildSignatureFieldDcl());
+        structDcl.addField(buildPackageLengthFieldDcl((byte)0x09));
+        structDcl.addField(buildCmdFieldDcl((byte)0x38));
+
+//        structDcl.addField(buildCRCFieldDcl((short) 8));
+
+        return structDcl;
+    }
+
+    /**
+     * 机器报警命令结构：服务器 -> 机器
+     */
+    private static DefaultStructDeclaration buildMachineAlarmStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("机器报警命令结构", "CMD:0x43");
+        structDcl.setCRCCalculator(buildCRCCalculatorInst());
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.FuncId("machineAlarm"));
+
+        structDcl.addField(buildMagicFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildSignatureFieldDcl());
+        structDcl.addField(buildPackageLengthFieldDcl((byte)0x09));
+        structDcl.addField(buildCmdFieldDcl((byte)0x43));
+
+//        structDcl.addField(buildCRCFieldDcl((short) 8));
+
+        return structDcl;
+    }
+
+    /**
+     * 线上投币命令结构：服务器 -> 机器
+     */
+    private static DefaultStructDeclaration buildAddCoinStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("线上投币命令结构", "CMD:0x50");
+        structDcl.setCRCCalculator(buildCRCCalculatorInst());
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.FuncId("addCoin"));
+
+        structDcl.addField(buildMagicFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildSignatureFieldDcl());
+        structDcl.addField(buildPackageLengthFieldDcl((byte)0x0B));
+        structDcl.addField(buildCmdFieldDcl((byte)0x50));
+
+        structDcl.addField(new DefaultFieldDeclaration("投币数", "coins", BaseDataType.UINT16, (short) 9)
+                .addMeta(ThingAnnotation.FuncInput()));
+
+//        structDcl.addField(buildCRCFieldDcl((short) 8));
+
+        return structDcl;
+    }
+
+
+    /**
+     * 读取出奖结果和状态命令结构：服务器 -> 机器
+     */
+    private static DefaultStructDeclaration buildReadResultAndStatusStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("读取出奖结果和状态命令结构", "CMD:0x3E");
+        structDcl.setCRCCalculator(buildCRCCalculatorInst());
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.FuncId("readResultAndStatus"));
+
+        structDcl.addField(buildMagicFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildSignatureFieldDcl());
+        structDcl.addField(buildPackageLengthFieldDcl((byte)0x09));
+        structDcl.addField(buildCmdFieldDcl((byte)0x3E));
+
+//        structDcl.addField(buildCRCFieldDcl((short) 8));
+
+        return structDcl;
+    }
+
+    /**
+     * 读取出奖结果和状态命令的返回结构：机器 -> 服务器
+     */
+    private static DefaultStructDeclaration buildReadResultAndStatusReplyStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("读取出奖结果和状态命令的返回结构", "CMD:0x3E");
+        structDcl.setCRCCalculator(buildCRCCalculatorInst());
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("readResultAndStatus"));
+
+        structDcl.addField(buildMagicFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildSignatureFieldDcl());
+        structDcl.addField(buildPackageLengthFieldDcl((byte) 0x0B));
+        structDcl.addField(buildCmdFieldDcl((byte)0x3E));
+
+        structDcl.addField(new DefaultFieldDeclaration("机器状态", "status", BaseDataType.UINT8, (short) 9)
+                .addMeta(ThingAnnotation.FuncOutput())); // 0=空闲，1，2=使用中，100+=故障码
+        structDcl.addField(new DefaultFieldDeclaration("中奖结果", "result", BaseDataType.UINT8, (short) 10)
+                .addMeta(ThingAnnotation.FuncOutput())); // 0=表示没有中奖，1=表示中奖
+
+//        structDcl.addField(buildCRCFieldDcl((short) 21));
+
+        return structDcl;
+    }
+
+    /**
      * PING指令结构：服务器 -> 机器
      */
     private static DefaultStructDeclaration buildPingStructDcl() {
@@ -305,7 +430,7 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.addField(buildPackageLengthFieldDcl((byte) 21));
         structDcl.addField(buildCmdFieldDcl((byte)0x35));
 
-        structDcl.addField(new DefaultFieldDeclaration("MAC码", "machineMAC", BaseDataType.HEX_STR, (short) 8,  (short) 12)
+        structDcl.addField(new DefaultFieldDeclaration("MAC码", "machineMAC", BaseDataType.STRING, (short) 8,  (short) 12)
                                 .addMeta(ThingAnnotation.EventData())
                                 .addMeta(ThingAnnotation.DeviceId()));
 
@@ -318,7 +443,7 @@ public class XueBaoWaWaProtocolSupport {
      * 默认的ACK响应结构：机器 -> 服务器
      */
     private static DefaultStructDeclaration buildACKDefaultStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("默认的ACK响应", "CMD:ACK_DEFAULT");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("默认的ACK响应结构", "CMD:ACK_DEFAULT");
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
@@ -362,7 +487,7 @@ public class XueBaoWaWaProtocolSupport {
     }
 
     private static CRCCalculator    buildCRCCalculatorInst() {
-        return new SumAndModCRCCalculator(0, -1, 100);
+        return new SumAndModCRCCalculator(6, 0, 100);
     }
 
     private static class V26FeatureCodeExtractor implements FeatureCodeExtractor {

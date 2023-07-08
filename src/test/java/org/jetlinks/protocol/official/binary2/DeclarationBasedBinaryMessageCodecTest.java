@@ -49,8 +49,8 @@ public class DeclarationBasedBinaryMessageCodecTest {
         startGameMsg.setMessageId("M001");
 
         startGameMsg.addInput("timeOut", (byte)1);
-        startGameMsg.addInput("result", (short)0);
-        startGameMsg.addInput("pickUpCF", (short)2);
+        startGameMsg.addInput("result", false);
+        startGameMsg.addInput("pickUpCF", 2);
         startGameMsg.addInput("toTopCF", (short)3);
         startGameMsg.addInput("moveCF", (short)4);
         startGameMsg.addInput("bigCF", (short)5);

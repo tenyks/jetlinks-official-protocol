@@ -17,9 +17,9 @@ import java.util.Map;
  */
 public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
 
-    private StructSuit  structSuit;
+    private StructSuit                   structSuit;
 
-    private StructAndMessageMapper  mapper;
+    private StructAndMessageMapper       mapper;
 
     private Map<String, MapperContext>   contextMap; //TODO 优化：自动释放、并发控制
 

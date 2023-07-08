@@ -1,5 +1,8 @@
 package org.jetlinks.protocol.official.binary2;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.annotation.Nullable;
 
 /**
@@ -7,6 +10,8 @@ import javax.annotation.Nullable;
  * //TODO 根据物模型元信息，正则化值
  */
 public class DefaultFieldValueAndPropertyMapping implements FieldValueAndPropertyMapping {
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultFieldValueAndPropertyMapping.class);
 
     @Override
     public Object toPropertyValue(@Nullable MapperContext context, FieldInstance fieldInst) {
@@ -25,10 +30,19 @@ public class DefaultFieldValueAndPropertyMapping implements FieldValueAndPropert
 
     @Override
     public Object toFieldValue(@Nullable MapperContext context, FieldDeclaration fieldDcl, Object val) {
+        log.debug("[Codec]{}={}", fieldDcl.getCode(), val);
+
         if ("messageId".equals(fieldDcl.getCode())) {
             if (context == null) return val;
 
             return context.acquireAndBindThingMessageId((String) val);
+        }
+        if ("action".equals(fieldDcl.getCode())) {
+            if (val instanceof String) {
+                return Integer.valueOf((String)val);
+            }
+
+            return val;
         }
 
         return val;

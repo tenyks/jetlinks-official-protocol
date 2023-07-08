@@ -1,7 +1,12 @@
 package org.jetlinks.protocol.official.binary2;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.base64.Base64Encoder;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 
@@ -36,7 +41,12 @@ public enum BaseDataType {
             if (value == null) {
                 buf.writeByte(0);
             } else {
-                buf.writeBoolean((Boolean) value);
+                if (value instanceof Number) {
+                    int v = ((Number) value).intValue();
+                    buf.writeBoolean(v != 0);
+                } else {
+                    buf.writeBoolean((Boolean) value);
+                }
             }
             return 1;
         }
@@ -56,7 +66,7 @@ public enum BaseDataType {
             if (value == null) {
                 buf.writeByte(0);
             } else {
-                buf.writeByte((Byte) value);
+                buf.writeByte(((Number) value).byteValue());
             }
             return 1;
         }
@@ -76,7 +86,7 @@ public enum BaseDataType {
             if (value == null) {
                 buf.writeShort(0);
             } else {
-                buf.writeShort((Short) value);
+                buf.writeShort(((Number) value).intValue());
             }
             return 2;
         }
@@ -96,7 +106,7 @@ public enum BaseDataType {
             if (value == null) {
                 buf.writeInt(0);
             } else {
-                buf.writeInt((Integer) value);
+                buf.writeInt(((Number) value).intValue());
             }
             return 4;
         }
@@ -116,7 +126,7 @@ public enum BaseDataType {
             if (value == null) {
                 buf.writeLong(0);
             } else {
-                buf.writeLong((Long) value);
+                buf.writeLong(((Number) value).longValue());
             }
             return 8;
         }
@@ -136,7 +146,7 @@ public enum BaseDataType {
             if (value == null) {
                 buf.writeByte(0);
             } else {
-                buf.writeByte(((Number) value).byteValue());
+                buf.writeByte(((Number) value).intValue());
             }
             return 1;
         }
@@ -156,7 +166,7 @@ public enum BaseDataType {
             if (value == null) {
                 buf.writeShort(0);
             } else {
-                buf.writeShort((Short) value);
+                buf.writeShort(((Number) value).intValue());
             }
             return 2;
         }
@@ -176,7 +186,7 @@ public enum BaseDataType {
             if (value == null) {
                 buf.writeInt(0);
             } else {
-                buf.writeInt((Integer) value);
+                buf.writeInt(((Number) value).intValue());
             }
             return 4;
         }
@@ -196,7 +206,7 @@ public enum BaseDataType {
             if (value == null) {
                 buf.writeFloat(0);
             } else {
-                buf.writeFloat((Float) value);
+                buf.writeFloat(((Number) value).floatValue());
             }
             return 4;
         }
@@ -216,7 +226,7 @@ public enum BaseDataType {
             if (value == null) {
                 buf.writeDouble(0);
             } else {
-                buf.writeDouble((Double) value);
+                buf.writeDouble(((Number) value).doubleValue());
             }
             return 8;
         }
@@ -280,10 +290,37 @@ public enum BaseDataType {
         public short write(ByteBuf buf, Object value) {
             if (value == null) return 0;
 
-            byte[] bytes = (byte[]) value;
+            byte[] bytes;
+            try {
+                bytes = Hex.decodeHex((String) value);
+            } catch (DecoderException e) {
+                throw new RuntimeException("解码HEX字符串失败：", e);
+            }
             buf.writeBytes(bytes);
 
-            return (short)(bytes.length * 2);
+            return (short)(bytes.length);
+        }
+
+        @Override
+        public short size() { return 0; }
+    },
+    //0x0D
+    BASE64_STR {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size];
+            buf.readBytes(bytes);
+            return Base64.encodeBase64String(bytes);
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes = Base64.decodeBase64((String) value);
+            buf.writeBytes(bytes);
+
+            return (short)(bytes.length);
         }
 
         @Override

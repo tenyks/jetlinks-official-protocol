@@ -1,6 +1,8 @@
 package org.jetlinks.protocol.official.binary2;
 
 import org.jetlinks.core.message.DeviceMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 
@@ -10,9 +12,11 @@ import javax.annotation.Nullable;
  */
 public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
 
-    private StructAndThingMapping   structAndThingMapping;
+    private static final Logger log = LoggerFactory.getLogger(SimpleStructAndMessageMapper.class);
 
-    private FieldAndPropertyMapping fieldAndPropertyMapping;
+    private StructAndThingMapping           structAndThingMapping;
+
+    private FieldAndPropertyMapping         fieldAndPropertyMapping;
 
     private FieldValueAndPropertyMapping    fieldValueAndPropertyMapping;
 
@@ -50,6 +54,10 @@ public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
     @Override
     public DeviceMessage toDeviceMessage(@Nullable MapperContext context, StructInstance structInst) {
         DeviceMessage msg = structAndThingMapping.map(structInst.getDeclaration());
+        if (msg == null) {
+            log.warn("[CodecMapper]{} not mapping to DeviceMessage", structInst.getDeclaration().getName());
+            return null;
+        }
 
         if (context != null && context.getDeviceId() != null) {
             msg.messageId(context.getDeviceId());

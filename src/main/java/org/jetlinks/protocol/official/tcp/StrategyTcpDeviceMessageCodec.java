@@ -70,7 +70,15 @@ public class StrategyTcpDeviceMessageCodec implements DeviceMessageCodec {
             return handleLogin(context, onlineMsg);
         }
 
-        return Mono.just(payload).map(v -> codec.decode(context, v));
+        return Mono.defer(() -> {
+            DeviceMessage devMsg = codec.decode(context, payload);
+            if (devMsg == null) {
+                log.warn("[TCPCodec]消息无法解码：{}", ByteUtils.toHexStr(payload));
+                return Mono.empty();
+            }
+
+            return Mono.just(devMsg);
+        });
     }
 
     private Mono<DeviceMessage> handleLogin(MessageDecodeContext context, DeviceOnlineMessage message) {
