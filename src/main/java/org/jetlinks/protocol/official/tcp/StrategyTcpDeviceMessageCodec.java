@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 /**
- * TCP交换行为：<br>
+ * TCP通讯交互行为：<br>
  * <li>TCP链接建立后，首次心跳消息触发设备认证和设备上线，该消息之前的消息将会被丢弃</li>
  * <li></li>
  */
@@ -54,14 +54,15 @@ public class StrategyTcpDeviceMessageCodec implements DeviceMessageCodec {
         if (context.getDevice() == null) {
             DeviceMessage devMsg = codec.decode(context, payload);
             if (devMsg == null) {
-                log.warn("[TCPCodec]消息无法解码：{}", ByteUtils.toHexStr(payload));
+                log.warn("[TCPCodec]忽略Decoder不支持的消息：{}", ByteUtils.toHexStr(payload));
                 return Mono.empty();
             }
 
             boolean fireLogin = itcmncStrategy.canFireLogin(devMsg);
             if (!fireLogin) {
                 if (log.isInfoEnabled()) {
-                    log.info("[TCPCodec]忽略登录前的消息：raw={}, devMsg={}", ByteUtils.toHexStr(payload), devMsg.toJson());
+                    log.info("[TCPCodec]按策略忽略登录前的消息：raw={}, devMsg={}",
+                            ByteUtils.toHexStr(payload), devMsg.toJson());
                 }
                 return Mono.empty();
             }
@@ -77,26 +78,35 @@ public class StrategyTcpDeviceMessageCodec implements DeviceMessageCodec {
                 return Mono.empty();
             }
 
+            if (log.isDebugEnabled()) {
+                log.debug("[TCPCodec]消息解码成功：payload={}, msg={}", ByteUtils.toHexStr(payload), devMsg.toJson());
+            }
+
             return Mono.just(devMsg);
         });
     }
 
     private Mono<DeviceMessage> handleLogin(MessageDecodeContext context, DeviceOnlineMessage message) {
         if (log.isInfoEnabled()) {
-            log.info("[TCPCodec]发现设备上线消息：{}", message.toJson());
+            log.info("[TCPCodec]发现设备上线消息：msg={}", message.toJson());
         }
 
         String deviceId = message.getDeviceId();
         return context
                 .getDevice(deviceId)
                 .flatMap(device -> {
+                    log.info("[TCPCodec]设备上线OK：deviceId={}", deviceId);
+
                     if (itcmncStrategy.needAckWhileLoginSuccess()) {
-                        return doAck(message, AckCode.ok, context).thenReturn((DeviceMessage)message);
+                        return doAck(message, AckCode.ok, context)
+                                .thenReturn((DeviceMessage)message);
                     } else {
                         return Mono.justOrEmpty(message);
                     }
                 })
                 .switchIfEmpty(Mono.defer(() -> {
+                    log.warn("[TCPCodec]设备上线Fail：deviceId={}", deviceId);
+
                     if (itcmncStrategy.needAckWhileLoginFail()) {
                         return doAck(message, AckCode.noAuth, context);
                     } else {
@@ -144,8 +154,12 @@ public class StrategyTcpDeviceMessageCodec implements DeviceMessageCodec {
         }
 
         ByteBuf payload = codec.encode(context, deviceMessage);
+        if (payload == null) {
+            log.warn("[TCPCodec]Encoder不支持的消息：msg={}", deviceMessage.toJson());
+            return Mono.empty();
+        }
         if (log.isDebugEnabled()) {
-            log.debug("[TCPCodec]编码结果：msg={}, payload={}", deviceMessage.toJson(), ByteUtils.toHexStr(payload));
+            log.debug("[TCPCodec]设备消息编码结果：msg={}, payload={}", deviceMessage.toJson(), ByteUtils.toHexStr(payload));
         }
 
         payload.readerIndex(0);

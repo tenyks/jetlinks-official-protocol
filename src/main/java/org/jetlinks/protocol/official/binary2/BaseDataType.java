@@ -174,6 +174,30 @@ public enum BaseDataType {
         @Override
         public short size() { return 2; }
     },
+    UINT16LE { //小端优先
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            return buf.readUnsignedShort();
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) {
+                buf.writeShort(0);
+            } else {
+                int val = ((Number) value).intValue();
+                byte b1 = (byte) (val & 0xff);
+                byte b2 = (byte) (val >> 8 & 0xff);
+
+                buf.writeByte(b1);
+                buf.writeByte(b2);
+            }
+            return 2;
+        }
+
+        @Override
+        public short size() { return 2; }
+    },
     //0x08
     UINT32 {
         @Override

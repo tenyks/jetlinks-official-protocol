@@ -14,6 +14,7 @@ import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
 import org.jetlinks.protocol.official.tcp.StrategyTcpDeviceMessageCodec;
 
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 
 /**
@@ -62,17 +63,34 @@ public class XueBaoWaWaProtocolSupport {
                 new V26FeatureCodeExtractor()
         );
 
-        suit.addStructDeclaration(buildStartGameStructDcl());
+        DefaultStructDeclaration structDcl;
+
+        structDcl = buildStartGameStructDcl();
+        suit.addStructDeclaration(structDcl);
+        suit.addStructDeclaration(buildFunInvokeReplyACKStructDcl(structDcl));
+
         suit.addStructDeclaration(buildGameOverStructDcl());
-        suit.addStructDeclaration(buildCtrlMotorStructDcl());
+
+        structDcl = buildCtrlMotorStructDcl();
+        suit.addStructDeclaration(structDcl);
+        suit.addStructDeclaration(buildFunInvokeReplyACKStructDcl(structDcl));
+
         suit.addStructDeclaration(buildCheckOnlineStructDcl());
         suit.addStructDeclaration(buildCheckOnlineReplyStructDcl());
+
         suit.addStructDeclaration(buildReportMachineErrorStructDcl());
+
         suit.addStructDeclaration(buildPingStructDcl());
         suit.addStructDeclaration(buildReportPongStructDcl());
+
         suit.addStructDeclaration(buildRestartStructDcl());
+
         suit.addStructDeclaration(buildMachineAlarmStructDcl());
-        suit.addStructDeclaration(buildAddCoinStructDcl());
+
+        structDcl = buildAddCoinStructDcl();
+        suit.addStructDeclaration(structDcl);
+        suit.addStructDeclaration(buildFunInvokeReplyACKStructDcl(structDcl));
+
         suit.addStructDeclaration(buildReadResultAndStatusStructDcl());
         suit.addStructDeclaration(buildReadResultAndStatusReplyStructDcl());
 
@@ -101,6 +119,11 @@ public class XueBaoWaWaProtocolSupport {
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("读取出奖结果和状态命令的返回结构"), FunctionInvokeMessageReply.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("错误上报结构【事件】"), EventMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("心跳上报结构【事件】"), EventMessage.class);
+
+        for (StructDeclaration structDcl : structSuit.structDeclarations()) {
+            if (!structDcl.getName().endsWith("回复结构")) continue;
+            structAndThingMapping.addMapping(structDcl, FunctionInvokeMessageReply.class);
+        }
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("默认的ACK响应结构"), FunctionInvokeMessageReply.class);
 
         DefaultFieldAndPropertyMapping fieldAndPropertyMapping = new DefaultFieldAndPropertyMapping();
@@ -117,7 +140,7 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("startGame"));
+        structDcl.addThingAnnotation(ThingAnnotation.FuncId("startGame"));
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildSignatureFieldDcl());
@@ -167,7 +190,8 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.addField(buildPackageLengthFieldDcl((byte)12));
         structDcl.addField(buildCmdFieldDcl((byte)0x33));
 
-        structDcl.addField(new DefaultFieldDeclaration("是否抓到", "result", BaseDataType.BOOLEAN, (short) 9));
+        structDcl.addField(new DefaultFieldDeclaration("是否抓到", "result", BaseDataType.BOOLEAN, (short) 9)
+                .addMeta(ThingAnnotation.EventData()));
         structDcl.addField(new DefaultFieldDeclaration("保留字节1", "reversed1", BaseDataType.UINT8, (short) 10));
         structDcl.addField(new DefaultFieldDeclaration("保留字节2", "reversed2", BaseDataType.UINT8, (short) 11));
 
@@ -194,7 +218,7 @@ public class XueBaoWaWaProtocolSupport {
 
         structDcl.addField(new DefaultFieldDeclaration("运动动作", "action", BaseDataType.UINT8, (short) 9)
                             .addMeta(ThingAnnotation.FuncInput()));
-        structDcl.addField(new DefaultFieldDeclaration("运动时长（毫秒）", "moveDuration", BaseDataType.UINT16, (short) 10)
+        structDcl.addField(new DefaultFieldDeclaration("运动时长（毫秒）", "moveDuration", BaseDataType.UINT16LE, (short) 10)
                             .addMeta(ThingAnnotation.FuncInput()));
 
 //        structDcl.addField(buildCRCFieldDcl((short) 12));
@@ -440,6 +464,29 @@ public class XueBaoWaWaProtocolSupport {
     }
 
     /**
+     * 功能调用回复结构：机器 -> 服务器
+     */
+    private static DefaultStructDeclaration buildFunInvokeReplyACKStructDcl(DefaultStructDeclaration fromDcl) {
+        String featureCode = fromDcl.getFeatureCode();
+        String name = String.format("%s回复结构", fromDcl.getName().replace("结构", ""));
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration(name, featureCode);
+        structDcl.setCRCCalculator(buildCRCCalculatorInst());
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(fromDcl.thingAnnotations());
+
+        structDcl.addField(buildMagicFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildSignatureFieldDcl());
+        structDcl.addField(buildPackageLengthFieldDcl((byte) 0));
+        structDcl.addField(buildCmdFieldDcl(null));
+
+//        structDcl.addField(buildCRCFieldDcl((short) 21));
+
+        return structDcl;
+    }
+
+    /**
      * 默认的ACK响应结构：机器 -> 服务器
      */
     private static DefaultStructDeclaration buildACKDefaultStructDcl() {
@@ -498,6 +545,9 @@ public class XueBaoWaWaProtocolSupport {
         public String extract(ByteBuf buf) {
             byte[] headerBuf = new byte[8];
 
+            if (buf.readableBytes() < headerBuf.length) {
+                return "WRONG_SIZE:" + Hex.encodeHexString(headerBuf);
+            }
             buf.readBytes(headerBuf);
 
             if (headerBuf[0] != MAGIC_ID) {
@@ -509,7 +559,12 @@ public class XueBaoWaWaProtocolSupport {
                 return "~NOT_EQ:" + Hex.encodeHexString(headerBuf);
             }
 
-            return "CMD:0x" + Integer.toHexString(headerBuf[7]);
+            return "CMD:0x" + Integer.toHexString(headerBuf[7] & 0xff);
+        }
+
+        @Override
+        public boolean isValidFeatureCode(String featureCode) {
+            return (featureCode != null && featureCode.startsWith("CMD:"));
         }
     }
 

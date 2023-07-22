@@ -6,6 +6,7 @@ import org.apache.commons.codec.binary.Hex;
 public class ByteUtils {
 
     public static String toHexStr(ByteBuf buf) {
+        //TODO 优化性能
         if (buf == null) return null;
 
         int originReaderIdx = buf.readerIndex();

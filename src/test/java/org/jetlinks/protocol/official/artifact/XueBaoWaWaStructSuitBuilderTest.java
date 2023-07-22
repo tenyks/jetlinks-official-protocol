@@ -35,6 +35,15 @@ public class XueBaoWaWaStructSuitBuilderTest {
     }
 
     @Test
+    public void testStartGameReply() throws DecoderException {
+        String payload = "fe000201fffd14313c000000000000000000001d";
+        ByteBuf input = Unpooled.wrappedBuffer(Hex.decodeHex(payload));
+
+        StructInstance rst = structSuit.deserialize(input);
+        System.out.println(rst);
+    }
+
+    @Test
     public void testGameOver() throws DecoderException {
         String str = "fe 00 00 01 ff ff 0c 33 01 00 00 3e".replace(" ", "");
         ByteBuf input = Unpooled.wrappedBuffer(Hex.decodeHex(str));

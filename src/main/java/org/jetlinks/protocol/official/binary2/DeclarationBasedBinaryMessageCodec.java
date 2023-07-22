@@ -6,16 +6,22 @@ import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.codec.MessageCodecContext;
 import org.jetlinks.core.message.codec.MessageDecodeContext;
 import org.jetlinks.core.message.codec.MessageEncodeContext;
+import org.jetlinks.protocol.official.core.ByteUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * 基于声明的二进制消息编解码
  * @author v-lizy81
  * @date 2023/6/29 00:27
  */
 public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
+
+    private static final Logger log = LoggerFactory.getLogger(DeclarationBasedBinaryMessageCodec.class);
 
     private StructSuit                   structSuit;
 
@@ -32,10 +38,12 @@ public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
     @Override
     public DeviceMessage decode(MessageCodecContext context, ByteBuf buf) {
         StructInstance structInst = structSuit.deserialize(buf);
+        if (structInst == null) return null;
 
         MapperContext mapperContext = getOrCreateContext(context);
 
         DeviceMessage deviceMsg = mapper.toDeviceMessage(mapperContext, structInst);
+        
         return deviceMsg;
     }
 
@@ -44,9 +52,12 @@ public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
         MapperContext mapperContext = getOrCreateContext(context);
 
         StructInstance structInst = mapper.toStructInstance(mapperContext, message);
+        if (structInst == null) return null;
 
         ByteBuf rst = structSuit.serialize(structInst);
-        if (rst != null && structSuit.getSigner() != null) {
+        if (rst == null) return null;
+
+        if (structSuit.getSigner() != null) { //按需补校验字段
             rst = structSuit.getSigner().apply(rst);
         }
 
@@ -59,7 +70,7 @@ public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
 
         String deviceId = deviceOperator.getDeviceId();
 //        String sessionId = deviceOperator.getSessionId().block(Duration.ofSeconds(30));
-        String sessionId = "";
+        String sessionId = deviceId;
 
         MapperContext ctx = contextMap.get(sessionId);
         if (ctx != null){

@@ -88,18 +88,28 @@ public class StructSuit {
     }
 
     public StructInstance deserialize(ByteBuf buf) {
+        buf.readerIndex(0);
+
         String fc = fcExtractor.extract(buf);
+        if (!fcExtractor.isValidFeatureCode(fc)) {
+            log.warn("[StructSuit]不支持的字节流：featureCode={}", fc);
+            return null;
+        }
+
         StructReader reader = idxByFcReaderMap.get(fc);
         if (reader == null) {
             if (defaultReader == null) {
-                log.warn("[StructSuit]缺少FC={}的解码Reader.", fc);
+                log.warn("[StructSuit]缺少支持的Reader：featureCode={}", fc);
                 return null;
             } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("[StructSuit]缺少支持的Reader使用默认Reader：featureCode={}", fc);
+                }
                 reader = defaultReader;
             }
         }
 
-        //TODO 增加CRC校验
+        //TODO 增加CRC检查
 
         return reader.read(buf);
     }
@@ -107,7 +117,7 @@ public class StructSuit {
     public ByteBuf serialize(StructInstance structInst) {
         StructDeclaration structDcl = structInst.getDeclaration();
         if (structDcl == null) {
-            throw new IllegalArgumentException("structInst缺少结构声明数据");
+            throw new IllegalArgumentException("StructInst参数不完整：缺少结构声明数据");
         }
 
         StructWriter writer = idxByFcWriterMap.get(structDcl.getFeatureCode());

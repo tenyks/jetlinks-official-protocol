@@ -40,6 +40,32 @@ public class DeclarationBasedBinaryMessageCodecTest {
     }
 
     @Test
+    public void decodeStartGameReply() throws DecoderException {
+        DeviceMessage rst;
+        TestMessageDecodeContext context = new TestMessageDecodeContext("D001", "SD001_002");
+
+        String cas1 = "fe000201fffd14313c000000000000000000001d";
+        ByteBuf input = Unpooled.wrappedBuffer(Hex.decodeHex(cas1));
+
+        rst = codec.decode(context, input);
+        System.out.println(rst.toJson());
+
+    }
+
+    @Test
+    public void decodeGameOverEvent() throws DecoderException {
+        DeviceMessage rst;
+        TestMessageDecodeContext context = new TestMessageDecodeContext("D001", "SD001_002");
+
+        String cas1 = "fe400001bfff0c330000003f";
+        ByteBuf input = Unpooled.wrappedBuffer(Hex.decodeHex(cas1));
+
+        rst = codec.decode(context, input);
+        System.out.println(rst.toJson());
+
+    }
+
+    @Test
     public void encode() {
         TestMessageEncodeContext context = new TestMessageEncodeContext("D001", "SD001_002");
         ByteBuf rst;

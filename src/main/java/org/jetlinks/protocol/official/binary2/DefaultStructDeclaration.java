@@ -107,6 +107,14 @@ public class DefaultStructDeclaration implements StructDeclaration {
         return this;
     }
 
+    public DefaultStructDeclaration addThingAnnotation(Iterable<ThingAnnotation> tAnnIterable) {
+        if (tAnnIterable != null) {
+            tAnnIterable.forEach(v -> this.thingAnnotations.add(v));
+        }
+
+        return this;
+    }
+
     @Override
     public Iterable<ThingAnnotation> thingAnnotations() {
         return this.thingAnnotations;

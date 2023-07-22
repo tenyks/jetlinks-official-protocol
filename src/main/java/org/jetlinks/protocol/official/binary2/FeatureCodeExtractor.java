@@ -12,4 +12,6 @@ public interface FeatureCodeExtractor {
 
     String extract(ByteBuf buf);
 
+    boolean isValidFeatureCode(String featureCode);
+
 }

@@ -1,5 +1,7 @@
 package org.jetlinks.protocol.official.binary2;
 
+import org.jetlinks.core.message.CommonDeviceMessage;
+import org.jetlinks.core.message.CommonDeviceMessageReply;
 import org.jetlinks.core.message.DeviceMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,8 +61,12 @@ public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
             return null;
         }
 
-        if (context != null && context.getDeviceId() != null) {
-            msg.messageId(context.getDeviceId());
+        if (msg.getDeviceId() == null && context != null && context.getDeviceId() != null) {
+            if (msg instanceof CommonDeviceMessageReply) {
+                ((CommonDeviceMessageReply) msg).setDeviceId(context.getDeviceId());
+            } else if (msg instanceof CommonDeviceMessage) {
+                ((CommonDeviceMessage)msg).setDeviceId(context.getDeviceId());
+            }
         }
 
         Iterable<ThingAnnotation> structThAnns = structInst.getDeclaration().thingAnnotations();
