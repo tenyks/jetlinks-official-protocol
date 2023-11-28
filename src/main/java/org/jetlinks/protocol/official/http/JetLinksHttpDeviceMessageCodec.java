@@ -76,7 +76,6 @@ public class JetLinksHttpDeviceMessageCodec implements DeviceMessageCodec, Authe
                 .build();
     }
 
-
     private static SimpleHttpResponseMessage badRequest() {
         return SimpleHttpResponseMessage
                 .builder()
@@ -146,7 +145,7 @@ public class JetLinksHttpDeviceMessageCodec implements DeviceMessageCodec, Authe
                         .response(unauthorized("Device no register or token not match"))
                         .then(Mono.empty())))
                 //解码
-                .flatMapMany(ignore -> doDecode(message, paths))
+                .flatMapMany(ignore -> doDecodePayload(message, paths))
                 .switchOnFirst((s, flux) -> {
                     Mono<Void> handler;
                     //有结果则认为成功
@@ -166,10 +165,9 @@ public class JetLinksHttpDeviceMessageCodec implements DeviceMessageCodec, Authe
                 .as(FluxTracer
                             .create(DeviceTracer.SpanName.decode(deviceId),
                                     builder -> builder.setAttribute(DeviceTracer.SpanKey.message, message.print())));
-
     }
 
-    private Flux<DeviceMessage> doDecode(HttpExchangeMessage message, String[] paths) {
+    protected Flux<DeviceMessage> doDecodePayload(HttpExchangeMessage message, String[] paths) {
         return message
                 .payload()
                 .flatMapMany(buf -> {
