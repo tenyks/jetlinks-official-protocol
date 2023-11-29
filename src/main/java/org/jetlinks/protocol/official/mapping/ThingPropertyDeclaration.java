@@ -8,7 +8,7 @@ import org.jetlinks.protocol.official.binary2.BaseDataType;
  * @date 2023/11/29
  * @since V1.3.0
  */
-public interface FieldDeclaration {
+public interface ThingPropertyDeclaration {
 
     /**
      * 字段编码
