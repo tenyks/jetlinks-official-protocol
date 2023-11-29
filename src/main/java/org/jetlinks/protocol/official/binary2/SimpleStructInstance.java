@@ -7,7 +7,7 @@ public class SimpleStructInstance implements StructInstance {
 
     private StructDeclaration            structDcl;
 
-    private Map<FieldDeclaration, FieldInstance>   fieldInstMap;
+    private Map<StructFieldDeclaration, FieldInstance>   fieldInstMap;
 
     public SimpleStructInstance(StructDeclaration dcl) {
         this.structDcl = dcl;
@@ -25,7 +25,7 @@ public class SimpleStructInstance implements StructInstance {
     }
 
     @Override
-    public FieldInstance getFieldInstance(FieldDeclaration fieldDcl) {
+    public FieldInstance getFieldInstance(StructFieldDeclaration fieldDcl) {
         return fieldInstMap.get(fieldDcl);
     }
 
@@ -36,7 +36,7 @@ public class SimpleStructInstance implements StructInstance {
 
     @Override
     public void addFieldInstance(String fieldCode, Object value) {
-        FieldDeclaration fieldDcl = structDcl.getField(fieldCode);
+        StructFieldDeclaration fieldDcl = structDcl.getField(fieldCode);
         addFieldInstance(new SimpleFieldInstance(fieldDcl, value));
     }
 

@@ -3,7 +3,6 @@ package org.jetlinks.protocol.official.artifact;
 import io.netty.buffer.ByteBuf;
 import org.apache.commons.codec.binary.Hex;
 import org.jetlinks.core.message.DeviceMessage;
-import org.jetlinks.core.message.DeviceOnlineMessage;
 import org.jetlinks.core.message.codec.DeviceMessageCodec;
 import org.jetlinks.core.message.event.EventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
@@ -12,10 +11,8 @@ import org.jetlinks.protocol.official.PluginConfig;
 import org.jetlinks.protocol.official.binary2.*;
 import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
+import org.jetlinks.protocol.official.mapping.ThingAnnotation;
 import org.jetlinks.protocol.official.tcp.StrategyTcpDeviceMessageCodec;
-
-import javax.validation.constraints.NotNull;
-import java.util.Map;
 
 /**
  * 雪暴娃娃机协议支持类

@@ -2,11 +2,11 @@ package org.jetlinks.protocol.official.binary2;
 
 public class PreviousFieldValueAsSize implements DynamicSize {
 
-    public FieldDeclaration     targetField;
+    public StructFieldDeclaration targetField;
 
     private StructInstance      currentStructInst;
 
-    public PreviousFieldValueAsSize(FieldDeclaration targetField) {
+    public PreviousFieldValueAsSize(StructFieldDeclaration targetField) {
         this.targetField = targetField;
     }
 

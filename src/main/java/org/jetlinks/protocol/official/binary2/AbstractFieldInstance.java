@@ -2,20 +2,20 @@ package org.jetlinks.protocol.official.binary2;
 
 public abstract class AbstractFieldInstance implements FieldInstance {
 
-    private FieldDeclaration   fieldDcl;
+    private StructFieldDeclaration fieldDcl;
 
     private Short   offset;
 
     private Short   size;
 
-    public AbstractFieldInstance(FieldDeclaration fieldDcl, Short offset, Short size) {
+    public AbstractFieldInstance(StructFieldDeclaration fieldDcl, Short offset, Short size) {
         this.fieldDcl = fieldDcl;
         this.offset = offset;
         this.size = size;
     }
 
     @Override
-    public FieldDeclaration getDeclaration() {
+    public StructFieldDeclaration getDeclaration() {
         return fieldDcl;
     }
 

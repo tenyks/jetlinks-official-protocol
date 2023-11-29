@@ -1,10 +1,12 @@
 package org.jetlinks.protocol.official.binary2;
 
+import org.jetlinks.protocol.official.mapping.ThingAnnotation;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultFieldDeclaration implements FieldDeclaration, Serializable {
+public class DefaultFieldDeclaration implements StructFieldDeclaration, Serializable {
 
     private static final long serialVersionUID = 1540156939056534169L;
 

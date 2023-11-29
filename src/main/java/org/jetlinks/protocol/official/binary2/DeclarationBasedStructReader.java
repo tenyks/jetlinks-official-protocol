@@ -1,7 +1,6 @@
 package org.jetlinks.protocol.official.binary2;
 
 import io.netty.buffer.ByteBuf;
-import org.jetlinks.protocol.official.core.ByteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +19,7 @@ public class DeclarationBasedStructReader implements StructReader {
         this.structDcl = structDcl;
 
         this.fieldReaders = new ArrayList<>();
-        for (FieldDeclaration fieldDcl : structDcl.fields()) {
+        for (StructFieldDeclaration fieldDcl : structDcl.fields()) {
             this.fieldReaders.add(new DeclarationBasedFieldReader(fieldDcl));
         }
     }
@@ -30,7 +29,7 @@ public class DeclarationBasedStructReader implements StructReader {
         StructInstance sInst = new SimpleStructInstance(structDcl);
 
         for (FieldReader fReader : fieldReaders) {
-            FieldDeclaration fDcl = ((DeclarationBasedFieldReader) fReader).getFieldDeclaration();
+            StructFieldDeclaration fDcl = ((DeclarationBasedFieldReader) fReader).getFieldDeclaration();
             DynamicAnchor dynamicAnchor = fDcl.getDynamicAnchor();
             if (dynamicAnchor != null) dynamicAnchor.bind(sInst);
 

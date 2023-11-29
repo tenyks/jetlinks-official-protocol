@@ -20,7 +20,7 @@ public class DeclarationBasedStructWriter implements StructWriter {
         this.structDcl = structDcl;
 
         this.fieldWriters = new ArrayList<>();
-        for (FieldDeclaration fieldDcl : structDcl.fields()) {
+        for (StructFieldDeclaration fieldDcl : structDcl.fields()) {
             this.fieldWriters.add(new DeclarationBasedFieldWriter(fieldDcl));
         }
     }
@@ -29,7 +29,7 @@ public class DeclarationBasedStructWriter implements StructWriter {
     public ByteBuf write(StructInstance instance) {
         ByteBuf rst = Unpooled.buffer();
 
-        for (FieldDeclaration fDcl : structDcl.fields()) {
+        for (StructFieldDeclaration fDcl : structDcl.fields()) {
             FieldInstance fInst = instance.getFieldInstance(fDcl);
 
             BaseDataType dataType = fDcl.getDataType();

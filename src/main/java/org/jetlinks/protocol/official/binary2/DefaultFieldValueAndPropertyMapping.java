@@ -29,7 +29,7 @@ public class DefaultFieldValueAndPropertyMapping implements FieldValueAndPropert
     }
 
     @Override
-    public Object toFieldValue(@Nullable MapperContext context, FieldDeclaration fieldDcl, Object val) {
+    public Object toFieldValue(@Nullable MapperContext context, StructFieldDeclaration fieldDcl, Object val) {
         log.debug("[Codec]{}={}", fieldDcl.getCode(), val);
 
         if ("messageId".equals(fieldDcl.getCode())) {

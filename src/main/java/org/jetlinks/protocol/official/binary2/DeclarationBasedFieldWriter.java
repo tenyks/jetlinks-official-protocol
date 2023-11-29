@@ -8,9 +8,9 @@ import io.netty.buffer.ByteBuf;
  */
 public class DeclarationBasedFieldWriter implements FieldWriter {
 
-    private FieldDeclaration fieldDcl;
+    private StructFieldDeclaration fieldDcl;
 
-    public DeclarationBasedFieldWriter(FieldDeclaration fieldDcl) {
+    public DeclarationBasedFieldWriter(StructFieldDeclaration fieldDcl) {
         this.fieldDcl = fieldDcl;
     }
 
@@ -23,7 +23,7 @@ public class DeclarationBasedFieldWriter implements FieldWriter {
         return fieldDcl.getDataType().write(outputBuf, val);
     }
 
-    public FieldDeclaration getFieldDeclaration() {
+    public StructFieldDeclaration getFieldDeclaration() {
         return fieldDcl;
     }
 }

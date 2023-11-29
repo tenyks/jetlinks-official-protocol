@@ -10,6 +10,6 @@ public interface FieldValueAndPropertyMapping {
 
     Object toPropertyValue(@Nullable MapperContext context, FieldInstance fieldInst);
 
-    Object toFieldValue(@Nullable MapperContext context, FieldDeclaration fieldDcl, Object val);
+    Object toFieldValue(@Nullable MapperContext context, StructFieldDeclaration fieldDcl, Object val);
 
 }

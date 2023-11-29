@@ -8,8 +8,8 @@ package org.jetlinks.protocol.official.binary2;
  */
 public interface FieldAndPropertyMapping {
 
-    String toProperty(FieldDeclaration fieldDcl);
+    String toProperty(StructFieldDeclaration fieldDcl);
 
-    FieldDeclaration toField(StructDeclaration structDcl, String property);
+    StructFieldDeclaration toField(StructDeclaration structDcl, String property);
 
 }

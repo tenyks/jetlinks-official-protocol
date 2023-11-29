@@ -1,5 +1,7 @@
 package org.jetlinks.protocol.official.binary2;
 
+import org.jetlinks.protocol.official.mapping.ThingAnnotation;
+
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,9 +18,9 @@ public class DefaultStructDeclaration implements StructDeclaration {
 
     private List<ThingAnnotation> thingAnnotations;
 
-    private List<FieldDeclaration> fields;
+    private List<StructFieldDeclaration> fields;
 
-    private Map<String, FieldDeclaration> idxByCodeMap;
+    private Map<String, StructFieldDeclaration> idxByCodeMap;
 
     private CRCCalculator       crcCalculator;
 
@@ -38,14 +40,14 @@ public class DefaultStructDeclaration implements StructDeclaration {
     }
 
     @Override
-    public StructDeclaration addField(FieldDeclaration field) {
+    public StructDeclaration addField(StructFieldDeclaration field) {
         fields.add(field);
         idxByCodeMap.put(field.getCode(), field);
         return this;
     }
 
     @Override
-    public FieldDeclaration getField(String code) {
+    public StructFieldDeclaration getField(String code) {
         return idxByCodeMap.get(code);
     }
 
@@ -85,7 +87,7 @@ public class DefaultStructDeclaration implements StructDeclaration {
     }
 
     @Override
-    public Iterable<FieldDeclaration> fields() {
+    public Iterable<StructFieldDeclaration> fields() {
         return fields;
     }
 

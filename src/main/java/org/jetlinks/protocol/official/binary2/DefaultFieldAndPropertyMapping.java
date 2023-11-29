@@ -6,12 +6,12 @@ package org.jetlinks.protocol.official.binary2;
 public class DefaultFieldAndPropertyMapping implements FieldAndPropertyMapping {
 
     @Override
-    public String toProperty(FieldDeclaration fieldDcl) {
+    public String toProperty(StructFieldDeclaration fieldDcl) {
         return fieldDcl.getCode();
     }
 
     @Override
-    public FieldDeclaration toField(StructDeclaration structDcl, String property) {
+    public StructFieldDeclaration toField(StructDeclaration structDcl, String property) {
         return structDcl.getField(property);
     }
 }

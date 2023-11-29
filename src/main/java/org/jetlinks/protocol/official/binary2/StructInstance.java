@@ -15,7 +15,7 @@ public interface StructInstance {
 
     Iterable<FieldInstance> filedInstances();
 
-    FieldInstance getFieldInstance(FieldDeclaration fieldDcl);
+    FieldInstance getFieldInstance(StructFieldDeclaration fieldDcl);
 
     void addFieldInstance(FieldInstance inst);
 

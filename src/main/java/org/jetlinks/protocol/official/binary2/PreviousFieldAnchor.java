@@ -5,11 +5,11 @@ import javax.annotation.Nonnull;
 public class PreviousFieldAnchor implements DynamicAnchor {
 
     @Nonnull
-    private FieldDeclaration    targetField;
+    private StructFieldDeclaration targetField;
 
     private StructInstance      currentStructInst;
 
-    public PreviousFieldAnchor(@Nonnull FieldDeclaration targetField) {
+    public PreviousFieldAnchor(@Nonnull StructFieldDeclaration targetField) {
         this.targetField = targetField;
     }
 

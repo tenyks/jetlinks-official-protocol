@@ -2,7 +2,7 @@ package org.jetlinks.protocol.official.binary2;
 
 public interface FieldInstance {
 
-    FieldDeclaration getDeclaration();
+    StructFieldDeclaration getDeclaration();
 
     Object getValue();
 

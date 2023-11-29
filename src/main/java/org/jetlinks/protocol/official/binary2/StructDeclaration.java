@@ -1,5 +1,7 @@
 package org.jetlinks.protocol.official.binary2;
 
+import org.jetlinks.protocol.official.mapping.ThingAnnotation;
+
 import javax.validation.constraints.NotNull;
 
 /**
@@ -10,9 +12,9 @@ import javax.validation.constraints.NotNull;
  */
 public interface StructDeclaration {
 
-    StructDeclaration   addField(FieldDeclaration field);
+    StructDeclaration   addField(StructFieldDeclaration field);
 
-    FieldDeclaration    getField(String code);
+    StructFieldDeclaration getField(String code);
 
     @NotNull
     String  getFeatureCode();
@@ -21,7 +23,7 @@ public interface StructDeclaration {
 
     Iterable<ThingAnnotation> thingAnnotations();
 
-    Iterable<FieldDeclaration>  fields();
+    Iterable<StructFieldDeclaration>  fields();
 
     CRCCalculator   getCRCCalculator();
 

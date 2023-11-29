@@ -3,6 +3,7 @@ package org.jetlinks.protocol.official.binary2;
 import org.jetlinks.core.message.CommonDeviceMessage;
 import org.jetlinks.core.message.CommonDeviceMessageReply;
 import org.jetlinks.core.message.DeviceMessage;
+import org.jetlinks.protocol.official.mapping.ThingAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +37,7 @@ public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
         StructDeclaration   structDcl = structAndThingMapping.map(message);
         StructInstance structInst = new SimpleStructInstance(structDcl);
 
-        for (FieldDeclaration fieldDcl : structDcl.fields()) {
+        for (StructFieldDeclaration fieldDcl : structDcl.fields()) {
             if (fieldDcl.thingAnnotations() == null) continue;
 
             String itemKey = fieldAndPropertyMapping.toProperty(fieldDcl);

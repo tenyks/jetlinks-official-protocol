@@ -6,7 +6,7 @@ public class LazyFieldInstance extends AbstractFieldInstance {
 
     private Supplier<Object> valueSupplier;
 
-    public LazyFieldInstance(FieldDeclaration fieldDcl, short offset, short size, Supplier<Object> valueSupplier) {
+    public LazyFieldInstance(StructFieldDeclaration fieldDcl, short offset, short size, Supplier<Object> valueSupplier) {
         super(fieldDcl, offset, size);
         this.valueSupplier = valueSupplier;
     }
