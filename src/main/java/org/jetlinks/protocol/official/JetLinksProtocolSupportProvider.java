@@ -6,13 +6,11 @@ import org.jetlinks.core.route.HttpRoute;
 import org.jetlinks.core.route.WebsocketRoute;
 import org.jetlinks.core.spi.ProtocolSupportProvider;
 import org.jetlinks.core.spi.ServiceContext;
-import org.jetlinks.protocol.official.artifact.XueBaoWaWaProtocolSupport;
-import org.jetlinks.protocol.official.binary2.BinaryMessageCodec;
+import org.jetlinks.protocol.xuebao.XueBaoWaWaProtocolSupport;
 import org.jetlinks.protocol.official.core.TopicMessageCodec;
 import org.jetlinks.protocol.official.http.JetLinksHttpDeviceMessageCodec;
 import org.jetlinks.protocol.official.lwm2m.JetLinksLwM2MDeviceMessageCodec;
 import org.jetlinks.protocol.official.mqtt.JetLinksMqttDeviceMessageCodec;
-import org.jetlinks.protocol.official.tcp.StrategyTcpDeviceMessageCodec;
 import org.jetlinks.protocol.official.tcp.TcpDeviceMessageCodec;
 import org.jetlinks.protocol.official.udp.UDPDeviceMessageCodec;
 import org.jetlinks.supports.official.JetLinksDeviceMetadataCodec;
@@ -120,7 +118,7 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
                     ));
 
             //LwM2M
-            JetLinksLwM2MDeviceMessageCodec l2M2MDeviceMessageCodec = createL2M2MDeviceMessageCodec();
+            JetLinksLwM2MDeviceMessageCodec l2M2MDeviceMessageCodec = createLwM2MDeviceMessageCodec();
             support.addConfigMetadata(DefaultTransport.LwM2M, JetLinksLwM2MDeviceMessageCodec.CONFIG);
             support.addMessageCodecSupport(l2M2MDeviceMessageCodec);
             support.addAuthenticator(DefaultTransport.LwM2M, l2M2MDeviceMessageCodec);
@@ -129,7 +127,7 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
         });
     }
 
-    public JetLinksLwM2MDeviceMessageCodec  createL2M2MDeviceMessageCodec() {
+    public JetLinksLwM2MDeviceMessageCodec createLwM2MDeviceMessageCodec() {
         return new JetLinksLwM2MDeviceMessageCodec(
                 createJsonParserSuit(),
                 createJsonWriterSuit()

@@ -5,6 +5,7 @@ import io.netty.buffer.Unpooled;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.jetlinks.protocol.official.binary2.*;
+import org.jetlinks.protocol.xuebao.XueBaoWaWaProtocolSupport;
 import org.junit.Test;
 
 public class XueBaoWaWaStructSuitBuilderTest {

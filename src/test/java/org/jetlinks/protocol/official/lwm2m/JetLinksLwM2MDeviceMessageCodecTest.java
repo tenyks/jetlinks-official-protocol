@@ -9,7 +9,6 @@ import org.jetlinks.core.message.codec.MessageDecodeContext;
 import org.jetlinks.core.message.codec.MessageEncodeContext;
 import org.jetlinks.core.message.codec.lwm2m.LwM2MDownlinkMessage;
 import org.jetlinks.core.message.codec.lwm2m.LwM2MResource;
-import org.jetlinks.core.message.codec.lwm2m.LwM2MUplinkMessage;
 import org.jetlinks.core.message.codec.lwm2m.SimpleLwM2MUplinkMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionParameter;
@@ -29,7 +28,7 @@ import static org.junit.Assert.*;
 
 public class JetLinksLwM2MDeviceMessageCodecTest {
 
-    private JetLinksLwM2MDeviceMessageCodec codec = new JetLinksProtocolSupportProvider().createL2M2MDeviceMessageCodec();
+    private JetLinksLwM2MDeviceMessageCodec codec = new JetLinksProtocolSupportProvider().createLwM2MDeviceMessageCodec();
 
     @Test
     public void decodeReportPropertiesMessage() {

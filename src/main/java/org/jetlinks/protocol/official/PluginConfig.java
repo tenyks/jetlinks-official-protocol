@@ -21,7 +21,7 @@ public class PluginConfig {
 
     private static final Logger log = LoggerFactory.getLogger(PluginConfig.class);
 
-    private Properties properties;
+    private final Properties properties;
 
     public PluginConfig(Properties properties) {
         this.properties = properties;

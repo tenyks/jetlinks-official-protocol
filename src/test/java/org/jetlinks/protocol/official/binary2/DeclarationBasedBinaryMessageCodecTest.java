@@ -8,7 +8,7 @@ import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.protocol.official.TestMessageDecodeContext;
 import org.jetlinks.protocol.official.TestMessageEncodeContext;
-import org.jetlinks.protocol.official.artifact.XueBaoWaWaProtocolSupport;
+import org.jetlinks.protocol.xuebao.XueBaoWaWaProtocolSupport;
 import org.jetlinks.protocol.official.core.ByteUtils;
 import org.junit.Before;
 import org.junit.Test;

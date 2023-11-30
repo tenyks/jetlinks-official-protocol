@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.official.artifact;
+package org.jetlinks.protocol.xuebao;
 
 import io.netty.buffer.ByteBuf;
 import org.apache.commons.codec.binary.Hex;
