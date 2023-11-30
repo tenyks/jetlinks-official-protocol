@@ -19,4 +19,7 @@ public interface DedicatedMessageCodec extends DedicatedMessageDecoder, Dedicate
         return Mono.empty();
     }
 
+    static DedicatedMessageCodec findCodec(String[] topic) {
+        return null;
+    }
 }

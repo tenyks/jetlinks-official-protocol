@@ -3,7 +3,7 @@ package org.jetlinks.protocol.official.binary2;
 import org.jetlinks.core.message.CommonDeviceMessage;
 import org.jetlinks.core.message.CommonDeviceMessageReply;
 import org.jetlinks.core.message.DeviceMessage;
-import org.jetlinks.protocol.official.mapping.ThingAnnotation;
+import org.jetlinks.protocol.common.mapping.ThingAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

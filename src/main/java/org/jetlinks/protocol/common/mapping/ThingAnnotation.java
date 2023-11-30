@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.official.mapping;
+package org.jetlinks.protocol.common.mapping;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections.CollectionUtils;

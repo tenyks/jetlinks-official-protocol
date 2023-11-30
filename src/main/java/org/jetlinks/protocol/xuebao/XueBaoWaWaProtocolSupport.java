@@ -11,7 +11,7 @@ import org.jetlinks.protocol.official.PluginConfig;
 import org.jetlinks.protocol.official.binary2.*;
 import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
-import org.jetlinks.protocol.official.mapping.ThingAnnotation;
+import org.jetlinks.protocol.common.mapping.ThingAnnotation;
 import org.jetlinks.protocol.official.tcp.StrategyTcpDeviceMessageCodec;
 
 /**

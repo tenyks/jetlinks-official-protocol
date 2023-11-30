@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.official.mapping;
+package org.jetlinks.protocol.common.mapping;
 
 /**
  * 消息之间映射关系声明

@@ -1,7 +1,7 @@
 package org.jetlinks.protocol.common;
 
-import org.jetlinks.core.message.Message;
-import org.jetlinks.core.message.codec.MessageDecodeContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jetlinks.core.message.DeviceMessage;
 import org.reactivestreams.Publisher;
 
 import javax.annotation.Nonnull;
@@ -15,6 +15,6 @@ import javax.annotation.Nonnull;
 public interface DedicatedMessageDecoder {
 
     @Nonnull
-    Publisher<? extends Message> decode(@Nonnull MessageDecodeContext context);
+    Publisher<DeviceMessage> decode(ObjectMapper mapper, String[] topics, byte[] payload);
 
 }
