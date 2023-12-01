@@ -82,6 +82,10 @@ public class DataSkyWiFiSampleVo implements DedicatedMessage, Serializable {
         return (val != null && (val.equalsIgnoreCase("y")));
     }
 
+    public boolean isOfAPSample() {
+        return (!isOfYes(tc));
+    }
+
     @Override
     public void readFields(String topic, Map<String, Object> buf) {
         if (topic.equals(DataSkyThingDefine.THING_ID_OF_REPORT_AP_SAMPLE)) {

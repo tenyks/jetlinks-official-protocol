@@ -16,10 +16,10 @@
 ### 服务
 
 #### A. 上报属性
-* 编码：`ReportData`
+* 编码：`ReportProperties`
 
-#### B. 上报样本
-* 编码：`ReportSample`
+#### B. 上报AP样本
+* 编码：`ReportAPSample`
 * 输出参数：
 |编码|类型|名称|描述|
 |---|---|---|---|
