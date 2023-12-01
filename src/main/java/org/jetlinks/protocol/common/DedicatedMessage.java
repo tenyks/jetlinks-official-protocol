@@ -1,5 +1,7 @@
 package org.jetlinks.protocol.common;
 
+import java.util.Map;
+
 /**
  * 专用协议消息，在传输层协议之上，底座协议之下
  *
@@ -10,6 +12,6 @@ package org.jetlinks.protocol.common;
  */
 public interface DedicatedMessage {
 
-
+    void readFields(String topic, Map<String, Object> buf);
 
 }
