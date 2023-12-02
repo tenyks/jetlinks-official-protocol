@@ -64,7 +64,7 @@ public class DataSkyWiFiProbeSubmitVo implements DedicatedMessage, Serializable 
             return ;
         }
 
-        if (time != null) buf.put("time", time.getTime());
+        if (time != null) buf.put("sampleTime", time.getTime());
     }
 
     public static void main(String[] args) throws JsonProcessingException {

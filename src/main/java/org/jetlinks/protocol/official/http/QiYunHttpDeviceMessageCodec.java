@@ -1,21 +1,12 @@
 package org.jetlinks.protocol.official.http;
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonParseException;
 import io.netty.buffer.ByteBufUtil;
-import io.netty.buffer.Unpooled;
 import lombok.extern.slf4j.Slf4j;
-import org.jetlinks.core.defaults.Authenticator;
-import org.jetlinks.core.device.*;
 import org.jetlinks.core.message.DeviceMessage;
-import org.jetlinks.core.message.MessageType;
 import org.jetlinks.core.message.codec.*;
-import org.jetlinks.core.message.codec.http.Header;
 import org.jetlinks.core.message.codec.http.HttpExchangeMessage;
 import org.jetlinks.core.message.codec.http.SimpleHttpResponseMessage;
-import org.jetlinks.core.message.codec.http.websocket.DefaultWebSocketMessage;
-import org.jetlinks.core.message.codec.http.websocket.WebSocketMessage;
-import org.jetlinks.core.message.codec.http.websocket.WebSocketSessionMessage;
 import org.jetlinks.core.metadata.DefaultConfigMetadata;
 import org.jetlinks.core.metadata.types.PasswordType;
 import org.jetlinks.core.trace.DeviceTracer;
@@ -23,14 +14,11 @@ import org.jetlinks.core.trace.FluxTracer;
 import org.jetlinks.protocol.common.DedicatedMessageCodec;
 import org.jetlinks.protocol.official.ObjectMappers;
 import org.jetlinks.protocol.official.core.TopicMessageCodec;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 /**
  * Http消息的编解码器
@@ -48,12 +36,11 @@ public class QiYunHttpDeviceMessageCodec implements DeviceMessageCodec {
 
     private final Transport transport;
 
-    public QiYunHttpDeviceMessageCodec(Transport transport) {
-        this.transport = transport;
-    }
+    private final DedicatedMessageCodec payloadCodec;
 
-    public QiYunHttpDeviceMessageCodec() {
-        this(DefaultTransport.HTTP);
+    public QiYunHttpDeviceMessageCodec(DedicatedMessageCodec payloadCodec) {
+        this.transport = DefaultTransport.HTTP;
+        this.payloadCodec = payloadCodec;
     }
 
     @Override
@@ -108,6 +95,9 @@ public class QiYunHttpDeviceMessageCodec implements DeviceMessageCodec {
         String deviceId = paths[1];
         return context
                 .getDevice(deviceId)
+                .switchIfEmpty(Mono.defer(() -> message
+                        .response(unauthorized("Device no register"))
+                        .then(Mono.empty())))
                 //解码
                 .flatMapMany(ignore -> doDecodePayload(message, paths))
                 .switchOnFirst((s, flux) -> {
@@ -132,16 +122,11 @@ public class QiYunHttpDeviceMessageCodec implements DeviceMessageCodec {
     }
 
     protected Flux<DeviceMessage> doDecodePayload(HttpExchangeMessage message, String[] paths) {
-        DedicatedMessageCodec codec = DedicatedMessageCodec.findCodec(paths);
-        if (codec == null) {
-            return Flux.empty();
-        }
-
         return message
                 .payload()
                 .flatMapMany(buf -> {
                     byte[] body = ByteBufUtil.getBytes(buf);
-                    return codec.decode(ObjectMappers.JSON_MAPPER, paths, body);
+                    return payloadCodec.decode(ObjectMappers.JSON_MAPPER, paths, body);
                 });
     }
 

@@ -13,7 +13,7 @@ import org.jetlinks.protocol.official.PluginConfig;
  */
 public class DataSkyProtocolSupport {
 
-    public static final String NAME = "DataSky_WiFIProbe_V2.6";
+    public static final String NAME = "DataSkyWIFIProbe_DS600_V1.0";
 
     public static DeviceMessageCodec buildDeviceMessageCodecOfWiFiProbe(PluginConfig config) {
         return null;

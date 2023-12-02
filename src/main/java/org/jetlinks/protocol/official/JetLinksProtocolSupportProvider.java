@@ -6,6 +6,9 @@ import org.jetlinks.core.route.HttpRoute;
 import org.jetlinks.core.route.WebsocketRoute;
 import org.jetlinks.core.spi.ProtocolSupportProvider;
 import org.jetlinks.core.spi.ServiceContext;
+import org.jetlinks.protocol.dataSky.DataSkyDedicatedMessageCodec;
+import org.jetlinks.protocol.dataSky.DataSkyProtocolSupport;
+import org.jetlinks.protocol.official.http.QiYunHttpDeviceMessageCodec;
 import org.jetlinks.protocol.xuebao.XueBaoWaWaProtocolSupport;
 import org.jetlinks.protocol.official.core.TopicMessageCodec;
 import org.jetlinks.protocol.official.http.JetLinksHttpDeviceMessageCodec;
@@ -15,6 +18,8 @@ import org.jetlinks.protocol.official.tcp.TcpDeviceMessageCodec;
 import org.jetlinks.protocol.official.udp.UDPDeviceMessageCodec;
 import org.jetlinks.supports.official.JetLinksDeviceMetadataCodec;
 import org.jetlinks.supports.protocol.serial.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import reactor.core.publisher.Mono;
@@ -27,10 +32,14 @@ import java.util.stream.Stream;
 
 public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider {
 
+    private static final Logger log = LoggerFactory.getLogger(JetLinksProtocolSupportProvider.class);
+
     private PluginConfig    pluginConfig;
 
     @Override
     public Mono<CompositeProtocolSupport> create(ServiceContext context) {
+        log.info("开始加载JetLinksProtocolSupportProvider");
+
         ensurePluginConfigLoaded();
 
         return Mono.defer(() -> {
@@ -99,8 +108,15 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
             support.addMessageCodecSupport(new JetLinksMqttDeviceMessageCodec());
 
             //HTTP
-            support.addConfigMetadata(DefaultTransport.HTTP, JetLinksHttpDeviceMessageCodec.httpConfig);
-            support.addMessageCodecSupport(new JetLinksHttpDeviceMessageCodec());
+            String httpCodec = pluginConfig.getHttpCodec();
+            if (DataSkyProtocolSupport.NAME.equals(httpCodec)) {
+                support.addMessageCodecSupport(new QiYunHttpDeviceMessageCodec(new DataSkyDedicatedMessageCodec()));
+                support.addConfigMetadata(DefaultTransport.HTTP, QiYunHttpDeviceMessageCodec.httpConfig);
+            } else {
+                support.addMessageCodecSupport(new JetLinksHttpDeviceMessageCodec());
+                support.addConfigMetadata(DefaultTransport.HTTP, JetLinksHttpDeviceMessageCodec.httpConfig);
+            }
+
 
             //Websocket
             JetLinksHttpDeviceMessageCodec codec = new JetLinksHttpDeviceMessageCodec(DefaultTransport.WebSocket);

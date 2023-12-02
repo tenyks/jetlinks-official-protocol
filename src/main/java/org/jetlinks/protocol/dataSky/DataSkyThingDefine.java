@@ -17,15 +17,16 @@ public class DataSkyThingDefine {
 
     public static String THING_ID_OF_REPORT_PROPERTIES = "ReportProperties";
 
-    public static String THING_ID_OF_REPORT_CLIENT_SAMPLE = "ReportAPSample";
+    public static String THING_ID_OF_REPORT_CLIENT_SAMPLE = "ReportClientSample";
 
-    public static String THING_ID_OF_REPORT_AP_SAMPLE = "ReportClientSample";
+    public static String THING_ID_OF_REPORT_AP_SAMPLE = "ReportAPSample";
 
     public static ReportPropertyMessage     createReportPropertyMessage(String deviceId, String msgId) {
         ReportPropertyMessage rst = ReportPropertyMessage.create();
         rst.thingId(ThingType.of("DataSkyWIFIProbe"), THING_ID_OF_REPORT_PROPERTIES);
         rst.properties(new HashMap<>());
         rst.setDeviceId(deviceId);
+        rst.setMessageId(msgId);
 
         return rst;
     }
@@ -34,7 +35,6 @@ public class DataSkyThingDefine {
         EventMessage tem = new EventMessage();
         tem.setDeviceId(deviceId);
         tem.event(THING_ID_OF_REPORT_AP_SAMPLE);
-        tem.thingId(ThingType.of("DataSkyWIFIProbe"), THING_ID_OF_REPORT_AP_SAMPLE);
         tem.data(data);
         tem.messageId(msgId);
 
@@ -45,7 +45,6 @@ public class DataSkyThingDefine {
         EventMessage tem = new EventMessage();
         tem.setDeviceId(deviceId);
         tem.event(THING_ID_OF_REPORT_CLIENT_SAMPLE);
-        tem.thingId(ThingType.of("DataSkyWIFIProbe"), THING_ID_OF_REPORT_CLIENT_SAMPLE);
         tem.data(data);
         tem.messageId(msgId);
 

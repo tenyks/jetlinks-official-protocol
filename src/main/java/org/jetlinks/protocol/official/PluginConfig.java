@@ -18,6 +18,7 @@ public class PluginConfig {
     public static final String DEFAULT_RESOURCE = "plugin.properties";
 
     public static final String TCP_CODEC_KEY = "tcp.codec";
+    public static final String HTTP_CODEC_KEY = "http.codec";
 
     private static final Logger log = LoggerFactory.getLogger(PluginConfig.class);
 
@@ -61,6 +62,10 @@ public class PluginConfig {
 
     public String getTcpCodec() {
         return getConfig(TCP_CODEC_KEY);
+    }
+
+    public String getHttpCodec() {
+        return getConfig(HTTP_CODEC_KEY);
     }
 
 }

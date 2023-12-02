@@ -83,7 +83,7 @@ public class DataSkyWiFiSampleVo implements DedicatedMessage, Serializable {
     }
 
     public boolean isOfAPSample() {
-        return (!isOfYes(tc));
+        return (router != null && router.length() > 0);
     }
 
     @Override
@@ -117,13 +117,13 @@ public class DataSkyWiFiSampleVo implements DedicatedMessage, Serializable {
             buf.put("rssi4", rssi4);
             buf.put("rssi5", rssi5);
 
-            buf.put("essid0", essid0);
-            buf.put("essid1", essid1);
-            buf.put("essid2", essid2);
-            buf.put("essid3", essid3);
-            buf.put("essid4", essid4);
-            buf.put("essid5", essid5);
-            buf.put("essid6", essid6);
+            buf.put("recentSsid0", essid0);
+            buf.put("recentSsid1", essid1);
+            buf.put("recentSsid2", essid2);
+            buf.put("recentSsid3", essid3);
+            buf.put("recentSsid4", essid4);
+            buf.put("recentSsid5", essid5);
+            buf.put("recentSsid6", essid6);
 
             return ;
         }

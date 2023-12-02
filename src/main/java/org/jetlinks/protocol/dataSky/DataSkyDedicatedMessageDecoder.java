@@ -11,12 +11,14 @@ import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
+ *
  * @author v-lizy81
  * @date 2023/11/30 23:12
  */
@@ -29,15 +31,18 @@ public class DataSkyDedicatedMessageDecoder implements DedicatedMessageDecoder {
     @Nonnull
     @Override
     public Publisher<DeviceMessage> decode(ObjectMapper mapper, String[] topics, byte[] payload) {
+        final String deviceId = topics[1];
+        final String msgIdPrefix = MSG_ID_GENERATOR.next();
+
         try {
             DataSkyWiFiProbeSubmitVo inputVo = decodePayload(mapper, payload);
-            if (inputVo == null) return Flux.empty();
+            if (inputVo == null) return Mono.empty();
 
             List<DeviceMessage> msgList = new ArrayList<>();
 
-            ReportPropertyMessage mainMsg = buildReportPropertyMessage(inputVo);
+            ReportPropertyMessage mainMsg = buildReportPropertyMessage(deviceId, msgIdPrefix, inputVo);
             msgList.add(mainMsg);
-            msgList.addAll(readReportSamples(inputVo, inputVo.getData(), mainMsg.getDeviceId(), mainMsg.getMessageId()));
+            msgList.addAll(readReportSamples(inputVo, inputVo.getData(), mainMsg.getDeviceId(), msgIdPrefix));
 
             return Flux.fromIterable(msgList);
         } catch (Exception e) {
@@ -46,8 +51,8 @@ public class DataSkyDedicatedMessageDecoder implements DedicatedMessageDecoder {
         }
     }
 
-    private ReportPropertyMessage       buildReportPropertyMessage(DataSkyWiFiProbeSubmitVo submitVo) {
-        ReportPropertyMessage msg = DataSkyThingDefine.createReportPropertyMessage(submitVo.getId(), MSG_ID_GENERATOR.next() + "_0000");
+    private ReportPropertyMessage       buildReportPropertyMessage(String deviceId, String msgIdPrefix, DataSkyWiFiProbeSubmitVo submitVo) {
+        ReportPropertyMessage msg = DataSkyThingDefine.createReportPropertyMessage(deviceId, msgIdPrefix + "_00000");
 
         submitVo.readFields(DataSkyThingDefine.THING_ID_OF_REPORT_PROPERTIES, msg.getProperties());
 
@@ -63,17 +68,19 @@ public class DataSkyDedicatedMessageDecoder implements DedicatedMessageDecoder {
 
         int seqNo = 1;
         for (DataSkyWiFiSampleVo sampleVo : samples) {
-            String msgId = String.format("%s_%04d", refMsgId, seqNo);
+            String msgId = String.format("%s_%05d", refMsgId, seqNo);
 
             Map<String, Object> msgData = new HashMap<>();
             EventMessage tem;
 
             if (sampleVo.isOfAPSample()) {
                 sampleVo.readFields(DataSkyThingDefine.THING_ID_OF_REPORT_AP_SAMPLE, msgData);
+                submitVo.readFields(DataSkyThingDefine.THING_ID_OF_REPORT_AP_SAMPLE, msgData);
                 tem = DataSkyThingDefine.createReportAPSample(deviceId, msgId, msgData);
             } else {
-                sampleVo.readFields(DataSkyThingDefine.THING_ID_OF_REPORT_AP_SAMPLE, msgData);
-                tem = DataSkyThingDefine.createReportAPSample(deviceId, msgId, msgData);
+                sampleVo.readFields(DataSkyThingDefine.THING_ID_OF_REPORT_CLIENT_SAMPLE, msgData);
+                submitVo.readFields(DataSkyThingDefine.THING_ID_OF_REPORT_CLIENT_SAMPLE, msgData);
+                tem = DataSkyThingDefine.createReportClientSample(deviceId, msgId, msgData);
             }
 
             rst.add(tem);
