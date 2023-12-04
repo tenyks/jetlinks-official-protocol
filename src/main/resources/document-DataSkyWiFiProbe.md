@@ -1,8 +1,15 @@
 # 概述
+支持DataSky厂家的专有数据协议
 
-## `DS_006`上报混杂的数据
+# 1. DS-006WIFI探针
+
+## 1.1 认证方式
+* ID认证：与`设备标识`比较，如果相等任务认证通过，否则丢弃消息；
+* MAC认证：`mac`做为Token，如设备密钥比较
+
+## 1.2 上报MAC采样数据
 ```http request
-POST /{productId}/{deviceId}/event
+POST /{productId}/{deviceId}/event/reportData
 Content-Type: application/json
 
 {
@@ -230,13 +237,12 @@ Content-Type: application/json
 	"time": "Wed Jan 15 02:26:28 2020",
 	"lat": "",
 	"lon": ""
-}
+}/
 ```
 
+## 1.3 物模型定义
 
-## 物模型定义
-
-### 属性
+### 1.3.1 属性
 
 |编码|类型|描述|
 |---|---|---|
@@ -246,8 +252,7 @@ Content-Type: application/json
 |latestUpdateTime|Long|最后上报样本的时间戳，单位：`毫秒`|
 |mac|String|探针网卡物理地址||
 
-
-### 服务
+### 1.3.2 服务
 
 #### A. 上报属性
 * 编码：`ReportProperties`
@@ -290,8 +295,7 @@ Content-Type: application/json
 |sampleTime|Long|采样时间戳，单位：`毫秒`|
 |mac|String|网卡物理地址|
 
-### TSL
-
+### 1.3.3 TSL
 ```TSL
 {
   "properties": [
@@ -635,3 +639,4 @@ Content-Type: application/json
   ]
 }
 ```
+
