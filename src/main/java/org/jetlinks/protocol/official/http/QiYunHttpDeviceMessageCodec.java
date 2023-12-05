@@ -19,6 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
+import java.util.Base64;
 
 /**
  * Http消息的编解码器
@@ -83,6 +84,11 @@ public class QiYunHttpDeviceMessageCodec implements DeviceMessageCodec {
 
     private Flux<DeviceMessage> decodeHttp(MessageDecodeContext context) {
         HttpExchangeMessage message = (HttpExchangeMessage) context.getMessage();
+
+        if (log.isInfoEnabled()) {
+            log.info("[QiYunHttpDeviceMessageCodec]URI={}, Headers={}, BODY={}",
+                    message.getPath(), message.getHeaders(), Base64.getEncoder().encodeToString(message.getBytes(0, 100)));
+        }
 
         //提取Topic
         String[] paths = TopicMessageCodec.removeProductPath(message.getPath());

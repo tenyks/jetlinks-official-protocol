@@ -46,7 +46,7 @@ public class DataSkyDedicatedMessageDecoder implements DedicatedMessageDecoder {
 
             return Flux.fromIterable(msgList);
         } catch (Exception e) {
-            log.error("[DataSky]payload反序列失败：{}", Base64.getEncoder().encodeToString(payload));
+            log.error("[DataSky]payload反序列失败：{}", Base64.getEncoder().encodeToString(payload), e);
             return Flux.empty();
         }
     }
@@ -93,6 +93,9 @@ public class DataSkyDedicatedMessageDecoder implements DedicatedMessageDecoder {
     private DataSkyWiFiProbeSubmitVo    decodePayload(ObjectMapper mapper, byte[] payload)
             throws JsonProcessingException {
         String jsonStr = new String(payload, StandardCharsets.UTF_8);
+        if (jsonStr.startsWith("data=")) {
+            jsonStr = jsonStr.substring(5);
+        }
 
         return mapper.readValue(jsonStr, DataSkyWiFiProbeSubmitVo.class);
     }
