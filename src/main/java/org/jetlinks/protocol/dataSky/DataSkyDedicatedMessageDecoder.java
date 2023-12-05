@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
+ * DataSky厂家专有协议
  *
  * @author v-lizy81
  * @date 2023/11/30 23:12
@@ -94,6 +95,7 @@ public class DataSkyDedicatedMessageDecoder implements DedicatedMessageDecoder {
             throws JsonProcessingException {
         String jsonStr = new String(payload, StandardCharsets.UTF_8);
         if (jsonStr.startsWith("data=")) {
+            // 特殊处理：移除POST BODY前缀中非JSON的字符串
             jsonStr = jsonStr.substring(5);
         }
 
