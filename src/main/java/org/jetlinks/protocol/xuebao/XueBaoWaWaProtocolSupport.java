@@ -137,7 +137,7 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.FuncId("startGame"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("startGame"));
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildSignatureFieldDcl());
@@ -205,7 +205,7 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.FuncId("controlMotor"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("controlMotor"));
 
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
@@ -231,7 +231,7 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.FuncId("checkOnline"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("checkOnline"));
 
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
@@ -252,7 +252,7 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.FuncId("checkOnlineReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("checkOnlineReply"));
 
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
@@ -308,7 +308,7 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.FuncId("restart"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("restart"));
 
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
@@ -329,7 +329,7 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.FuncId("machineAlarm"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("machineAlarm"));
 
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
@@ -350,7 +350,7 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.FuncId("addCoin"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("addCoin"));
 
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
@@ -375,7 +375,7 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.FuncId("readResultAndStatus"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("readResultAndStatus"));
 
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
@@ -422,7 +422,7 @@ public class XueBaoWaWaProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculatorInst());
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.FuncId("ping"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ping"));
 
         structDcl.addField(buildMagicFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());

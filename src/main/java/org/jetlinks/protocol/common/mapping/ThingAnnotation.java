@@ -28,8 +28,8 @@ public abstract class ThingAnnotation {
             }
         };
     }
-    public static ThingAnnotation FuncId(String thingValue) {
-        return new ThingAnnotation("functionId", thingValue) {
+    public static ThingAnnotation ServiceId(String thingValue) {
+        return new ThingAnnotation("serviceId", thingValue) {
             @Override
             public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
                 if (msg instanceof FunctionInvokeMessage) {
