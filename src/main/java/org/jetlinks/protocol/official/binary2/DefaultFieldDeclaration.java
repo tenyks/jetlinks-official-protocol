@@ -21,6 +21,9 @@ public class DefaultFieldDeclaration implements StructFieldDeclaration, Serializ
      */
     private Short               size;
 
+    /**
+     * 偏移位置，单位：字节，空值表示仅靠前一字段的结尾
+     */
     private Short               absOffset;
 
     private DynamicAnchor       refAnchor;

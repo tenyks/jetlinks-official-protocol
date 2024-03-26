@@ -24,8 +24,14 @@ public class DefaultStructDeclaration implements StructDeclaration {
 
     private CRCCalculator       crcCalculator;
 
+    /**
+     * 支持编码
+     */
     private boolean     enableEncode;
 
+    /**
+     * 支持解码
+     */
     private boolean     enableDecode;
 
     public DefaultStructDeclaration(String name, String featureCode) {

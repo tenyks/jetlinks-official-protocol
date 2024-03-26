@@ -24,34 +24,300 @@ public class E53IAxProtocolSupport {
     public static final String NAME_OF_IA2 = "E53_IA2_V1.0.0";
 
     /**
-     * 心跳上报结构【事件】：机器 -> 服务器
+     * 数据上报【消息】，上行
      */
-    private static DefaultStructDeclaration buildReportPongStructDcl() {
+    private static DefaultStructDeclaration buildReportDataStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("数据上报结构【消息】", "CMD:0x10");
 
         structDcl.enableDecode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("ReportData"));
 
+        structDcl.addField(buildMagicIdFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte) 21));
-        structDcl.addField(buildCmdFieldDcl((byte)0x35));
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0x10));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)14));
+
+        structDcl.addField(buildIOParamFieldDcl("温度", "temperature", BaseDataType.FLOAT));
+        structDcl.addField(buildIOParamFieldDcl("相对湿度", "humidity", BaseDataType.FLOAT));
+        structDcl.addField(buildIOParamFieldDcl("亮度", "luminance", BaseDataType.FLOAT));
+        structDcl.addField(buildIOParamFieldDcl("低水位标志", "lowWaterMark", BaseDataType.UINT8));
+        structDcl.addField(buildIOParamFieldDcl("高水位标志", "highWaterMark", BaseDataType.UINT8));
 
         return structDcl;
     }
 
-    private static DefaultFieldDeclaration buildMagicFieldDcl() {
-        return new DefaultFieldDeclaration("结构类型标识字段", "magicId", BaseDataType.UINT16, (short)0)
-                    .setDefaultValue(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_DOWNLINK);
+    /**
+     * 开启给水指令【指令】，下行
+     */
+    private static DefaultStructDeclaration buildPumpInWaterOnStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启给水指令【指令】", "CMD:0x11");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("PumpInWaterOn"));
+
+        structDcl.addField(buildMagicIdFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0x11));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)5));
+
+        structDcl.addField(buildIOParamFieldDcl("工作挡位", "degree", BaseDataType.UINT8));
+        structDcl.addField(buildIOParamFieldDcl("工作时长", "duration", BaseDataType.UINT32));
+
+        return structDcl;
+    }
+
+    /**
+     * 关停给水指令【指令】，下行
+     */
+    private static DefaultStructDeclaration buildPumpInWaterOffStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启给水指令【指令】", "CMD:0x12");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("PumpInWaterOff"));
+
+        structDcl.addField(buildMagicIdFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0x12));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)0));
+
+        return structDcl;
+    }
+
+    /**
+     * 开启排水指令【指令】，下行
+     */
+    private static DefaultStructDeclaration buildPumpOutWaterOnStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启排水指令【指令】", "CMD:0x13");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("PumpOutWaterOn"));
+
+        structDcl.addField(buildMagicIdFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0x13));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)5));
+
+        structDcl.addField(buildIOParamFieldDcl("工作挡位", "degree", BaseDataType.UINT8));
+        structDcl.addField(buildIOParamFieldDcl("工作时长", "duration", BaseDataType.UINT32));
+
+        return structDcl;
+    }
+
+    /**
+     * 关停排水指令，下行
+     */
+    private static DefaultStructDeclaration buildPumpOutWaterOffStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停排水指令", "CMD:0x14");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("PumpOutWaterOff"));
+
+        structDcl.addField(buildMagicIdFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0x14));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)0));
+
+        return structDcl;
+    }
+
+    /**
+     * 开启送风指令，下行
+     */
+    private static DefaultStructDeclaration buildFanInAirOnStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启送风指令", "CMD:0x15");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("FanInAirOn"));
+
+        structDcl.addField(buildMagicIdFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0x15));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)5));
+
+        structDcl.addField(buildIOParamFieldDcl("工作挡位", "degree", BaseDataType.UINT8));
+        structDcl.addField(buildIOParamFieldDcl("工作时长", "duration", BaseDataType.UINT32));
+
+        return structDcl;
+    }
+
+    /**
+     * 关停送风指令，下行
+     */
+    private static DefaultStructDeclaration buildFanInAirOffStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停送风指令", "CMD:0x16");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("FanInAirOff"));
+
+        structDcl.addField(buildMagicIdFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0x16));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)0));
+
+        return structDcl;
+    }
+
+    /**
+     * 开启排风指令，下行
+     */
+    private static DefaultStructDeclaration buildFanOutAirOnStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启排风指令", "CMD:0x17");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("FanOutAirOn"));
+
+        structDcl.addField(buildMagicIdFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0x17));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)5));
+
+        structDcl.addField(buildIOParamFieldDcl("工作挡位", "degree", BaseDataType.UINT8));
+        structDcl.addField(buildIOParamFieldDcl("工作时长", "duration", BaseDataType.UINT32));
+
+        return structDcl;
+    }
+
+    /**
+     * 关停排风指令，下行
+     */
+    private static DefaultStructDeclaration buildFanOutAirOffStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停排风指令", "CMD:0x18");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("FanOutAirOff"));
+
+        structDcl.addField(buildMagicIdFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0x18));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)0));
+
+        return structDcl;
+    }
+
+    /**
+     * 开启加热器A指令，下行
+     */
+    private static DefaultStructDeclaration buildHeaterAOnStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启加热器A指令", "CMD:0x19");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("HeaterAOn"));
+
+        structDcl.addField(buildMagicIdFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0x19));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)5));
+
+        structDcl.addField(buildIOParamFieldDcl("工作挡位", "degree", BaseDataType.UINT8));
+        structDcl.addField(buildIOParamFieldDcl("工作时长", "duration", BaseDataType.UINT32));
+
+        return structDcl;
+    }
+
+    /**
+     * 关停加热器A指令，下行
+     */
+    private static DefaultStructDeclaration buildHeaterAOffStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停加热器A指令", "CMD:0x1A");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("HeaterAOff"));
+
+        structDcl.addField(buildMagicIdFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0x1A));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)0));
+
+        return structDcl;
+    }
+
+    /**
+     * 开启加热器B指令，下行
+     */
+    private static DefaultStructDeclaration buildHeaterBOnStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启加热器B指令", "CMD:0x1B");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("HeaterBOn"));
+
+        structDcl.addField(buildMagicIdFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0x1B));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)5));
+
+        structDcl.addField(buildIOParamFieldDcl("工作挡位", "degree", BaseDataType.UINT8));
+        structDcl.addField(buildIOParamFieldDcl("工作时长", "duration", BaseDataType.UINT32));
+
+        return structDcl;
+    }
+
+    /**
+     * 关停加热器B指令，下行
+     */
+    private static DefaultStructDeclaration buildHeaterBOffStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停加热器B指令", "CMD:0x1C");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("HeaterBOff"));
+
+        structDcl.addField(buildMagicIdFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0x1C));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)0));
+
+        return structDcl;
+    }
+
+    /**
+     * 开启补光指令，下行
+     */
+    private static DefaultStructDeclaration buildLightOnStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启补光指令", "CMD:0x1D");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("LightOn"));
+
+        structDcl.addField(buildMagicIdFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0x1D));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)5));
+
+        structDcl.addField(buildIOParamFieldDcl("工作挡位", "degree", BaseDataType.UINT8));
+        structDcl.addField(buildIOParamFieldDcl("工作时长", "duration", BaseDataType.UINT32));
+
+        return structDcl;
+    }
+
+    /**
+     * 关停补光指令，下行
+     */
+    private static DefaultStructDeclaration buildLightOffStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停补光指令", "CMD:0x1E");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("LightOff"));
+
+        structDcl.addField(buildMagicIdFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0x1E));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)0));
+
+        return structDcl;
+    }
+
+    private static DefaultFieldDeclaration buildMagicIdFieldDcl() {
+        return new DefaultFieldDeclaration("协议及版本标识字段", "MagicId", BaseDataType.UINT16, (short)0)
+                    .setDefaultValue(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2);
     }
 
     private static DefaultFieldDeclaration buildMessageIdFieldDcl() {
-        return new DefaultFieldDeclaration("消息ID", "messageId", BaseDataType.UINT16, (short) 1)
+        return new DefaultFieldDeclaration("消息ID", "MessageId", BaseDataType.UINT16, (short) 2)
                 .addMeta(ThingAnnotation.MsgId());
     }
 
-    private static DefaultFieldDeclaration buildMessageTypeFieldDcl(String thingId) {
-        return new DefaultFieldDeclaration("消息编码", "messageType", BaseDataType.UINT8, (short) 1)
-                .addMeta(ThingAnnotation.ServiceId(thingId));
+    private static DefaultFieldDeclaration buildMessageTypeFieldDcl(byte typeCode) {
+        return new DefaultFieldDeclaration("消息编码", "MessageType", BaseDataType.UINT8, (short) 5)
+                    .setDefaultValue(typeCode);
     }
 
     private static DefaultFieldDeclaration buildIOParamsPayloadLengthFieldDcl(byte defaultValue) {
@@ -59,13 +325,12 @@ public class E53IAxProtocolSupport {
                 .setDefaultValue(defaultValue);
     }
 
-    private static DefaultFieldDeclaration buildCmdFieldDcl(Byte defaultVal) {
-        return new DefaultFieldDeclaration("CMD字段", "functionId", BaseDataType.INT8, (short) 7).setDefaultValue(defaultVal);
+    private static DefaultFieldDeclaration buildIOParamFieldDcl(String name, String code, BaseDataType dataType) {
+        return new DefaultFieldDeclaration(name, code, dataType);
     }
 
     private static class E53IAxFeatureCodeExtractor implements FeatureCodeExtractor {
-        private static final short MAGIC_ID_OF_UNLINK = (byte) 0xfa11;
-        private static final short MAGIC_ID_OF_DOWNLINK = (byte) 0xfa37;
+        private static final short MAGIC_ID_OF_IA2 = (byte) 0xfa11;
 
         @Override
         public String extract(ByteBuf buf) {
@@ -78,7 +343,7 @@ public class E53IAxProtocolSupport {
 
             short magId = (short)(((short) headerBuf[0]) << 8 | (short)headerBuf[1]);
 
-            if (magId != MAGIC_ID_OF_UNLINK) {
+            if (magId != MAGIC_ID_OF_IA2) {
                 return "WRONG_MAGIC_ID:" + Hex.encodeHexString(headerBuf);
             }
 
@@ -98,8 +363,8 @@ public class E53IAxProtocolSupport {
             int saveWriterIdx = buf.writerIndex();
 
             buf.writerIndex(0);
-            buf.writeByte((byte)(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_DOWNLINK >> 8 & 0xFF));
-            buf.writeByte((byte)(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_DOWNLINK & 0xFF));
+            buf.writeByte((byte)(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2 >> 8 & 0xFF));
+            buf.writeByte((byte)(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2 & 0xFF));
 
             buf.writerIndex(saveWriterIdx);
 
