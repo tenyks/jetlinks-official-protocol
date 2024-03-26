@@ -36,12 +36,6 @@ public class E53IAxProtocolSupport {
         structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte) 21));
         structDcl.addField(buildCmdFieldDcl((byte)0x35));
 
-        structDcl.addField(new DefaultFieldDeclaration("MAC码", "machineMAC", BaseDataType.STRING, (short) 8,  (short) 12)
-                .addMeta(ThingAnnotation.EventData())
-                .addMeta(ThingAnnotation.DeviceId()));
-
-//        structDcl.addField(buildCRCFieldDcl((short) 21));
-
         return structDcl;
     }
 
