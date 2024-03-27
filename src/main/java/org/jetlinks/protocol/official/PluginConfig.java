@@ -20,6 +20,7 @@ public class PluginConfig {
     public static final String TCP_CODEC_KEY = "tcp.codec";
     public static final String UDP_CODEC_KEY = "udp.codec";
     public static final String HTTP_CODEC_KEY = "http.codec";
+    public static final String LWM2M_CODEC_KEY = "lwm2m.codec";
 
     private static final Logger log = LoggerFactory.getLogger(PluginConfig.class);
 
@@ -71,6 +72,10 @@ public class PluginConfig {
 
     public String getUdpCodecKey() {
         return getConfig(UDP_CODEC_KEY);
+    }
+
+    public String getLwM2MCodecKey() {
+        return getConfig(LWM2M_CODEC_KEY);
     }
 
 }

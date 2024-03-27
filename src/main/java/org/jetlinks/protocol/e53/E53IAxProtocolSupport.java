@@ -2,8 +2,18 @@ package org.jetlinks.protocol.e53;
 
 import io.netty.buffer.ByteBuf;
 import org.apache.commons.codec.binary.Hex;
+import org.jetlinks.core.message.DeviceMessage;
+import org.jetlinks.core.message.codec.DeviceMessageCodec;
+import org.jetlinks.core.message.event.EventMessage;
+import org.jetlinks.core.message.function.FunctionInvokeMessage;
+import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
+import org.jetlinks.core.message.property.ReportPropertyMessage;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
+import org.jetlinks.protocol.official.PluginConfig;
 import org.jetlinks.protocol.official.binary2.*;
+import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
+import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
+import org.jetlinks.protocol.official.tcp.StrategyTcpDeviceMessageCodec;
 
 /**
  * E53版IA2协议
@@ -23,11 +33,102 @@ public class E53IAxProtocolSupport {
 
     public static final String NAME_OF_IA2 = "E53_IA2_V1.0.0";
 
+    public static DeviceMessageCodec buildDeviceMessageCodec(PluginConfig config) {
+        IntercommunicateStrategy strategy = buildIntercommunicateStrategy(config);
+        BinaryMessageCodec bmCodec = buildBinaryMessageCodec(config);
+
+        StrategyTcpDeviceMessageCodec devMsgCodec = new StrategyTcpDeviceMessageCodec(bmCodec, strategy);
+        return devMsgCodec;
+    }
+
+    public static BinaryMessageCodec buildBinaryMessageCodec(PluginConfig config) {
+        StructSuit structSuit = buildStructSuitV1();
+        StructAndMessageMapper mapper = buildMapper(structSuit);
+        return new DeclarationBasedBinaryMessageCodec(structSuit, mapper);
+    }
+
+    public static IntercommunicateStrategy  buildIntercommunicateStrategy(PluginConfig config) {
+        return new AbstractIntercommunicateStrategy() {};
+    }
+
+    public static StructSuit buildStructSuitV1() {
+        StructSuit suit = new StructSuit(
+                "E53版IA2协议",
+                "1.0",
+                "document-coap-e53.md",
+                new E53IAxFeatureCodeExtractor()
+        );
+
+        suit.addStructDeclaration(buildReportDataStructDcl());
+
+        suit.addStructDeclaration(buildPumpInWaterOnStructDcl());
+        suit.addStructDeclaration(buildPumpInWaterOffStructDcl());
+
+        suit.addStructDeclaration(buildPumpOutWaterOnStructDcl());
+        suit.addStructDeclaration(buildPumpOutWaterOffStructDcl());
+
+        suit.addStructDeclaration(buildFanInAirOnStructDcl());
+        suit.addStructDeclaration(buildFanInAirOffStructDcl());
+
+        suit.addStructDeclaration(buildFanOutAirOnStructDcl());
+        suit.addStructDeclaration(buildFanOutAirOffStructDcl());
+
+        suit.addStructDeclaration(buildHeaterAOnStructDcl());
+        suit.addStructDeclaration(buildHeaterAOffStructDcl());
+
+        suit.addStructDeclaration(buildHeaterBOnStructDcl());
+        suit.addStructDeclaration(buildHeaterBOffStructDcl());
+
+        suit.addStructDeclaration(buildLightOnStructDcl());
+        suit.addStructDeclaration(buildLightOffStructDcl());
+
+        return suit;
+    }
+
+    public static StructAndMessageMapper    buildMapper(StructSuit structSuit) {
+        DefaultStructAndThingMapping structAndThingMapping = new DefaultStructAndThingMapping();
+
+        //Encode
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "PumpInWaterOn", structSuit.getStructDeclaration("开启给水指令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "PumpInWaterOff", structSuit.getStructDeclaration("关停给水指令结构"));
+
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "PumpOutWaterOn", structSuit.getStructDeclaration("开启排水指令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "PumpOutWaterOff", structSuit.getStructDeclaration("关停排水指令结构"));
+
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "FanInAirOn", structSuit.getStructDeclaration("开启送风指令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "FanInAirOff", structSuit.getStructDeclaration("关停送风指令结构"));
+
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "FanOutAirOn", structSuit.getStructDeclaration("开启排风指令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "FanOutAirOff", structSuit.getStructDeclaration("关停排风指令结构"));
+
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "HeaterAOn", structSuit.getStructDeclaration("开启加热器A指令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "HeaterAOff", structSuit.getStructDeclaration("关停加热器A指令结构"));
+
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "HeaterBOn", structSuit.getStructDeclaration("开启加热器B指令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "HeaterBOff", structSuit.getStructDeclaration("关停加热器B指令结构"));
+
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "LightOn", structSuit.getStructDeclaration("开启补光指令结构"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "LightOff", structSuit.getStructDeclaration("关停补光指令结构"));
+
+        //Decode
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("数据上报消息结构"), ReportPropertyMessage.class);
+
+        for (StructDeclaration structDcl : structSuit.structDeclarations()) {
+            if (!structDcl.getName().endsWith("回复结构")) continue;
+            structAndThingMapping.addMapping(structDcl, FunctionInvokeMessageReply.class);
+        }
+
+        DefaultFieldAndPropertyMapping fieldAndPropertyMapping = new DefaultFieldAndPropertyMapping();
+        DefaultFieldValueAndPropertyMapping fieldValueAndPropertyMapping = new DefaultFieldValueAndPropertyMapping();
+
+        return new SimpleStructAndMessageMapper(structAndThingMapping, fieldAndPropertyMapping, fieldValueAndPropertyMapping);
+    }
+
     /**
-     * 数据上报【消息】，上行
+     * 数据上报消息，上行
      */
     private static DefaultStructDeclaration buildReportDataStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("数据上报结构【消息】", "CMD:0x10");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("数据上报消息结构", "CMD:0x10");
 
         structDcl.enableDecode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("ReportData"));
@@ -47,10 +148,10 @@ public class E53IAxProtocolSupport {
     }
 
     /**
-     * 开启给水指令【指令】，下行
+     * 开启给水指令，下行
      */
     private static DefaultStructDeclaration buildPumpInWaterOnStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启给水指令【指令】", "CMD:0x11");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启给水指令结构", "CMD:0x11");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("PumpInWaterOn"));
@@ -67,10 +168,10 @@ public class E53IAxProtocolSupport {
     }
 
     /**
-     * 关停给水指令【指令】，下行
+     * 关停给水指令，下行
      */
     private static DefaultStructDeclaration buildPumpInWaterOffStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启给水指令【指令】", "CMD:0x12");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停给水指令结构", "CMD:0x12");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("PumpInWaterOff"));
@@ -84,10 +185,10 @@ public class E53IAxProtocolSupport {
     }
 
     /**
-     * 开启排水指令【指令】，下行
+     * 开启排水指令，下行
      */
     private static DefaultStructDeclaration buildPumpOutWaterOnStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启排水指令【指令】", "CMD:0x13");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启排水指令结构", "CMD:0x13");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("PumpOutWaterOn"));
@@ -95,10 +196,12 @@ public class E53IAxProtocolSupport {
         structDcl.addField(buildMagicIdFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildMessageTypeFieldDcl((byte)0x13));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)5));
+        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)6));
 
         structDcl.addField(buildIOParamFieldDcl("工作挡位", "degree", BaseDataType.UINT8));
         structDcl.addField(buildIOParamFieldDcl("工作时长", "duration", BaseDataType.UINT32));
+        structDcl.addField(buildIOParamFieldDcl("低水位时自动停止", "autoStopAtLWM", BaseDataType.UINT8)
+                .setDefaultValue(0));
 
         return structDcl;
     }
@@ -107,7 +210,7 @@ public class E53IAxProtocolSupport {
      * 关停排水指令，下行
      */
     private static DefaultStructDeclaration buildPumpOutWaterOffStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停排水指令", "CMD:0x14");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停排水指令结构", "CMD:0x14");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("PumpOutWaterOff"));
@@ -124,7 +227,7 @@ public class E53IAxProtocolSupport {
      * 开启送风指令，下行
      */
     private static DefaultStructDeclaration buildFanInAirOnStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启送风指令", "CMD:0x15");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启送风指令结构", "CMD:0x15");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("FanInAirOn"));
@@ -144,7 +247,7 @@ public class E53IAxProtocolSupport {
      * 关停送风指令，下行
      */
     private static DefaultStructDeclaration buildFanInAirOffStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停送风指令", "CMD:0x16");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停送风指令结构", "CMD:0x16");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("FanInAirOff"));
@@ -161,7 +264,7 @@ public class E53IAxProtocolSupport {
      * 开启排风指令，下行
      */
     private static DefaultStructDeclaration buildFanOutAirOnStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启排风指令", "CMD:0x17");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启排风指令结构", "CMD:0x17");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("FanOutAirOn"));
@@ -181,7 +284,7 @@ public class E53IAxProtocolSupport {
      * 关停排风指令，下行
      */
     private static DefaultStructDeclaration buildFanOutAirOffStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停排风指令", "CMD:0x18");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停排风指令结构", "CMD:0x18");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("FanOutAirOff"));
@@ -198,7 +301,7 @@ public class E53IAxProtocolSupport {
      * 开启加热器A指令，下行
      */
     private static DefaultStructDeclaration buildHeaterAOnStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启加热器A指令", "CMD:0x19");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启加热器A指令结构", "CMD:0x19");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("HeaterAOn"));
@@ -218,7 +321,7 @@ public class E53IAxProtocolSupport {
      * 关停加热器A指令，下行
      */
     private static DefaultStructDeclaration buildHeaterAOffStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停加热器A指令", "CMD:0x1A");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停加热器A指令结构", "CMD:0x1A");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("HeaterAOff"));
@@ -235,7 +338,7 @@ public class E53IAxProtocolSupport {
      * 开启加热器B指令，下行
      */
     private static DefaultStructDeclaration buildHeaterBOnStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启加热器B指令", "CMD:0x1B");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启加热器B指令结构", "CMD:0x1B");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("HeaterBOn"));
@@ -255,7 +358,7 @@ public class E53IAxProtocolSupport {
      * 关停加热器B指令，下行
      */
     private static DefaultStructDeclaration buildHeaterBOffStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停加热器B指令", "CMD:0x1C");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停加热器B指令结构", "CMD:0x1C");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("HeaterBOff"));
@@ -272,7 +375,7 @@ public class E53IAxProtocolSupport {
      * 开启补光指令，下行
      */
     private static DefaultStructDeclaration buildLightOnStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启补光指令", "CMD:0x1D");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启补光指令结构", "CMD:0x1D");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("LightOn"));
@@ -292,7 +395,7 @@ public class E53IAxProtocolSupport {
      * 关停补光指令，下行
      */
     private static DefaultStructDeclaration buildLightOffStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停补光指令", "CMD:0x1E");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停补光指令结构", "CMD:0x1E");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("LightOff"));
@@ -307,7 +410,7 @@ public class E53IAxProtocolSupport {
 
     private static DefaultFieldDeclaration buildMagicIdFieldDcl() {
         return new DefaultFieldDeclaration("协议及版本标识字段", "MagicId", BaseDataType.UINT16, (short)0)
-                    .setDefaultValue(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2);
+                    .setDefaultValue(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2_V1);
     }
 
     private static DefaultFieldDeclaration buildMessageIdFieldDcl() {
@@ -330,7 +433,7 @@ public class E53IAxProtocolSupport {
     }
 
     private static class E53IAxFeatureCodeExtractor implements FeatureCodeExtractor {
-        private static final short MAGIC_ID_OF_IA2 = (byte) 0xfa11;
+        private static final short MAGIC_ID_OF_IA2_V1 = (byte) 0xfa11;
 
         @Override
         public String extract(ByteBuf buf) {
@@ -343,7 +446,7 @@ public class E53IAxProtocolSupport {
 
             short magId = (short)(((short) headerBuf[0]) << 8 | (short)headerBuf[1]);
 
-            if (magId != MAGIC_ID_OF_IA2) {
+            if (magId != MAGIC_ID_OF_IA2_V1) {
                 return "WRONG_MAGIC_ID:" + Hex.encodeHexString(headerBuf);
             }
 
@@ -363,8 +466,8 @@ public class E53IAxProtocolSupport {
             int saveWriterIdx = buf.writerIndex();
 
             buf.writerIndex(0);
-            buf.writeByte((byte)(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2 >> 8 & 0xFF));
-            buf.writeByte((byte)(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2 & 0xFF));
+            buf.writeByte((byte)(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2_V1 >> 8 & 0xFF));
+            buf.writeByte((byte)(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2_V1 & 0xFF));
 
             buf.writerIndex(saveWriterIdx);
 

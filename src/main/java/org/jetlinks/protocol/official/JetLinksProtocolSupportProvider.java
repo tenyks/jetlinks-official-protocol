@@ -8,6 +8,7 @@ import org.jetlinks.core.spi.ProtocolSupportProvider;
 import org.jetlinks.core.spi.ServiceContext;
 import org.jetlinks.protocol.dataSky.DataSkyDedicatedMessageCodec;
 import org.jetlinks.protocol.dataSky.DataSkyProtocolSupport;
+import org.jetlinks.protocol.e53.E53IAxProtocolSupport;
 import org.jetlinks.protocol.official.http.QiYunHttpDeviceMessageCodec;
 import org.jetlinks.protocol.xuebao.XueBaoWaWaProtocolSupport;
 import org.jetlinks.protocol.official.core.TopicMessageCodec;
@@ -89,9 +90,8 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
             support.setMetadataCodec(new JetLinksDeviceMetadataCodec());
 
             //TCP
-            String tcpCodec = pluginConfig.getTcpCodec();
             support.addConfigMetadata(DefaultTransport.TCP, TcpDeviceMessageCodec.tcpConfig);
-            if (XueBaoWaWaProtocolSupport.NAME.equals(tcpCodec)) {
+            if (XueBaoWaWaProtocolSupport.NAME.equals(pluginConfig.getTcpCodec())) {
                 support.addMessageCodecSupport(XueBaoWaWaProtocolSupport.buildDeviceMessageCodec(pluginConfig));
             } else {
                 support.addMessageCodecSupport(new TcpDeviceMessageCodec());
@@ -134,10 +134,14 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
                     ));
 
             //LwM2M
-            JetLinksLwM2MDeviceMessageCodec l2M2MDeviceMessageCodec = createLwM2MDeviceMessageCodec();
             support.addConfigMetadata(DefaultTransport.LwM2M, JetLinksLwM2MDeviceMessageCodec.CONFIG);
-            support.addMessageCodecSupport(l2M2MDeviceMessageCodec);
+            JetLinksLwM2MDeviceMessageCodec l2M2MDeviceMessageCodec = createLwM2MDeviceMessageCodec();
             support.addAuthenticator(DefaultTransport.LwM2M, l2M2MDeviceMessageCodec);
+            if (E53IAxProtocolSupport.NAME_OF_IA2.equals(pluginConfig.getTcpCodec())) {
+                support.addMessageCodecSupport(E53IAxProtocolSupport.buildDeviceMessageCodec(pluginConfig));
+            } else {
+                support.addMessageCodecSupport(l2M2MDeviceMessageCodec);
+            }
 
             return Mono.just(support);
         });
