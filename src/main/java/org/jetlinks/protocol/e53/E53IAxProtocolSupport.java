@@ -136,13 +136,24 @@ public class E53IAxProtocolSupport {
         structDcl.addField(buildMagicIdFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildMessageTypeFieldDcl((byte)0x10));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)14));
 
-        structDcl.addField(buildIOParamFieldDcl("温度", "temperature", BaseDataType.FLOAT));
-        structDcl.addField(buildIOParamFieldDcl("相对湿度", "humidity", BaseDataType.FLOAT));
-        structDcl.addField(buildIOParamFieldDcl("亮度", "luminance", BaseDataType.FLOAT));
-        structDcl.addField(buildIOParamFieldDcl("低水位标志", "lowWaterMark", BaseDataType.UINT8));
-        structDcl.addField(buildIOParamFieldDcl("高水位标志", "highWaterMark", BaseDataType.UINT8));
+        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)14);
+        structDcl.addField(field);
+
+        field = buildIOParamFieldDcl(field.asAnchor(), "温度", "temperature", BaseDataType.FLOAT);
+        structDcl.addField(field);
+
+        field = buildIOParamFieldDcl(field.asAnchor(), "相对湿度", "humidity", BaseDataType.FLOAT);
+        structDcl.addField(field);
+
+        field = buildIOParamFieldDcl(field.asAnchor(), "亮度", "luminance", BaseDataType.FLOAT);
+        structDcl.addField(field);
+
+        field = buildIOParamFieldDcl(field.asAnchor(), "低水位标志", "lowWaterMark", BaseDataType.UINT8);
+        structDcl.addField(field);
+
+        field = buildIOParamFieldDcl(field.asAnchor(), "高水位标志", "highWaterMark", BaseDataType.UINT8);
+        structDcl.addField(field);
 
         return structDcl;
     }
@@ -159,10 +170,13 @@ public class E53IAxProtocolSupport {
         structDcl.addField(buildMagicIdFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildMessageTypeFieldDcl((byte)0x11));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)5));
 
-        structDcl.addField(buildIOParamFieldDcl("工作挡位", "degree", BaseDataType.UINT8));
-        structDcl.addField(buildIOParamFieldDcl("工作时长", "duration", BaseDataType.UINT32));
+        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)5);
+        structDcl.addField(field);
+
+        field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
+        structDcl.addField(field);
+        field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
 
         return structDcl;
     }
@@ -196,12 +210,15 @@ public class E53IAxProtocolSupport {
         structDcl.addField(buildMagicIdFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildMessageTypeFieldDcl((byte)0x13));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)6));
 
-        structDcl.addField(buildIOParamFieldDcl("工作挡位", "degree", BaseDataType.UINT8));
-        structDcl.addField(buildIOParamFieldDcl("工作时长", "duration", BaseDataType.UINT32));
-        structDcl.addField(buildIOParamFieldDcl("低水位时自动停止", "autoStopAtLWM", BaseDataType.UINT8)
-                .setDefaultValue(0));
+        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)6);
+        structDcl.addField(field);
+
+        field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
+        structDcl.addField(field);
+        field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
+        field = buildIOParamFieldDcl(field.asAnchor(), "低水位时自动停止", "autoStopAtLWM", BaseDataType.UINT8).setDefaultValue(0);
+        structDcl.addField(field);
 
         return structDcl;
     }
@@ -235,10 +252,13 @@ public class E53IAxProtocolSupport {
         structDcl.addField(buildMagicIdFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildMessageTypeFieldDcl((byte)0x15));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)5));
 
-        structDcl.addField(buildIOParamFieldDcl("工作挡位", "degree", BaseDataType.UINT8));
-        structDcl.addField(buildIOParamFieldDcl("工作时长", "duration", BaseDataType.UINT32));
+        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)5);
+        structDcl.addField(field);
+
+        field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
+        structDcl.addField(field);
+        field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
 
         return structDcl;
     }
@@ -272,10 +292,13 @@ public class E53IAxProtocolSupport {
         structDcl.addField(buildMagicIdFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildMessageTypeFieldDcl((byte)0x17));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)5));
 
-        structDcl.addField(buildIOParamFieldDcl("工作挡位", "degree", BaseDataType.UINT8));
-        structDcl.addField(buildIOParamFieldDcl("工作时长", "duration", BaseDataType.UINT32));
+        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)5);
+        structDcl.addField(field);
+
+        field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
+        structDcl.addField(field);
+        field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
 
         return structDcl;
     }
@@ -309,10 +332,14 @@ public class E53IAxProtocolSupport {
         structDcl.addField(buildMagicIdFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildMessageTypeFieldDcl((byte)0x19));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)5));
 
-        structDcl.addField(buildIOParamFieldDcl("工作挡位", "degree", BaseDataType.UINT8));
-        structDcl.addField(buildIOParamFieldDcl("工作时长", "duration", BaseDataType.UINT32));
+        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)5);
+        structDcl.addField(field);
+
+        field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
+        structDcl.addField(field);
+        field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
+        structDcl.addField(field);
 
         return structDcl;
     }
@@ -346,10 +373,14 @@ public class E53IAxProtocolSupport {
         structDcl.addField(buildMagicIdFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildMessageTypeFieldDcl((byte)0x1B));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)5));
 
-        structDcl.addField(buildIOParamFieldDcl("工作挡位", "degree", BaseDataType.UINT8));
-        structDcl.addField(buildIOParamFieldDcl("工作时长", "duration", BaseDataType.UINT32));
+        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)5);
+        structDcl.addField(field);
+
+        field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
+        structDcl.addField(field);
+        field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
+        structDcl.addField(field);
 
         return structDcl;
     }
@@ -383,10 +414,14 @@ public class E53IAxProtocolSupport {
         structDcl.addField(buildMagicIdFieldDcl());
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildMessageTypeFieldDcl((byte)0x1D));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)5));
 
-        structDcl.addField(buildIOParamFieldDcl("工作挡位", "degree", BaseDataType.UINT8));
-        structDcl.addField(buildIOParamFieldDcl("工作时长", "duration", BaseDataType.UINT32));
+        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)5);
+        structDcl.addField(field);
+
+        field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
+        structDcl.addField(field);
+        field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
+        structDcl.addField(field);
 
         return structDcl;
     }
@@ -419,21 +454,22 @@ public class E53IAxProtocolSupport {
     }
 
     private static DefaultFieldDeclaration buildMessageTypeFieldDcl(byte typeCode) {
-        return new DefaultFieldDeclaration("消息编码", "MessageType", BaseDataType.UINT8, (short) 5)
+        return new DefaultFieldDeclaration("消息编码", "MessageType", BaseDataType.UINT8, (short) 4)
                     .setDefaultValue(typeCode);
     }
 
     private static DefaultFieldDeclaration buildIOParamsPayloadLengthFieldDcl(byte defaultValue) {
-        return new DefaultFieldDeclaration("输入/输出参数负载总字节数", "packageLength", BaseDataType.UINT16, (short) 6)
+        return new DefaultFieldDeclaration("输入/输出参数负载总字节数", "packageLength", BaseDataType.UINT16, (short) 5)
                 .setDefaultValue(defaultValue);
     }
 
-    private static DefaultFieldDeclaration buildIOParamFieldDcl(String name, String code, BaseDataType dataType) {
-        return new DefaultFieldDeclaration(name, code, dataType);
+    private static DefaultFieldDeclaration buildIOParamFieldDcl(DynamicAnchor nextToThisAnchor, String name,
+                                                                String code, BaseDataType dataType) {
+        return new DefaultFieldDeclaration(name, code, dataType).setAnchorReference(nextToThisAnchor, (short)0);
     }
 
     private static class E53IAxFeatureCodeExtractor implements FeatureCodeExtractor {
-        private static final short MAGIC_ID_OF_IA2_V1 = (byte) 0xfa11;
+        private static final short MAGIC_ID_OF_IA2_V1 = (short)0xfa11;
 
         @Override
         public String extract(ByteBuf buf) {
