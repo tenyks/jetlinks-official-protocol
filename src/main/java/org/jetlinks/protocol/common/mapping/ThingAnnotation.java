@@ -1,6 +1,10 @@
 package org.jetlinks.protocol.common.mapping;
 
 import com.alibaba.fastjson.JSONObject;
+import me.tenyks.core.utils.ShortCodeGenerator;
+import me.tenyks.core.utils.UuidRemapFactory;
+import me.tenyks.core.utils.UuidRemapShort;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections.CollectionUtils;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.DeviceMessageReply;
@@ -10,6 +14,7 @@ import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.function.FunctionParameter;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
 
+import java.util.HashMap;
 import java.util.List;
 
 public abstract class ThingAnnotation {
@@ -24,6 +29,36 @@ public abstract class ThingAnnotation {
             public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
                 if (itemVal != null) {
                     msg.messageId(itemVal.toString());
+                }
+            }
+        };
+    }
+
+    /**
+     * 映射为UINT16的消息流水号
+     */
+    public static ThingAnnotation MsgIdUint16() {
+        return new ThingAnnotation("messageId", null) {
+
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                String msgId = msg.getMessageId();
+
+                UuidRemapShort uuidRemap = UuidRemapFactory.DEF_INST.createOrGet(msg.getDeviceId());
+
+                return uuidRemap.shrink(msgId);
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                if (itemVal != null) {
+                    Short   shortMsgId = (Short) itemVal;
+                    String  msgId = UuidRemapFactory.DEF_INST.createOrGet(msg.getDeviceId()).recovery(shortMsgId);
+                    if (msgId == null) {
+                        msgId = String.format("%s_%d", ShortCodeGenerator.INSTANCE.next(), shortMsgId);
+                    }
+
+                    msg.messageId(msgId);
                 }
             }
         };
@@ -187,23 +222,40 @@ public abstract class ThingAnnotation {
             }
         };
     }
+    public static ThingAnnotation Property() {
+        return new ThingAnnotation("properties", null) {
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                ReportPropertyMessage rpMsg = (ReportPropertyMessage) msg;
 
-    private String  thingKey;
+                if (rpMsg.getProperties() == null) rpMsg.setProperties(new HashMap<>());
 
-    private String  thingValue;
+                rpMsg.getProperties().put(itemKey, itemVal);
+            }
+
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                ReportPropertyMessage rpMsg = (ReportPropertyMessage) msg;
+
+                if (rpMsg.getProperties() == null) return null;
+
+                return rpMsg.getProperties().get(itemKey);
+            }
+        };
+    }
+
+    private final String  thingKey;
+
+    private final String  thingValue;
 
     protected ThingAnnotation(String thingKey, String thingValue) {
         this.thingKey = thingKey;
         this.thingValue = thingValue;
     }
 
-    public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
-        return null;
-    }
+    public abstract Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey);
 
-    public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
-
-    }
+    public abstract void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal);
 
     public void invokeSetter(ThingContext context, DeviceMessage msg) {
         invokeSetter(context, msg, thingKey, thingValue);

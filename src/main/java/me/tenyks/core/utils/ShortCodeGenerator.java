@@ -8,6 +8,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ShortCodeGenerator {
 
+    public static final ShortCodeGenerator INSTANCE = new ShortCodeGenerator();
+
     private static final AtomicLong SeqNo = new AtomicLong(1);
 
     public String   next() {
