@@ -123,4 +123,169 @@ public class E53IAxStructSuitBuilderTest {
         String expected = "fa 11 00 01 14 00".replace(" ", "");
         Assert.assertEquals(expected, x);
     }
+
+    @Test
+    public void encodeFanInAirOn() {
+        FunctionInvokeMessage funInvMsg;
+        funInvMsg = new FunctionInvokeMessage().functionId("FanInAirOn");
+        funInvMsg.addInput("degree", (byte)4);
+        funInvMsg.addInput("duration", 66053);
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        ByteBuf rst = codec.encode(encodeCtx, funInvMsg);
+        String x = ByteUtils.toHexStr(rst);
+        System.out.println(x);
+
+        String expected = "fa 11 00 01 15 05 04 00 01 02 05".replace(" ", "");
+        Assert.assertEquals(expected, x);
+    }
+
+    @Test
+    public void encodeFanInAirOff() {
+        FunctionInvokeMessage funInvMsg;
+        funInvMsg = new FunctionInvokeMessage().functionId("FanInAirOff");
+        funInvMsg.addInput("degree", (byte)3);
+        funInvMsg.addInput("duration", 66052);
+        funInvMsg.addInput("autoStopAtLWM", (byte)1);
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        ByteBuf rst = codec.encode(encodeCtx, funInvMsg);
+        String x = ByteUtils.toHexStr(rst);
+        System.out.println(x);
+
+        String expected = "fa 11 00 01 16 00".replace(" ", "");
+        Assert.assertEquals(expected, x);
+    }
+
+    @Test
+    public void encodeFanOutAirOn() {
+        FunctionInvokeMessage funInvMsg;
+        funInvMsg = new FunctionInvokeMessage().functionId("FanOutAirOn");
+        funInvMsg.addInput("degree", (byte)5);
+        funInvMsg.addInput("duration", 66054);
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        ByteBuf rst = codec.encode(encodeCtx, funInvMsg);
+        String x = ByteUtils.toHexStr(rst);
+        System.out.println(x);
+
+        String expected = "fa 11 00 01 17 05 05 00 01 02 06".replace(" ", "");
+        Assert.assertEquals(expected, x);
+    }
+
+    @Test
+    public void encodeFanOutAirOff() {
+        FunctionInvokeMessage funInvMsg;
+        funInvMsg = new FunctionInvokeMessage().functionId("FanOutAirOff");
+        funInvMsg.addInput("degree", (byte)3);
+        funInvMsg.addInput("duration", 66052);
+        funInvMsg.addInput("autoStopAtLWM", (byte)1);
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        ByteBuf rst = codec.encode(encodeCtx, funInvMsg);
+        String x = ByteUtils.toHexStr(rst);
+        System.out.println(x);
+
+        String expected = "fa 11 00 01 18 00".replace(" ", "");
+        Assert.assertEquals(expected, x);
+    }
+
+    @Test
+    public void encodeHeaterAOn() {
+        FunctionInvokeMessage funInvMsg;
+        funInvMsg = new FunctionInvokeMessage().functionId("HeaterAOn");
+        funInvMsg.addInput("degree", (byte)6);
+        funInvMsg.addInput("duration", 66055);
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        ByteBuf rst = codec.encode(encodeCtx, funInvMsg);
+        String x = ByteUtils.toHexStr(rst);
+        System.out.println(x);
+
+        String expected = "fa 11 00 01 19 05 06 00 01 02 07".replace(" ", "");
+        Assert.assertEquals(expected, x);
+    }
+
+    @Test
+    public void encodeHeaterAOff() {
+        FunctionInvokeMessage funInvMsg;
+        funInvMsg = new FunctionInvokeMessage().functionId("HeaterAOff");
+        funInvMsg.addInput("degree", (byte)3);
+        funInvMsg.addInput("duration", 66052);
+        funInvMsg.addInput("autoStopAtLWM", (byte)1);
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        ByteBuf rst = codec.encode(encodeCtx, funInvMsg);
+        String x = ByteUtils.toHexStr(rst);
+        System.out.println(x);
+
+        String expected = "fa 11 00 01 1a 00".replace(" ", "");
+        Assert.assertEquals(expected, x);
+    }
+
+    @Test
+    public void encodeHeaterBOn() {
+        FunctionInvokeMessage funInvMsg;
+        funInvMsg = new FunctionInvokeMessage().functionId("HeaterBOn");
+        funInvMsg.addInput("degree", (byte)7);
+        funInvMsg.addInput("duration", 66056);
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        ByteBuf rst = codec.encode(encodeCtx, funInvMsg);
+        String x = ByteUtils.toHexStr(rst);
+        System.out.println(x);
+
+        String expected = "fa 11 00 01 1b 05 07 00 01 02 08".replace(" ", "");
+        Assert.assertEquals(expected, x);
+    }
+
+    @Test
+    public void encodeHeaterBOff() {
+        FunctionInvokeMessage funInvMsg;
+        funInvMsg = new FunctionInvokeMessage().functionId("HeaterBOff");
+        funInvMsg.addInput("degree", (byte)3);
+        funInvMsg.addInput("duration", 66052);
+        funInvMsg.addInput("autoStopAtLWM", (byte)1);
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        ByteBuf rst = codec.encode(encodeCtx, funInvMsg);
+        String x = ByteUtils.toHexStr(rst);
+        System.out.println(x);
+
+        String expected = "fa 11 00 01 1c 00".replace(" ", "");
+        Assert.assertEquals(expected, x);
+    }
+
+    @Test
+    public void encodeLightOn() {
+        FunctionInvokeMessage funInvMsg;
+        funInvMsg = new FunctionInvokeMessage().functionId("LightOn");
+        funInvMsg.addInput("degree", (byte)8);
+        funInvMsg.addInput("duration", 66057);
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        ByteBuf rst = codec.encode(encodeCtx, funInvMsg);
+        String x = ByteUtils.toHexStr(rst);
+        System.out.println(x);
+
+        String expected = "fa 11 00 01 1d 05 08 00 01 02 09".replace(" ", "");
+        Assert.assertEquals(expected, x);
+    }
+
+    @Test
+    public void encodeLightOff() {
+        FunctionInvokeMessage funInvMsg;
+        funInvMsg = new FunctionInvokeMessage().functionId("LightOff");
+        funInvMsg.addInput("degree", (byte)3);
+        funInvMsg.addInput("duration", 66052);
+        funInvMsg.addInput("autoStopAtLWM", (byte)1);
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        ByteBuf rst = codec.encode(encodeCtx, funInvMsg);
+        String x = ByteUtils.toHexStr(rst);
+        System.out.println(x);
+
+        String expected = "fa 11 00 01 1e 00".replace(" ", "");
+        Assert.assertEquals(expected, x);
+    }
 }

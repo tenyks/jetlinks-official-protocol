@@ -259,8 +259,9 @@ public class E53IAxProtocolSupport {
         structDcl.addField(field);
 
         field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
-        structDcl.addField(field);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
         field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
 
         return structDcl;
     }
@@ -299,8 +300,9 @@ public class E53IAxProtocolSupport {
         structDcl.addField(field);
 
         field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
-        structDcl.addField(field);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
         field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
 
         return structDcl;
     }
@@ -339,9 +341,9 @@ public class E53IAxProtocolSupport {
         structDcl.addField(field);
 
         field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
-        structDcl.addField(field);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
         field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
-        structDcl.addField(field);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
 
         return structDcl;
     }
@@ -380,9 +382,9 @@ public class E53IAxProtocolSupport {
         structDcl.addField(field);
 
         field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
-        structDcl.addField(field);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
         field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
-        structDcl.addField(field);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
 
         return structDcl;
     }
@@ -421,9 +423,9 @@ public class E53IAxProtocolSupport {
         structDcl.addField(field);
 
         field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
-        structDcl.addField(field);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
         field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
-        structDcl.addField(field);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
 
         return structDcl;
     }
