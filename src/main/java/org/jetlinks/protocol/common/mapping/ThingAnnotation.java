@@ -52,7 +52,7 @@ public abstract class ThingAnnotation {
             @Override
             public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
                 if (itemVal != null) {
-                    Short   shortMsgId = (Short) itemVal;
+                    Short   shortMsgId = (itemVal instanceof Short ? (Short) itemVal : ((Integer)itemVal).shortValue());
                     String  msgId = UuidRemapFactory.DEF_INST.createOrGet(msg.getDeviceId()).recovery(shortMsgId);
                     if (msgId == null) {
                         msgId = String.format("%s_%d", ShortCodeGenerator.INSTANCE.next(), shortMsgId);
@@ -139,6 +139,7 @@ public abstract class ThingAnnotation {
             }
         };
     }
+
     public static ThingAnnotation FuncOutput() {
         return new ThingAnnotation("output", null) {
             @Override
@@ -171,6 +172,7 @@ public abstract class ThingAnnotation {
             }
         };
     }
+
     public static ThingAnnotation Event(String thingValue) {
         return new ThingAnnotation("event", thingValue) {
             @Override
@@ -190,6 +192,7 @@ public abstract class ThingAnnotation {
             }
         };
     }
+
     public static ThingAnnotation EventData() {
         return new ThingAnnotation("data", null) {
             @Override
@@ -222,6 +225,7 @@ public abstract class ThingAnnotation {
             }
         };
     }
+
     public static ThingAnnotation Property() {
         return new ThingAnnotation("properties", null) {
             @Override

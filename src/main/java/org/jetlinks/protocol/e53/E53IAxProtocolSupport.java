@@ -82,6 +82,8 @@ public class E53IAxProtocolSupport {
         suit.addStructDeclaration(buildLightOnStructDcl());
         suit.addStructDeclaration(buildLightOffStructDcl());
 
+        suit.addStructDeclaration(buildFunInvReplyDcl());
+
         return suit;
     }
 
@@ -112,6 +114,7 @@ public class E53IAxProtocolSupport {
 
         //Decode
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("数据上报消息结构"), ReportPropertyMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("指令下发反馈消息结构"), FunctionInvokeMessageReply.class);
 
         for (StructDeclaration structDcl : structSuit.structDeclarations()) {
             if (!structDcl.getName().endsWith("回复结构")) continue;
@@ -447,6 +450,34 @@ public class E53IAxProtocolSupport {
         return structDcl;
     }
 
+    /**
+     * 指令下发反馈消息，上行
+     */
+    private static DefaultStructDeclaration buildFunInvReplyDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("指令下发反馈消息结构", "CMD:0xF0");
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("FunInvReply"));
+
+        structDcl.addField(buildMagicIdFieldDcl());
+        structDcl.addField(buildMessageIdFieldDcl());
+        structDcl.addField(buildMessageTypeFieldDcl((byte)0xF0));
+
+        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)6);
+        structDcl.addField(field);
+
+        field = buildIOParamFieldDcl(field.asAnchor(), "结果编码", "rstCode", BaseDataType.INT8);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput()));
+
+        field = buildIOParamFieldDcl(field.asAnchor(), "指令的编码", "cmdCode", BaseDataType.INT8);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput()));
+
+        field = buildIOParamFieldDcl(field.asAnchor(), "附加信息", "extInfo", BaseDataType.UINT32);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput()));
+
+        return structDcl;
+    }
+
     private static DefaultFieldDeclaration buildMagicIdFieldDcl() {
         return new DefaultFieldDeclaration("协议及版本标识字段", "MagicId", BaseDataType.UINT16, (short)0)
                     .setDefaultValue(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2_V1);
@@ -490,7 +521,7 @@ public class E53IAxProtocolSupport {
                 return "WRONG_MAGIC_ID:" + Hex.encodeHexString(headerBuf);
             }
 
-            return "CMD:0x" + Integer.toHexString(headerBuf[4]);
+            return "CMD:0x" + Integer.toHexString(0x000000ff & headerBuf[4]).toUpperCase();
         }
 
         @Override

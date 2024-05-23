@@ -59,6 +59,21 @@ public class E53IAxStructSuitBuilderTest {
     }
 
     @Test
+    public void decodeFunInvReply() throws DecoderException {
+        String payload = "fa 11 ff 03 f0 06 01 1e 01 02 03 04".replace(" ", "");
+        ByteBuf input = Unpooled.wrappedBuffer(Hex.decodeHex(payload));
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0xF0[]
+
+        DeviceMessage devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //
+    }
+
+    @Test
     public void encodePumpInWaterOn() {
         FunctionInvokeMessage funInvMsg;
         funInvMsg = new FunctionInvokeMessage().functionId("PumpInWaterOn");
@@ -288,4 +303,5 @@ public class E53IAxStructSuitBuilderTest {
         String expected = "fa 11 00 01 1e 00".replace(" ", "");
         Assert.assertEquals(expected, x);
     }
+
 }
