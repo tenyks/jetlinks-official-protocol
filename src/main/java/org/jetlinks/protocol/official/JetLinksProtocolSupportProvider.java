@@ -126,8 +126,7 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
             support.addRoutes(
                     DefaultTransport.WebSocket,
                     Collections.singleton(
-                            WebsocketRoute
-                                    .builder()
+                            WebsocketRoute.builder()
                                     .path("/{productId:产品ID}/{productId:设备ID}/socket")
                                     .description("通过Websocket接入平台")
                                     .build()
@@ -137,7 +136,7 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
             support.addConfigMetadata(DefaultTransport.LwM2M, JetLinksLwM2MDeviceMessageCodec.CONFIG);
             JetLinksLwM2MDeviceMessageCodec l2M2MDeviceMessageCodec = createLwM2MDeviceMessageCodec();
             support.addAuthenticator(DefaultTransport.LwM2M, l2M2MDeviceMessageCodec);
-            if (E53IAxProtocolSupport.NAME_OF_IA2.equals(pluginConfig.getTcpCodec())) {
+            if (E53IAxProtocolSupport.NAME_OF_IA2.equals(pluginConfig.getLwM2MCodec())) {
                 support.addMessageCodecSupport(E53IAxProtocolSupport.buildDeviceMessageCodec(pluginConfig));
             } else {
                 support.addMessageCodecSupport(l2M2MDeviceMessageCodec);

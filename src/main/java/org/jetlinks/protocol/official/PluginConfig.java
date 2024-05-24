@@ -74,7 +74,7 @@ public class PluginConfig {
         return getConfig(UDP_CODEC_KEY);
     }
 
-    public String getLwM2MCodecKey() {
+    public String getLwM2MCodec() {
         return getConfig(LWM2M_CODEC_KEY);
     }
 
