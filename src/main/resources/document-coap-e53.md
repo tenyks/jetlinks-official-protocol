@@ -33,18 +33,19 @@ E53 IAx板通信协议
 ## 3.2 服务
 
 ### A. 上报数据
-开启给水，当达到高水位会自动停止。
+上报数据。
 * 编码： `ReportData`
 * 消息类型：`0x10`
 * 输入参数
 
 |名称|编码|类型|说明|
 |---|---|---|---|
-|温度|temperature|float|参数响应属性|
-|相对湿度|humidity|float|参数响应属性|
-|亮度|luminance|float|参数响应属性|
-|低水位标志|lowWaterMark|UINT8|参数响应属性|
-|高水位标志|highWaterMark|UINT8|参数响应属性|
+|温度|temperature|float|参数相应属性|
+|相对湿度|humidity|float|参数相应属性|
+|亮度|luminance|float|参数相应属性|
+|低水位标志|lowWaterMark|UINT8|参数相应属性|
+|高水位标志|highWaterMark|UINT8|参数相应属性|
+|外设工作标志|workingFlag|UINT16|参数相应属性|
 
 * 输出参数
   __空__
@@ -88,7 +89,7 @@ __空__
   __空__
 
 ### E. 关停排水指令
-关停给水。
+关停排水。
 * 编码： `PumpOutWaterOff`
 * 消息类型：`0x14`
 * 输入参数：
@@ -111,7 +112,7 @@ __空__
   __空__
 
 ### G. 关停送风指令
-关停给水。
+关停送风。
 * 编码： `FanInAirOff`
 * 消息类型：`0x16`
 * 输入参数：

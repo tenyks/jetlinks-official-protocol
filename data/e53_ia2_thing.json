@@ -1,0 +1,501 @@
+{
+  "properties": [
+    {
+      "id": "temperature",
+      "name": "温度",
+      "valueType": {
+        "type": "float",
+        "unit": "celsiusDegrees",
+        "scale": 2
+      },
+      "expands": {
+        "source": "device",
+        "type": [
+          "report"
+        ],
+        "metrics": []
+      },
+      "description": "单位：摄氏度"
+    },
+    {
+      "id": "humidity",
+      "name": "相对湿度",
+      "valueType": {
+        "type": "float",
+        "unit": "湿度",
+        "scale": 2
+      },
+      "expands": {
+        "source": "device",
+        "type": [
+          "report"
+        ],
+        "metrics": []
+      },
+      "description": "单位：RH%"
+    },
+    {
+      "id": "luminance",
+      "name": "亮度",
+      "valueType": {
+        "type": "float",
+        "unit": "流明",
+        "scale": 2
+      },
+      "expands": {
+        "source": "device",
+        "type": [
+          "report"
+        ],
+        "metrics": []
+      },
+      "description": "单位：流明"
+    },
+    {
+      "id": "lowWaterMark",
+      "name": "低水位标志",
+      "valueType": {
+        "type": "enum",
+        "elements": [
+          {
+            "value": "1",
+            "text": "是"
+          },
+          {
+            "value": "0",
+            "text": "否"
+          }
+        ]
+      },
+      "expands": {
+        "source": "device",
+        "type": [
+          "report"
+        ]
+      },
+      "description": "0=不是，1=是"
+    },
+    {
+      "id": "highWaterMark",
+      "name": "高水位标志",
+      "valueType": {
+        "type": "enum",
+        "elements": [
+          {
+            "value": "1",
+            "text": "是"
+          },
+          {
+            "value": "0",
+            "text": "否"
+          }
+        ]
+      },
+      "expands": {
+        "source": "device",
+        "type": [
+          "report"
+        ]
+      },
+      "description": "0=不是，1=是"
+    },
+    {
+      "id": "workingFlag",
+      "name": "外设工作标志",
+      "valueType": {
+        "type": "int"
+      },
+      "expands": {
+        "source": "device",
+        "type": [
+          "report"
+        ],
+        "metrics": []
+      },
+      "description": "0=停止，1=运行中, \n第0位用于表示给水，\n第1位用于表示排水，\n第2位用于表示送风，\n第3位用于表示排风，\n第4位用于表示加热器A，\n第5位用于表示加热器B，\n第6位用于表示补光"
+    }
+  ],
+  "events": [
+    {
+      "id": "ReportData",
+      "name": "上报数据",
+      "expands": {
+        "level": "ordinary"
+      },
+      "valueType": {
+        "type": "object",
+        "properties": [
+          {
+            "valueType": {
+              "expands": {},
+              "type": "float",
+              "scale": 2,
+              "unit": "摄氏度"
+            },
+            "id": "temperature",
+            "name": "温度"
+          },
+          {
+            "valueType": {
+              "expands": {},
+              "type": "float",
+              "scale": 2,
+              "unit": "RH%"
+            },
+            "name": "相对湿度",
+            "id": "humidity"
+          },
+          {
+            "valueType": {
+              "expands": {},
+              "type": "float",
+              "scale": 2,
+              "unit": "流明"
+            },
+            "id": "luminance",
+            "name": "亮度"
+          },
+          {
+            "valueType": {
+              "expands": {},
+              "type": "enum",
+              "scale": 2,
+              "elements": [
+                {
+                  "value": "1",
+                  "text": "是"
+                },
+                {
+                  "value": "0",
+                  "text": "否"
+                }
+              ]
+            },
+            "id": "lowWaterMark",
+            "name": "低水位标志"
+          },
+          {
+            "valueType": {
+              "expands": {},
+              "type": "enum",
+              "elements": [
+                {
+                  "value": "1",
+                  "text": "是"
+                },
+                {
+                  "value": "0",
+                  "text": "否"
+                }
+              ]
+            },
+            "id": "highWaterMark",
+            "name": "高水位标志"
+          },
+          {
+            "valueType": {
+              "expands": {},
+              "type": "int"
+            },
+            "name": "外设工作标志",
+            "id": "workingFlag"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FunInvReply",
+      "name": "指令下发反馈消息",
+      "expands": {
+        "level": "ordinary"
+      },
+      "valueType": {
+        "type": "object",
+        "properties": [
+          {
+            "valueType": {
+              "expands": {},
+              "type": "int",
+              "unit": "0=不执行，1=表示成功，-1=不支持，小于-1=其他错位原因"
+            },
+            "id": "rstCode",
+            "name": "结果编码"
+          },
+          {
+            "valueType": {
+              "expands": {},
+              "type": "int",
+              "unit": "参考各指令的编码"
+            },
+            "id": "cmdCode",
+            "name": "指令的编码"
+          },
+          {
+            "valueType": {
+              "expands": {},
+              "type": "int"
+            },
+            "name": "附加信息",
+            "id": "extInfo"
+          }
+        ]
+      }
+    }
+  ],
+  "functions": [
+    {
+      "id": "PumpInWaterOn",
+      "name": "开启给水指令",
+      "async": true,
+      "inputs": [
+        {
+          "valueType": {
+            "expands": {},
+            "type": "int",
+            "unit": "取值范围：(0, 100]，单位：百分比"
+          },
+          "id": "degree",
+          "name": "工作挡位"
+        },
+        {
+          "valueType": {
+            "expands": {},
+            "type": "int",
+            "unit": "取值范围：(0, 3600000]，最长1小时，单位：毫秒"
+          },
+          "name": "工作时长",
+          "id": "duration"
+        }
+      ],
+      "output": {},
+      "description": "开启给水，当达到高水位会自动停止。"
+    },
+    {
+      "id": "PumpInWaterOff",
+      "name": "关停给水指令",
+      "async": true,
+      "inputs": [],
+      "output": {},
+      "description": "关停给水"
+    },
+    {
+      "id": "PumpOutWaterOn",
+      "name": "开启排水指令",
+      "async": true,
+      "inputs": [
+        {
+          "valueType": {
+            "expands": {},
+            "type": "int",
+            "unit": "取值范围：(0, 100]，单位：百分比"
+          },
+          "id": "degree",
+          "name": "工作挡位"
+        },
+        {
+          "valueType": {
+            "expands": {},
+            "type": "int",
+            "unit": "取值范围：(0, 3600000]，最长1小时，单位：毫秒"
+          },
+          "id": "duration",
+          "name": "工作时长"
+        },
+        {
+          "valueType": {
+            "expands": {},
+            "type": "int",
+            "unit": "是否到达低水位时自动停止，`0`表示否，`1`表示是，默认值为：`0`"
+          },
+          "name": "低水位时自动停止",
+          "id": "autoStopAtLWM"
+        }
+      ],
+      "output": {},
+      "description": "开启排水，可按需设定到达低水位会自动停止。"
+    },
+    {
+      "id": "PumpOutWaterOff",
+      "name": "关停排水指令",
+      "async": true,
+      "inputs": [],
+      "output": {},
+      "description": "关停排水"
+    },
+    {
+      "id": "FanInAirOn",
+      "name": "开启送风指令",
+      "async": true,
+      "inputs": [
+        {
+          "valueType": {
+            "expands": {},
+            "type": "int",
+            "unit": "取值范围：(0, 100]，单位：百分比"
+          },
+          "id": "degree",
+          "name": "工作挡位"
+        },
+        {
+          "valueType": {
+            "expands": {},
+            "type": "int",
+            "unit": "取值范围：(0, 3600000]，最长1小时，单位：毫秒"
+          },
+          "name": "工作时长",
+          "id": "duration"
+        }
+      ],
+      "output": {},
+      "description": "开启送风，到达工作时长会自动停止"
+    },
+    {
+      "id": "FanInAirOff",
+      "name": "关停送风指令",
+      "async": true,
+      "inputs": [],
+      "output": {},
+      "description": "关停送风"
+    },
+    {
+      "id": "FanOutAirOn",
+      "name": "开启排风指令",
+      "async": true,
+      "inputs": [
+        {
+          "valueType": {
+            "expands": {},
+            "type": "int",
+            "unit": "取值范围：(0, 100]，单位：百分比"
+          },
+          "name": "工作挡位",
+          "id": "degree"
+        },
+        {
+          "valueType": {
+            "expands": {},
+            "type": "int",
+            "unit": "取值范围：(0, 3600000]，最长1小时，单位：毫秒"
+          },
+          "id": "duration",
+          "name": "工作时长"
+        }
+      ],
+      "output": {},
+      "description": "开启排风"
+    },
+    {
+      "id": "FanOutAirOff",
+      "name": "关停排风指令",
+      "async": true,
+      "inputs": [],
+      "output": {},
+      "description": "关停排风"
+    },
+    {
+      "id": "HeaterAOn",
+      "name": "开启加热器A指令",
+      "async": true,
+      "inputs": [
+        {
+          "valueType": {
+            "expands": {},
+            "type": "int",
+            "unit": "取值范围：(0, 100]，单位：百分比"
+          },
+          "name": "工作挡位",
+          "id": "degree"
+        },
+        {
+          "valueType": {
+            "expands": {},
+            "type": "int",
+            "unit": "取值范围：(0, 3600000]，最长1小时，单位：毫秒"
+          },
+          "id": "duration",
+          "name": "工作时长"
+        }
+      ],
+      "output": {},
+      "description": "开启加热器A"
+    },
+    {
+      "id": "HeaterAOff",
+      "name": "关停加热器A指令",
+      "async": true,
+      "inputs": [],
+      "output": {},
+      "description": "关停加热器A"
+    },
+    {
+      "id": "HeaterBOn",
+      "name": "开启加热器B指令",
+      "async": true,
+      "inputs": [
+        {
+          "valueType": {
+            "expands": {},
+            "type": "int",
+            "unit": "取值范围：(0, 100]，单位：百分比"
+          },
+          "name": "工作挡位",
+          "id": "degree"
+        },
+        {
+          "valueType": {
+            "expands": {},
+            "type": "int",
+            "unit": "取值范围：(0, 3600000]，最长1小时，单位：毫秒"
+          },
+          "id": "duration",
+          "name": "工作时长"
+        }
+      ],
+      "output": {},
+      "description": "开启加热器B"
+    },
+    {
+      "id": "HeaterBOff",
+      "name": "关停加热器B指令",
+      "async": true,
+      "inputs": [],
+      "output": {},
+      "description": "关停加热器B"
+    },
+    {
+      "id": "LightOn",
+      "name": "开启补光指令",
+      "async": true,
+      "inputs": [
+        {
+          "valueType": {
+            "expands": {},
+            "type": "int",
+            "unit": "取值范围：(0, 100]，单位：百分比"
+          },
+          "id": "degree",
+          "name": "工作挡位"
+        },
+        {
+          "valueType": {
+            "expands": {},
+            "type": "int",
+            "unit": "取值范围：(0, 3600000]，最长1小时，单位：毫秒"
+          },
+          "id": "duration",
+          "name": "工作时长"
+        }
+      ],
+      "output": {},
+      "description": "开启补光"
+    },
+    {
+      "id": "LightOff",
+      "name": "关停补光指令",
+      "async": true,
+      "inputs": [],
+      "output": {},
+      "description": "关停补光"
+    }
+  ]
+}
