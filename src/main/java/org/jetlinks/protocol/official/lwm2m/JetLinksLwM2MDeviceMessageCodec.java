@@ -43,7 +43,7 @@ public class JetLinksLwM2MDeviceMessageCodec implements DeviceMessageCodec, Auth
                     DeviceConfigScope.product)
             .add("secureKey", "密钥", "16位密钥KEY", new PasswordType());
 
-    private RouteMessageCodec   codec;
+    private final RouteMessageCodec   codec;
 
     public JetLinksLwM2MDeviceMessageCodec(PayloadParserSuit parserSuit, PayloadWriterSuit writerSuit) {
         List<MessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>> dclList = new ArrayList<>();
