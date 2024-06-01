@@ -1,6 +1,8 @@
 package org.jetlinks.protocol.official.binary2;
 
 import io.netty.buffer.ByteBuf;
+import org.apache.commons.codec.DecoderException;
+import org.jetlinks.core.utils.BytesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,21 +17,21 @@ public class StructSuit {
 
     private static final Logger log = LoggerFactory.getLogger(StructSuit.class);
 
-    private String  name;
+    private final String  name;
 
-    private String  version;
+    private final String  version;
 
-    private String  description;
+    private final String  description;
 
-    private FeatureCodeExtractor    fcExtractor;
+    private final FeatureCodeExtractor    fcExtractor;
 
     private EncodeSigner            signer;
 
-    private Map<String, DeclarationBasedStructReader> idxByFcReaderMap;
+    private final Map<String, DeclarationBasedStructReader> idxByFcReaderMap;
 
-    private Map<String, DeclarationBasedStructWriter>  idxByFcWriterMap;
+    private final Map<String, DeclarationBasedStructWriter>  idxByFcWriterMap;
 
-    private Map<String, StructDeclaration> idxByNameMap;
+    private final Map<String, StructDeclaration> idxByNameMap;
 
     private DeclarationBasedStructReader    defaultReader;
 
@@ -87,13 +89,25 @@ public class StructSuit {
         return (dcl != null ? new SimpleStructInstance(dcl.getStructDeclaration()) : null);
     }
 
-    public StructInstance deserialize(ByteBuf buf) {
+    public StructInstance deserialize(ByteBuf buf) throws DecoderException {
         buf.readerIndex(0);
-
         String fc = fcExtractor.extract(buf);
         if (!fcExtractor.isValidFeatureCode(fc)) {
-            log.warn("[StructSuit]不支持的字节流：featureCode={}", fc);
-            return null;
+            buf.readerIndex(0);
+            if (!fcExtractor.isDoubleHex(buf)) {
+                log.warn("[StructSuit]不支持的字节流：featureCode={}", fc);
+                return null;
+            }
+
+            buf.readerIndex(0);
+            buf = BytesUtils.decodeHex(buf, 0, buf.readableBytes());
+
+            buf.readerIndex(0);
+            fc = fcExtractor.extract(buf);
+            if (!fcExtractor.isValidFeatureCode(fc)) {
+                log.warn("[StructSuit]不支持的字节流：featureCode={}", fc);
+                return null;
+            }
         }
 
         StructReader reader = idxByFcReaderMap.get(fc);

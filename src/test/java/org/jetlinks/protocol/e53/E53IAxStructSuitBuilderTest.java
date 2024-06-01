@@ -26,6 +26,7 @@ import org.reactivestreams.Subscriber;
 import reactor.core.publisher.BaseSubscriber;
 import reactor.util.context.Context;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 /**
@@ -47,6 +48,21 @@ public class E53IAxStructSuitBuilderTest {
     public void decodeReportProperties() throws DecoderException {
         String payload = "fa 11 01 02 10 00 0e 3f 8c cc cd 3f 99 99 9a 40 06 66 66 01 00".replace(" ", "");
         ByteBuf input = Unpooled.wrappedBuffer(Hex.decodeHex(payload));
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0x10[MessageId=258,humidity=1.2,highWaterMark=0,packageLength=14,lowWaterMark=1,MagicId=64017,temperature=1.1,luminance=2.1,MessageType=16]
+
+        DeviceMessage devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //{"messageType":"REPORT_PROPERTY","messageId":"258","deviceId":"devId-001","properties":{"luminance":2.1,"temperature":1.1,"lowWaterMark":1,"humidity":1.2,"highWaterMark":0},"timestamp":1711782640801}
+    }
+
+    @Test
+    public void decodeReportProperties2() throws DecoderException {
+        String payload = "fa 11 01 02 10 00 0e 3f 8c cc cd 3f 99 99 9a 40 06 66 66 01 00".replace(" ", "");
+        ByteBuf input = Unpooled.wrappedBuffer(payload.getBytes(StandardCharsets.UTF_8)); // 模拟二次Hex
 
         StructInstance structInst;
         structInst = suit.deserialize(input);

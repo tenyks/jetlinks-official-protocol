@@ -39,13 +39,18 @@ public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
 
     @Override
     public DeviceMessage decode(MessageCodecContext context, ByteBuf buf) {
-        StructInstance structInst = structSuit.deserialize(buf);
-        if (structInst == null) return null;
+        try {
+            StructInstance structInst = structSuit.deserialize(buf);
+            if (structInst == null) return null;
 
-        MapperContext mapperContext = getOrCreateContext(context);
+            MapperContext mapperContext = getOrCreateContext(context);
 
-        DeviceMessage deviceMsg = mapper.toDeviceMessage(mapperContext, structInst);
-        return deviceMsg;
+            DeviceMessage deviceMsg = mapper.toDeviceMessage(mapperContext, structInst);
+            return deviceMsg;
+        } catch (Exception e) {
+            log.error("[Decoder]解码消息失败：", e);
+            return null;
+        }
     }
 
     @Override

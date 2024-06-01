@@ -504,7 +504,10 @@ public class E53IAxProtocolSupport {
     }
 
     private static class E53IAxFeatureCodeExtractor implements FeatureCodeExtractor {
-        private static final short MAGIC_ID_OF_IA2_V1 = (short)0xfa11;
+        private static final byte[] MAGIC_ID_OF_IA2_V1 = new byte[]{(byte) 0xfa, (byte) 0x11};
+        private static final byte[] MAGIC_ID_OF_IA2_V1_DOUBLE_HEX = new byte[]{
+                (byte) 0x66, (byte) 0x61, (byte)0x31, (byte)0x31
+        };
 
         @Override
         public String extract(ByteBuf buf) {
@@ -515,9 +518,7 @@ public class E53IAxProtocolSupport {
             }
             buf.readBytes(headerBuf);
 
-            short magId = (short)(((short) headerBuf[0]) << 8 | (short)headerBuf[1]);
-
-            if (magId != MAGIC_ID_OF_IA2_V1) {
+            if (headerBuf[0] != MAGIC_ID_OF_IA2_V1[0] && headerBuf[1] != MAGIC_ID_OF_IA2_V1[1]) {
                 return "WRONG_MAGIC_ID:" + Hex.encodeHexString(headerBuf);
             }
 
@@ -528,6 +529,21 @@ public class E53IAxProtocolSupport {
         public boolean isValidFeatureCode(String featureCode) {
             return (featureCode != null && featureCode.startsWith("CMD:"));
         }
+
+        @Override
+        public boolean isDoubleHex(ByteBuf buf) {
+            byte[] headerBuf = new byte[4];
+            if (buf.readableBytes() < headerBuf.length) return false;
+
+            buf.readBytes(headerBuf);
+
+            return (
+                    headerBuf[0] == MAGIC_ID_OF_IA2_V1_DOUBLE_HEX[0] &&
+                    headerBuf[1] == MAGIC_ID_OF_IA2_V1_DOUBLE_HEX[1] &&
+                    headerBuf[2] == MAGIC_ID_OF_IA2_V1_DOUBLE_HEX[2] &&
+                    headerBuf[3] == MAGIC_ID_OF_IA2_V1_DOUBLE_HEX[3]
+            );
+        }
     }
 
     private static class E53IAxEncodeSigner implements EncodeSigner {
@@ -537,8 +553,8 @@ public class E53IAxProtocolSupport {
             int saveWriterIdx = buf.writerIndex();
 
             buf.writerIndex(0);
-            buf.writeByte((byte)(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2_V1 >> 8 & 0xFF));
-            buf.writeByte((byte)(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2_V1 & 0xFF));
+            buf.writeByte(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2_V1[0]);
+            buf.writeByte(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2_V1[1]);
 
             buf.writerIndex(saveWriterIdx);
 
