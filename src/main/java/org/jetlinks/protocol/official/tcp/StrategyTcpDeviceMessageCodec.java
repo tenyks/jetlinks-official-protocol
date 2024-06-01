@@ -32,9 +32,9 @@ public class StrategyTcpDeviceMessageCodec implements DeviceMessageCodec {
             "TCP认证配置", "")
             .add(CONFIG_KEY_SECURE_KEY, "secureKey", "密钥", new PasswordType());
 
-    private BinaryMessageCodec  codec;
+    private final BinaryMessageCodec  codec;
 
-    private IntercommunicateStrategy itcmncStrategy;
+    private final IntercommunicateStrategy itcmncStrategy;
 
     public StrategyTcpDeviceMessageCodec(BinaryMessageCodec codec, IntercommunicateStrategy strategy) {
         this.codec = codec;

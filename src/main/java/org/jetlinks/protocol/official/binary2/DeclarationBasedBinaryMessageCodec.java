@@ -7,6 +7,8 @@ import org.jetlinks.core.message.codec.MessageCodecContext;
 import org.jetlinks.core.message.codec.MessageDecodeContext;
 import org.jetlinks.core.message.codec.MessageEncodeContext;
 import org.jetlinks.protocol.official.core.ByteUtils;
+import org.jetlinks.supports.protocol.serial.PayloadParserSuit;
+import org.jetlinks.supports.protocol.serial.PayloadWriterSuit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,11 +25,11 @@ public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
 
     private static final Logger log = LoggerFactory.getLogger(DeclarationBasedBinaryMessageCodec.class);
 
-    private StructSuit                   structSuit;
+    private final StructSuit                   structSuit;
 
-    private StructAndMessageMapper       mapper;
+    private final StructAndMessageMapper       mapper;
 
-    private Map<String, MapperContext>   contextMap; //TODO 优化：自动释放、并发控制
+    private final Map<String, MapperContext>   contextMap; //TODO 优化：自动释放、并发控制
 
     public DeclarationBasedBinaryMessageCodec(StructSuit structSuit, StructAndMessageMapper mapper) {
         this.structSuit = structSuit;
@@ -43,7 +45,6 @@ public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
         MapperContext mapperContext = getOrCreateContext(context);
 
         DeviceMessage deviceMsg = mapper.toDeviceMessage(mapperContext, structInst);
-        
         return deviceMsg;
     }
 

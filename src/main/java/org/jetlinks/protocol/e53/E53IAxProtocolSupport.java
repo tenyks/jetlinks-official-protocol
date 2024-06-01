@@ -13,6 +13,7 @@ import org.jetlinks.protocol.official.PluginConfig;
 import org.jetlinks.protocol.official.binary2.*;
 import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
+import org.jetlinks.protocol.official.lwm2m.StructLwM2M11DeviceMessageCodec;
 import org.jetlinks.protocol.official.tcp.StrategyTcpDeviceMessageCodec;
 
 /**
@@ -37,8 +38,7 @@ public class E53IAxProtocolSupport {
         IntercommunicateStrategy strategy = buildIntercommunicateStrategy(config);
         BinaryMessageCodec bmCodec = buildBinaryMessageCodec(config);
 
-        StrategyTcpDeviceMessageCodec devMsgCodec = new StrategyTcpDeviceMessageCodec(bmCodec, strategy);
-        return devMsgCodec;
+        return new StructLwM2M11DeviceMessageCodec(bmCodec, strategy);
     }
 
     public static BinaryMessageCodec buildBinaryMessageCodec(PluginConfig config) {

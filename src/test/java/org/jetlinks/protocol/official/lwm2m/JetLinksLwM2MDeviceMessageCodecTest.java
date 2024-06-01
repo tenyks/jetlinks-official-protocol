@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
 
 public class JetLinksLwM2MDeviceMessageCodecTest {
 
-    private JetLinksLwM2MDeviceMessageCodec codec = new JetLinksProtocolSupportProvider().createLwM2MDeviceMessageCodec();
+    private SimpleLwM2M11DeviceMessageCodec codec = new JetLinksProtocolSupportProvider().createLwM2MDeviceMessageCodec();
 
     @Test
     public void decodeReportPropertiesMessage() {

@@ -23,23 +23,24 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * TODO 需迁移到公共包
  * @author v-lizy81
  * @date 2023/4/11 21:21
  */
-public class RouteMessageCodec {
+public class RouteGuidedSimpleMessageCodec {
 
-    private static final Logger log = LoggerFactory.getLogger(RouteMessageCodec.class);
+    private static final Logger log = LoggerFactory.getLogger(RouteGuidedSimpleMessageCodec.class);
 
-    private PayloadParserSuit parserSuit;
+    private final PayloadParserSuit     parserSuit;
 
-    private PayloadWriterSuit writerSuit;
+    private final PayloadWriterSuit     writerSuit;
 
-    private List<MessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>>    dclList;
+    private final List<MessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>>    dclList;
 
-    private Map<Class<? extends DeviceMessage>, MessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>> dclIdx;
+    private final Map<Class<? extends DeviceMessage>, MessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>> dclIdx;
 
-    public RouteMessageCodec(PayloadParserSuit parserSuit, PayloadWriterSuit writerSuit,
-                             List<MessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>> dclList) {
+    public RouteGuidedSimpleMessageCodec(PayloadParserSuit parserSuit, PayloadWriterSuit writerSuit,
+                                         List<MessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>> dclList) {
         this.parserSuit = parserSuit;
         this.writerSuit = writerSuit;
         this.dclList = dclList;

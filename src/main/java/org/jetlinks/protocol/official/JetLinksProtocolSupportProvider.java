@@ -10,10 +10,11 @@ import org.jetlinks.protocol.dataSky.DataSkyDedicatedMessageCodec;
 import org.jetlinks.protocol.dataSky.DataSkyProtocolSupport;
 import org.jetlinks.protocol.e53.E53IAxProtocolSupport;
 import org.jetlinks.protocol.official.http.QiYunHttpDeviceMessageCodec;
+import org.jetlinks.protocol.official.lwm2m.QiYunLwM2MAuthenticator;
 import org.jetlinks.protocol.xuebao.XueBaoWaWaProtocolSupport;
 import org.jetlinks.protocol.official.core.TopicMessageCodec;
 import org.jetlinks.protocol.official.http.JetLinksHttpDeviceMessageCodec;
-import org.jetlinks.protocol.official.lwm2m.JetLinksLwM2MDeviceMessageCodec;
+import org.jetlinks.protocol.official.lwm2m.SimpleLwM2M11DeviceMessageCodec;
 import org.jetlinks.protocol.official.mqtt.JetLinksMqttDeviceMessageCodec;
 import org.jetlinks.protocol.official.tcp.TcpDeviceMessageCodec;
 import org.jetlinks.protocol.official.udp.UDPDeviceMessageCodec;
@@ -133,9 +134,10 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
                     ));
 
             //LwM2M
-            support.addConfigMetadata(DefaultTransport.LwM2M, JetLinksLwM2MDeviceMessageCodec.CONFIG);
-            JetLinksLwM2MDeviceMessageCodec l2M2MDeviceMessageCodec = createLwM2MDeviceMessageCodec();
-            support.addAuthenticator(DefaultTransport.LwM2M, l2M2MDeviceMessageCodec);
+            support.addConfigMetadata(DefaultTransport.LwM2M, QiYunLwM2MAuthenticator.CONFIG);
+            support.addAuthenticator(DefaultTransport.LwM2M, new QiYunLwM2MAuthenticator());
+
+            SimpleLwM2M11DeviceMessageCodec l2M2MDeviceMessageCodec = createLwM2MDeviceMessageCodec();
             if (E53IAxProtocolSupport.NAME_OF_IA2.equals(pluginConfig.getLwM2MCodec())) {
                 support.addMessageCodecSupport(E53IAxProtocolSupport.buildDeviceMessageCodec(pluginConfig));
             } else {
@@ -146,8 +148,8 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
         });
     }
 
-    public JetLinksLwM2MDeviceMessageCodec createLwM2MDeviceMessageCodec() {
-        return new JetLinksLwM2MDeviceMessageCodec(
+    public SimpleLwM2M11DeviceMessageCodec createLwM2MDeviceMessageCodec() {
+        return new SimpleLwM2M11DeviceMessageCodec(
                 createJsonParserSuit(),
                 createJsonWriterSuit()
         );
