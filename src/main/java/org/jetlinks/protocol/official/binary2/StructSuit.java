@@ -95,7 +95,7 @@ public class StructSuit {
         if (!fcExtractor.isValidFeatureCode(fc)) {
             buf.readerIndex(0);
             if (!fcExtractor.isDoubleHex(buf)) {
-                log.warn("[StructSuit]不支持的字节流：featureCode={}", fc);
+                log.warn("[StructSuit]不支持的报文：featureCode={}", fc);
                 return null;
             }
 
@@ -105,7 +105,7 @@ public class StructSuit {
             buf.readerIndex(0);
             fc = fcExtractor.extract(buf);
             if (!fcExtractor.isValidFeatureCode(fc)) {
-                log.warn("[StructSuit]不支持的字节流：featureCode={}", fc);
+                log.warn("[StructSuit]不支持的报文：featureCode={}", fc);
                 return null;
             }
         }

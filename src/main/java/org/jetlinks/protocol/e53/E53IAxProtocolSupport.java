@@ -504,7 +504,8 @@ public class E53IAxProtocolSupport {
     }
 
     private static class E53IAxFeatureCodeExtractor implements FeatureCodeExtractor {
-        private static final byte[] MAGIC_ID_OF_IA2_V1 = new byte[]{(byte) 0xfa, (byte) 0x11};
+        private static final short  MAGIC_ID_OF_IA2_V1 = (short)0xfa11;
+        private static final byte[] MAGIC_ID_OF_IA2_V1_HEX = new byte[]{(byte) 0xfa, (byte) 0x11};
         private static final byte[] MAGIC_ID_OF_IA2_V1_DOUBLE_HEX = new byte[]{
                 (byte) 0x66, (byte) 0x61, (byte)0x31, (byte)0x31
         };
@@ -513,12 +514,13 @@ public class E53IAxProtocolSupport {
         public String extract(ByteBuf buf) {
             byte[] headerBuf = new byte[8];
 
+            buf.readerIndex(0);
             if (buf.readableBytes() < headerBuf.length) {
-                return "WRONG_SIZE:" + Hex.encodeHexString(headerBuf);
+                return "WRONG_SIZE:" + Hex.encodeHexString(buf.array());
             }
             buf.readBytes(headerBuf);
 
-            if (headerBuf[0] != MAGIC_ID_OF_IA2_V1[0] && headerBuf[1] != MAGIC_ID_OF_IA2_V1[1]) {
+            if (headerBuf[0] != MAGIC_ID_OF_IA2_V1_HEX[0] && headerBuf[1] != MAGIC_ID_OF_IA2_V1_HEX[1]) {
                 return "WRONG_MAGIC_ID:" + Hex.encodeHexString(headerBuf);
             }
 
@@ -553,8 +555,8 @@ public class E53IAxProtocolSupport {
             int saveWriterIdx = buf.writerIndex();
 
             buf.writerIndex(0);
-            buf.writeByte(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2_V1[0]);
-            buf.writeByte(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2_V1[1]);
+            buf.writeByte(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2_V1_HEX[0]);
+            buf.writeByte(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2_V1_HEX[1]);
 
             buf.writerIndex(saveWriterIdx);
 

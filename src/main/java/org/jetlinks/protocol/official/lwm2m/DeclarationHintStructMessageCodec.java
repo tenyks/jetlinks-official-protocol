@@ -52,7 +52,7 @@ public class DeclarationHintStructMessageCodec {
 
         if (MessageContentType.STRUCT.equals(dcl.getPayloadContentType())) {
             DeviceMessage devMsg = backendCodec.decode(context, message.getPayload());
-            return Flux.just(devMsg);
+            return devMsg != null ? Flux.just(devMsg) : Flux.empty();
         }
 
         return Flux.empty();
