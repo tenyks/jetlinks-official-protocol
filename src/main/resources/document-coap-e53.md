@@ -23,9 +23,9 @@ E53 IAx板通信协议
 
 |名称|编码|值类型|说明|
 |---|---|---|---|
-|温度|temperature|float|单位：摄氏度|
-|相对湿度|humidity|float|单位：RH%|
-|亮度|luminance|float|单位：流明|
+|温度|temperature|FLOAT32|单位：摄氏度|
+|相对湿度|humidity|FLOAT32|单位：RH%|
+|亮度|luminance|FLOAT32|单位：流明|
 |低水位标志|lowWaterMark|UINT8|0=不是，1=是|
 |高水位标志|highWaterMark|UINT8|0=不是，1=是|
 |外设工作标志|workingFlag|UINT16|0=停止，1=运行中, 第0位用于表示给水，第1位用于表示排水，第2位用于表示送风，第3位用于表示排风，第4位用于表示加热器A，第5位用于表示加热器B，第6位用于表示补光|
@@ -40,9 +40,9 @@ E53 IAx板通信协议
 
 |名称|编码|类型|说明|
 |---|---|---|---|
-|温度|temperature|float|参数相应属性|
-|相对湿度|humidity|float|参数相应属性|
-|亮度|luminance|float|参数相应属性|
+|温度|temperature|FLOAT32|参数相应属性|
+|相对湿度|humidity|FLOAT32|参数相应属性|
+|亮度|luminance|FLOAT32|参数相应属性|
 |低水位标志|lowWaterMark|UINT8|参数相应属性|
 |高水位标志|highWaterMark|UINT8|参数相应属性|
 |外设工作标志|workingFlag|UINT16|参数相应属性|
