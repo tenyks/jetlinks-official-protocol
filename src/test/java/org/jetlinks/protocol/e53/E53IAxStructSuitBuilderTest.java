@@ -46,7 +46,7 @@ public class E53IAxStructSuitBuilderTest {
 
     @Test
     public void decodeReportProperties() throws DecoderException {
-        String payload = "fa 11 01 02 10 00 0e 3f 8c cc cd 3f 99 99 9a 40 06 66 66 01 00".replace(" ", "");
+        String payload = "fa 11 01 02 10 10 3f 8c cc cd 3f 99 99 9a 40 06 66 66 01 00 F1 F2".replace(" ", "");
         ByteBuf input = Unpooled.wrappedBuffer(Hex.decodeHex(payload));
 
         StructInstance structInst;

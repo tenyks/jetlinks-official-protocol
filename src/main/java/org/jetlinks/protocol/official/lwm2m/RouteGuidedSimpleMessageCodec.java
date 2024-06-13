@@ -50,7 +50,12 @@ public class RouteGuidedSimpleMessageCodec {
     }
 
     public Flux<DeviceMessage> decode(LwM2MUplinkMessage message) {
-        Tuple2<JSONObject, PayloadParser> parsedRst = null;
+        Tuple2<JSONObject, PayloadParser> parsedRst;
+
+        if (log.isDebugEnabled()) {
+            log.debug("[LwM2M]待解码字节：{}", message.getPayloadAsHex(32));
+        }
+
         try {
             parsedRst = parseMessage(message.getPath(), message.payloadAsBytes());
         } catch (IOException e) {

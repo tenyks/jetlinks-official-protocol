@@ -158,6 +158,9 @@ public class E53IAxProtocolSupport {
         field = buildIOParamFieldDcl(field.asAnchor(), "高水位标志", "highWaterMark", BaseDataType.UINT8);
         structDcl.addField(field.addMeta(ThingAnnotation.Property()));
 
+        field = buildIOParamFieldDcl(field.asAnchor(), "外设工作标志", "workingFlag", BaseDataType.UINT16);
+        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+
         return structDcl;
     }
 
