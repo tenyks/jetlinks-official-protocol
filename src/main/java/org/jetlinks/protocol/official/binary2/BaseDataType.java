@@ -225,6 +225,12 @@ public enum BaseDataType {
     FLOAT {
         @Override
         public Object read(ByteBuf buf, short size) {
+            int intVal = buf.readInt();
+
+            return Float.intBitsToFloat(intVal);
+        }
+
+        public Object _read(ByteBuf buf, short size) {
             //获取 字节数组转化成的16进制字符串
             String BinaryStr = bytes2BinaryStr(buf, size);
             //符号位S
@@ -245,11 +251,17 @@ public enum BaseDataType {
 
         @Override
         public short write(ByteBuf buf, Object value) {
+            float fVal;
+
             if (value == null) {
-                buf.writeFloat(0);
+                fVal = 0.0f;
+            } else if (value instanceof Float) {
+                fVal = (Float) value;
             } else {
-                buf.writeFloat(((Number) value).floatValue());
+                fVal = ((Number) value).floatValue();
             }
+
+            buf.writeInt(Float.floatToIntBits(fVal));
             return 4;
         }
 
