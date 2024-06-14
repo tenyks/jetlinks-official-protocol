@@ -5,7 +5,7 @@ import javax.annotation.Nonnull;
 public class PreviousFieldAnchor implements DynamicAnchor {
 
     @Nonnull
-    private StructFieldDeclaration targetField;
+    private final StructFieldDeclaration targetField;
 
     private StructInstance      currentStructInst;
 
@@ -36,4 +36,8 @@ public class PreviousFieldAnchor implements DynamicAnchor {
         this.currentStructInst = structInst;
     }
 
+    @Override
+    public String toString() {
+        return String.format("PreviousFieldAnchor[%s]", targetField.getCode());
+    }
 }

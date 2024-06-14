@@ -1,6 +1,8 @@
 package org.jetlinks.protocol.official.binary2;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.buffer.UnpooledDirectByteBuf;
 import io.netty.handler.codec.base64.Base64Encoder;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
@@ -8,6 +10,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -222,7 +225,22 @@ public enum BaseDataType {
     FLOAT {
         @Override
         public Object read(ByteBuf buf, short size) {
-            return buf.readFloat();
+            //获取 字节数组转化成的16进制字符串
+            String BinaryStr = bytes2BinaryStr(buf, size);
+            //符号位S
+            long s = Long.parseLong(BinaryStr.substring(0, 1));
+            //指数位E
+            long e = Long.parseLong(BinaryStr.substring(1, 9),2);
+            //位数M
+            String M = BinaryStr.substring(9);
+            float m = 0, a, b;
+            for (int i = 0; i < M.length(); i++) {
+                a = Integer.parseInt(M.charAt(i) + "");
+                b = (float) Math.pow(2, i + 1);
+                m = m + (a / b);
+            }
+
+            return (float) ((Math.pow(-1, s)) * (1+m) * (Math.pow(2,(e-127))));
         }
 
         @Override
@@ -366,6 +384,19 @@ public enum BaseDataType {
 
     public abstract short size();
 
+    /**
+     * 将字节数组转换成16进制字符串
+     */
+    public static String bytes2BinaryStr(ByteBuf buf, int length){
+        StringBuilder binaryStr = new StringBuilder();
+
+        for (int i = 0; i < length; i++) {
+            String str = Integer.toBinaryString((buf.readByte() & 0xFF) + 0x100).substring(1);
+            binaryStr.append(str);
+        }
+
+        return binaryStr.toString();
+    }
 
     private static BaseDataType loopUpType(Object data) {
         if (data == null) {

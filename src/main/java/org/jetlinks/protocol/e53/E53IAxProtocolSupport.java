@@ -140,7 +140,7 @@ public class E53IAxProtocolSupport {
         structDcl.addField(buildMessageIdFieldDcl());
         structDcl.addField(buildMessageTypeFieldDcl((byte)0x10));
 
-        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)14);
+        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)16);
         structDcl.addField(field);
 
         field = buildIOParamFieldDcl(field.asAnchor(), "温度", "temperature", BaseDataType.FLOAT);
@@ -497,7 +497,7 @@ public class E53IAxProtocolSupport {
     }
 
     private static DefaultFieldDeclaration buildIOParamsPayloadLengthFieldDcl(byte defaultValue) {
-        return new DefaultFieldDeclaration("输入/输出参数负载总字节数", "packageLength", BaseDataType.UINT8, (short) 5)
+        return new DefaultFieldDeclaration("输入/输出参数负载总字节数", "paramsPayloadLength", BaseDataType.UINT16, (short) 5)
                 .setDefaultValue(defaultValue);
     }
 
