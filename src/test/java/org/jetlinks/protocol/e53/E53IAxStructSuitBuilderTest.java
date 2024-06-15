@@ -61,8 +61,7 @@ public class E53IAxStructSuitBuilderTest {
 
     @Test
     public void decodeReportProperties2() throws DecoderException {
-//        String payload = "fa 11 00 01 10 00 10  0c 00 00 00 00 00 00 14 00 00 22 3d 02 03 00 00".replace(" ", "");
-        String payload = "fa 11 00 01 10 00 10   a4 70 45 41 0000a041baf5084602030000".replace(" ", "");
+        String payload = "fa11006a100010414570a441a000004608f5ba02030000".replace(" ", "");
         ByteBuf input = Unpooled.wrappedBuffer(payload.getBytes(StandardCharsets.UTF_8)); // 模拟二次Hex
 
         StructInstance structInst;
@@ -78,6 +77,22 @@ public class E53IAxStructSuitBuilderTest {
     @Test
     public void decodeFunInvReply() throws DecoderException {
         String payload = "fa 11 ff 03 f0 06 01 1e 01 02 03 04".replace(" ", "");
+        ByteBuf input = Unpooled.wrappedBuffer(Hex.decodeHex(payload));
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0xF0[]
+
+        DeviceMessage devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //
+    }
+
+    @Test
+    public void decodeFunInvReply2() throws DecoderException {
+        // FunInv = FA 11 00 06 110005010000012C
+        String payload = "fa11 0011 f0 06 01 ab 0000000b".replace(" ", "");
         ByteBuf input = Unpooled.wrappedBuffer(Hex.decodeHex(payload));
 
         StructInstance structInst;

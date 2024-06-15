@@ -515,7 +515,7 @@ public class E53IAxProtocolSupport {
 
         @Override
         public String extract(ByteBuf buf) {
-            byte[] headerBuf = new byte[8];
+            byte[] headerBuf = new byte[7];
 
             buf.readerIndex(0);
             if (buf.readableBytes() < headerBuf.length) {
