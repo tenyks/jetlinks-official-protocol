@@ -12,6 +12,7 @@ import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.property.*;
 import org.jetlinks.core.route.LwM2MRoute;
+import org.jetlinks.core.route.MqttRoute;
 import org.jetlinks.protocol.official.binary2.BinaryMessageCodec;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
 import org.jetlinks.protocol.official.lwm2m.DeclarationHintStructMessageCodec;
@@ -44,12 +45,12 @@ public class StructMqttDeviceMessageCodec {
     private final DeclarationHintStructMessageCodec codec;
 
     public StructMqttDeviceMessageCodec(BinaryMessageCodec backend, IntercommunicateStrategy strategy) {
-        List<MessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>> dclList = new ArrayList<>();
+        List<MessageCodecDeclaration<MqttRoute, LwM2MUplinkMessage>> dclList = new ArrayList<>();
 
-        dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerReport.getPath())
-                        .upstreamResponse()
-                        .group("属性上报").messageType("ReportPropertyMessage")
+        dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, LwM2MUplinkMessage>()
+                .route(MqttRoute.builder("tt_v1/+/+/+/uplink")
+                        .upstream(true)
+                        .group("OverMQTT上行的消息")
                         .description("上报物模型属性数据")
                         .example("{\"messageType\":\"ReportPropertyMessage\",\"properties\":{\"属性ID\":\"属性值\"}}")
                         .build())
@@ -65,70 +66,6 @@ public class StructMqttDeviceMessageCodec {
                         .example("{\"messageType\":\"EventMessage\",\"data\":{\"key\":\"value\"}}")
                         .build())
                 .thingMessageType(EventMessage.class)
-                .upstreamRoutePredict(this::isUpstreamRouteMatched)
-                .payloadContentType(MessageContentType.STRUCT)
-        );
-        dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerCommand.getPath())
-                        .downstreamRequest(LwM2MOperation.Write)
-                        .group("调用功能").messageType("FunctionInvokeMessage")
-                        .description("平台下发功能调用指令")
-                        .example("{\"messageType\":\"FunctionInvokeMessage\",\"messageId\":\"消息ID,回复时需要一致.\"," +
-                                "\"functionId\":\"功能标识\"," +
-                                "\"inputs\":[{\"name\":\"参数名\",\"value\":\"参数值\"}]}")
-                        .build())
-                .thingMessageType(FunctionInvokeMessage.class)
-                .payloadContentType(MessageContentType.STRUCT)
-        );
-        dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder("/19/*/0")
-                        .upstreamResponse()
-                        .group("调用功能").messageType("FunctionInvokeMessageReply")
-                        .description("设备响应平台下发的功能调用指令")
-                        .example("{\"messageType\":\"FunctionInvokeMessageReply\",\"messageId\":\"消息ID,与下发指令中的messageId一致.\"," +
-                                "\"output\":\"输出结果,格式与物模型中定义的类型一致\"")
-                        .build())
-                .thingMessageType(FunctionInvokeMessageReply.class)
-                .upstreamRoutePredict(this::isUpstreamRouteMatched)
-                .payloadContentType(MessageContentType.STRUCT)
-        );
-        dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerCommand.getPath())
-                        .downstreamRequest(LwM2MOperation.Write)
-                        .group("读取属性").messageType("ReadPropertyMessage")
-                        .description("平台下发读取物模型属性数据指令")
-                        .example("{\"messageType\":\"ReadPropertyMessage\",\"messageId\":\"消息ID,回复时需要一致.\",\"properties\":[\"属性ID\"]}")
-                        .build())
-                .thingMessageType(ReadPropertyMessage.class)
-                .payloadContentType(MessageContentType.STRUCT)
-        );
-        dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerCommand.getPath())
-                        .upstreamResponse()
-                        .group("读取属性").messageType("ReadPropertyMessageReply")
-                        .description("对平台下发的读取属性指令进行响应")
-                        .example("{\"messageType\":\"ReadPropertyMessageReply\",\"messageId\":\"消息ID,与读取指令中的ID一致.\",\"properties\":{\"属性ID\":\"属性值\"}}")
-                        .build())
-                .thingMessageType(ReadPropertyMessageReply.class)
-                .upstreamRoutePredict(this::isUpstreamRouteMatched)
-                .payloadContentType(MessageContentType.STRUCT)
-        );
-        dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerCommand.getPath())
-                        .downstreamRequest(LwM2MOperation.Write)
-                        .group("修改属性").messageType("WritePropertyMessage")
-                        .description("平台下发修改物模型属性数据指令")
-                        .example("{\"messageType\":\"WritePropertyMessage\",\"messageId\":\"消息ID,回复时需要一致.\",\"properties\":{\"属性ID\":\"属性值\"}}").build())
-                .thingMessageType(WritePropertyMessage.class)
-                .payloadContentType(MessageContentType.STRUCT)
-        );
-        dclList.add(new SimpleMessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>()
-                .route(LwM2MRoute.builder(LwM2MResource.BinaryAppDataContainerCommand.getPath())
-                        .upstreamResponse()
-                        .group("修改属性").messageType("WritePropertyMessageReply")
-                        .description("对平台下发的修改属性指令进行响应")
-                        .example("{\"messageType\":\"WritePropertyMessageReply\",\"messageId\":\"消息ID,与修改指令中的ID一致.\",\"properties\":{\"属性ID\":\"属性值\"}}").build())
-                .thingMessageType(WritePropertyMessageReply.class)
                 .upstreamRoutePredict(this::isUpstreamRouteMatched)
                 .payloadContentType(MessageContentType.STRUCT)
         );
