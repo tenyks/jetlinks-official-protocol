@@ -3,8 +3,7 @@ package org.jetlinks.protocol.official.binary2;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class DefaultFieldDeclaration implements StructFieldDeclaration, Serializable {
 
@@ -37,6 +36,8 @@ public class DefaultFieldDeclaration implements StructFieldDeclaration, Serializ
     private boolean             isPayloadField;
 
     private Object              defaultValue;
+
+    private Set<Object>         validValues;
 
     private List<ThingAnnotation> thingAnnotations;
 
@@ -83,6 +84,15 @@ public class DefaultFieldDeclaration implements StructFieldDeclaration, Serializ
 
     public DefaultFieldDeclaration setDefaultValue(Object defaultValue) {
         this.defaultValue = defaultValue;
+        return this;
+    }
+
+    public DefaultFieldDeclaration addValidValue(Object... optVals) {
+        if (optVals == null || optVals.length == 0) return this;
+
+        if (this.validValues == null) this.validValues = new HashSet<>();
+        Collections.addAll(this.validValues, optVals);
+
         return this;
     }
 
