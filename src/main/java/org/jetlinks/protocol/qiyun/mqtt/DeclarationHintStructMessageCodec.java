@@ -32,16 +32,16 @@ public class DeclarationHintStructMessageCodec {
 
     private final BinaryMessageCodec    backendCodec;
 
-    private final String                southAppId;
+    private final String                manufacturerCode;
 
     private final List<MessageCodecDeclaration<MqttRoute, MqttMessage>>    dclList;
 
     private final Map<Class<? extends DeviceMessage>, MessageCodecDeclaration<MqttRoute, MqttMessage>> dclIdx;
 
-    public DeclarationHintStructMessageCodec(String southAppId,
+    public DeclarationHintStructMessageCodec(String manufacturerCode,
                                              List<MessageCodecDeclaration<MqttRoute, MqttMessage>> dclList,
                                              BinaryMessageCodec backendCodec) {
-        this.southAppId = southAppId;
+        this.manufacturerCode = manufacturerCode;
         this.dclList = dclList;
         this.backendCodec = backendCodec;
 
@@ -84,7 +84,7 @@ public class DeclarationHintStructMessageCodec {
             String deviceId = device.getDeviceId();
 
             SimpleMqttMessage msg = new SimpleMqttMessage();
-            msg.setTopic(route.getSolidTopic(southAppId, productId, deviceId));
+            msg.setTopic(route.getTopicTemplate().concreteTopic(manufacturerCode, productId, deviceId));
             msg.setPayload(buf);
 
             return Flux.just(msg);

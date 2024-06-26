@@ -5,6 +5,7 @@ import org.jetlinks.core.message.Message;
 import org.jetlinks.core.message.codec.*;
 import org.jetlinks.core.message.codec.lwm2m.LwM2MUplinkMessage;
 import org.jetlinks.core.message.codec.mqtt.MqttMessage;
+import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.route.MqttRoute;
 import org.jetlinks.protocol.official.binary2.BinaryMessageCodec;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
@@ -51,10 +52,11 @@ public class StructMqttDeviceMessageCodec {
                         .group("OverMQTT下行的消息")
                         .description("通过MQTT协议封装下行行传输的消息")
                         .build())
+                .thingMessageType(FunctionInvokeMessage.class)
                 .payloadContentType(MessageContentType.STRUCT)
         );
 
-        this.codec = new DeclarationHintStructMessageCodec(dclList, backend);
+        this.codec = new DeclarationHintStructMessageCodec("MiChong", dclList, backend);
     }
 
     public Transport getSupportTransport() {
@@ -63,7 +65,7 @@ public class StructMqttDeviceMessageCodec {
 
     @Nonnull
     public Flux<? extends Message> decode(@Nonnull MessageDecodeContext context) {
-        LwM2MUplinkMessage message = (LwM2MUplinkMessage) context.getMessage();
+        MqttMessage message = (MqttMessage) context.getMessage();
 
         return codec.decode(context, message);
     }
