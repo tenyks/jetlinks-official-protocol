@@ -4,6 +4,8 @@ public abstract class AbstractFieldInstance implements FieldInstance {
 
     private StructFieldDeclaration fieldDcl;
 
+    private String  preferCode;
+
     private Short   offset;
 
     private Short   size;
@@ -12,6 +14,14 @@ public abstract class AbstractFieldInstance implements FieldInstance {
         this.fieldDcl = fieldDcl;
         this.offset = offset;
         this.size = size;
+    }
+
+    public String getPreferCode() {
+        return preferCode;
+    }
+
+    public void setPreferCode(String preferCode) {
+        this.preferCode = preferCode;
     }
 
     @Override
@@ -31,7 +41,7 @@ public abstract class AbstractFieldInstance implements FieldInstance {
 
     @Override
     public String getCode() {
-        return fieldDcl.getCode();
+        return (preferCode != null ? preferCode : fieldDcl.getCode());
     }
 
     @Override

@@ -19,5 +19,13 @@ public interface StructInstance {
 
     void addFieldInstance(FieldInstance inst);
 
+    default void addFieldInstance(Iterable<FieldInstance> instances) {
+        if (instances == null) return ;
+
+        for (FieldInstance fInst : instances) {
+            addFieldInstance(fInst);
+        }
+    }
+
     void addFieldInstance(String fieldCode, Object value);
 }

@@ -1,6 +1,7 @@
 package org.jetlinks.protocol.official.binary2;
 
 import io.netty.buffer.ByteBuf;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +20,8 @@ public class DeclarationBasedStructReader implements StructReader {
         this.structDcl = structDcl;
 
         this.partReaders = new ArrayList<>();
-        for (StructFieldDeclaration fieldDcl : structDcl.fields()) {
-            this.partReaders.add(new DeclarationBasedFieldReader(fieldDcl));
+        for (StructPartDeclaration partDcl : structDcl.parts()) {
+            this.partReaders.add(StructPartReader.create(partDcl));
         }
     }
 
@@ -29,7 +30,21 @@ public class DeclarationBasedStructReader implements StructReader {
         StructInstance sInst = new SimpleStructInstance(structDcl);
 
         for (StructPartReader partReader : partReaders) {
-            if (partReader instanceof FieldReader) {
+            if (partReader instanceof NRepeatFieldGroupReader) {
+                NRepeatFieldGroupReader fgReader = (NRepeatFieldGroupReader) partReader;
+                NRepeatFieldGroupDeclaration fgDcl = fgReader.getDeclaration();
+
+                DynamicAnchor dynamicAnchor = fgDcl.getDynamicAnchor();
+                if (dynamicAnchor != null) dynamicAnchor.bind(sInst);
+
+                List<FieldInstance> fInstList = fgReader.read(buf);
+                if (CollectionUtils.isEmpty(fInstList)) {
+                    log.error("[StructReader]字段读取返回空判定字节流反序列化为失败：fieldGroup={}", fgDcl);
+                    return null;
+                }
+
+                sInst.addFieldInstance(fInstList);
+            } else {
                 FieldReader fReader = (FieldReader) partReader;
                 StructFieldDeclaration fDcl = fReader.getDeclaration();
 
@@ -46,17 +61,7 @@ public class DeclarationBasedStructReader implements StructReader {
                 }
 
                 sInst.addFieldInstance(fInst);
-            } else {
-
             }
-
-
-
-
-
-
-
-
         }
 
         return sInst;

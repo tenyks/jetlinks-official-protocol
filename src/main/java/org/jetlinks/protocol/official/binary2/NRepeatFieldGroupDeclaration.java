@@ -1,7 +1,9 @@
 package org.jetlinks.protocol.official.binary2;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * 重复N次（根据报文实际值展开）的字段组
@@ -13,16 +15,15 @@ import java.util.List;
  */
 public interface NRepeatFieldGroupDeclaration extends StructPartDeclaration {
 
-    /**
-     * @return 分组编号，默认从1开始
-     */
-    default short firstNo() {
-        return 1;
-    }
-
     @Nullable
     StructFieldDeclaration          getNReferenceTo();
 
+    @Nonnull
     List<StructFieldDeclaration>    getIncludedFields();
 
+    /**
+     * 组实例解释后的后处理函数
+     */
+    @Nullable
+    Function<List<FieldInstance>, List<FieldInstance>> getInstancePostProcessor();
 }

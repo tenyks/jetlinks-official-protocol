@@ -32,11 +32,11 @@ public interface StructFieldDeclaration extends StructPartDeclaration {
      */
     short           getOffset();
 
-
-
     DynamicSize     getDynamicSize();
 
     Object          getDefaultValue();
+
+
 
     Iterable<ThingAnnotation> thingAnnotations();
 }

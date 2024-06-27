@@ -17,7 +17,7 @@ public interface NRepeatFieldGroupReader extends StructPartReader {
     NRepeatFieldGroupDeclaration getDeclaration();
 
     @Nullable
-    List<FieldInstance> read(ByteBuf buf);
+    List<FieldInstance> read(StructInstance structInst, ByteBuf buf);
 
     void bind(StructInstance structInst);
 }
