@@ -11,16 +11,16 @@ import java.util.Map;
 public class DefaultStructDeclaration implements StructDeclaration {
 
     @NotNull
-    private String      name;
+    private final String      name;
 
     @NotNull
-    private String      featureCode;
+    private final String      featureCode;
 
-    private List<ThingAnnotation> thingAnnotations;
+    private final List<ThingAnnotation> thingAnnotations;
 
-    private List<StructFieldDeclaration> fields;
+    private final List<StructPartDeclaration>   parts;
 
-    private Map<String, StructFieldDeclaration> idxByCodeMap;
+    private final Map<String, StructPartDeclaration>   idxByCodeMap;
 
     private CRCCalculator       crcCalculator;
 
@@ -40,20 +40,40 @@ public class DefaultStructDeclaration implements StructDeclaration {
         }
         this.name = name;
         this.featureCode = featureCode;
-        this.fields = new ArrayList<>();
+        this.parts = new ArrayList<>();
         this.idxByCodeMap = new HashMap<>();
         this.thingAnnotations = new ArrayList<>();
     }
 
     @Override
     public StructDeclaration addField(StructFieldDeclaration field) {
-        fields.add(field);
+        parts.add(field);
         idxByCodeMap.put(field.getCode(), field);
         return this;
     }
 
     @Override
+    public StructDeclaration addFieldGroup(NRepeatFieldGroupDeclaration fieldGrp) {
+        parts.add(fieldGrp);
+        return this;
+    }
+
+    @Override
     public StructFieldDeclaration getField(String code) {
+        StructPartDeclaration part = idxByCodeMap.get(code);
+
+        return (part instanceof StructFieldDeclaration ? (StructFieldDeclaration) part : null);
+    }
+
+    @Override
+    public NRepeatFieldGroupDeclaration getFieldGroup(String code) {
+        StructPartDeclaration part = idxByCodeMap.get(code);
+
+        return (part instanceof NRepeatFieldGroupDeclaration ? (NRepeatFieldGroupDeclaration) part : null);
+    }
+
+    @Override
+    public StructPartDeclaration getPart(String code) {
         return idxByCodeMap.get(code);
     }
 
@@ -93,8 +113,8 @@ public class DefaultStructDeclaration implements StructDeclaration {
     }
 
     @Override
-    public Iterable<StructFieldDeclaration> fields() {
-        return fields;
+    public Iterable<StructPartDeclaration> parts() {
+        return parts;
     }
 
     @Override

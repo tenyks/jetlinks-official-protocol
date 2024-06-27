@@ -2,18 +2,18 @@ package org.jetlinks.protocol.official.binary2;
 
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
 
+import javax.annotation.Nullable;
+
 /**
  * 字段结构声明
  * @author tenyks
  * @since 3.1
  * @version 1.0
  */
-public interface StructFieldDeclaration {
+public interface StructFieldDeclaration extends StructPartDeclaration {
 
-    /**
-     * 字段编码
-     */
-    String          getCode();
+    @Nullable
+    NRepeatFieldGroupDeclaration    includingGroup();
 
     boolean         isPayloadField();
 
@@ -32,7 +32,7 @@ public interface StructFieldDeclaration {
      */
     short           getOffset();
 
-    DynamicAnchor   getDynamicAnchor();
+
 
     DynamicSize     getDynamicSize();
 

@@ -4,11 +4,11 @@ import io.netty.buffer.ByteBuf;
 
 public class SumAndModCRCCalculator implements CRCCalculator {
 
-    private int beginIdx;
+    private final int beginIdx;
 
-    private int endIdx;
+    private final int endIdx;
 
-    private int mod;
+    private final int mod;
 
     /**
      *

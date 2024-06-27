@@ -128,10 +128,11 @@ public class MiChongV2ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("ReportData"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0x10));
+        structDcl.addField(buildLENFieldDcl((byte)0x00));
+        structDcl.addField(buildCMDFieldDcl((byte)0x10));
+        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
 
-        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)16);
+        DefaultFieldDeclaration field = buildPortNumFieldDcl((byte)0x05);
         structDcl.addField(field);
 
         field = buildIOParamFieldDcl(field.asAnchor(), "温度", "temperature", BaseDataType.FLOAT);
@@ -151,6 +152,8 @@ public class MiChongV2ProtocolSupport {
 
         field = buildIOParamFieldDcl(field.asAnchor(), "外设工作标志", "workingFlag", BaseDataType.UINT16);
         structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+
+        structDcl.addField(buildSUMFieldDcl());
 
         return structDcl;
     }
@@ -475,7 +478,7 @@ public class MiChongV2ProtocolSupport {
     /**
      * 公共字段：帧头
      */
-    private static DefaultFieldDeclaration buildSOPOfDown() {
+    private static DefaultFieldDeclaration buildSOP() {
         return new DefaultFieldDeclaration("公共：帧头", "SOP", BaseDataType.UINT8, (short)0)
                     .setDefaultValue((byte)0xAA)
                     .addValidValue((byte)0xAA, (byte)0x55); //下行时取值0xAA，上行时兼容：0xAA和0x55
@@ -514,8 +517,12 @@ public class MiChongV2ProtocolSupport {
                 .setDefaultValue((byte)0x00);
     }
 
+    private static DefaultFieldDeclaration buildPortNumFieldDcl(short absOffset) {
+        return new DefaultFieldDeclaration("设备端口数", "PORT_NUM", BaseDataType.UINT8, absOffset);
+    }
+
     private static CRCCalculator    buildCRCCalculatorInst() {
-        return new SumAndModCRCCalculator(6, 0, 100);
+        return new XORCRCCalculator(1, -1);
     }
 
     private static DefaultFieldDeclaration buildIOParamFieldDcl(DynamicAnchor nextToThisAnchor, String name,

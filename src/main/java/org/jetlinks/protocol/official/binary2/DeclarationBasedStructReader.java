@@ -11,16 +11,16 @@ public class DeclarationBasedStructReader implements StructReader {
 
     private static final Logger log = LoggerFactory.getLogger(DeclarationBasedStructReader.class);
 
-    private StructDeclaration   structDcl;
+    private final StructDeclaration   structDcl;
 
-    private List<FieldReader>   fieldReaders;
+    private final List<StructPartReader> partReaders;
 
     public DeclarationBasedStructReader(StructDeclaration structDcl) {
         this.structDcl = structDcl;
 
-        this.fieldReaders = new ArrayList<>();
+        this.partReaders = new ArrayList<>();
         for (StructFieldDeclaration fieldDcl : structDcl.fields()) {
-            this.fieldReaders.add(new DeclarationBasedFieldReader(fieldDcl));
+            this.partReaders.add(new DeclarationBasedFieldReader(fieldDcl));
         }
     }
 
@@ -28,21 +28,35 @@ public class DeclarationBasedStructReader implements StructReader {
     public StructInstance read(ByteBuf buf) {
         StructInstance sInst = new SimpleStructInstance(structDcl);
 
-        for (FieldReader fReader : fieldReaders) {
-            StructFieldDeclaration fDcl = ((DeclarationBasedFieldReader) fReader).getFieldDeclaration();
-            DynamicAnchor dynamicAnchor = fDcl.getDynamicAnchor();
-            if (dynamicAnchor != null) dynamicAnchor.bind(sInst);
+        for (StructPartReader partReader : partReaders) {
+            if (partReader instanceof FieldReader) {
+                FieldReader fReader = (FieldReader) partReader;
+                StructFieldDeclaration fDcl = fReader.getDeclaration();
 
-            DynamicSize dynamicSize = fDcl.getDynamicSize();
-            if (dynamicSize != null) dynamicSize.bind(sInst);
+                DynamicAnchor dynamicAnchor = fDcl.getDynamicAnchor();
+                if (dynamicAnchor != null) dynamicAnchor.bind(sInst);
 
-            FieldInstance fInst = fReader.read(buf);
-            if (fInst == null) {
-                log.error("[StructReader]字段读取返回空判定字节流反序列化为失败：field={}", fDcl);
-                return null;
+                DynamicSize dynamicSize = fDcl.getDynamicSize();
+                if (dynamicSize != null) dynamicSize.bind(sInst);
+
+                FieldInstance fInst = fReader.read(buf);
+                if (fInst == null) {
+                    log.error("[StructReader]字段读取返回空判定字节流反序列化为失败：field={}", fDcl);
+                    return null;
+                }
+
+                sInst.addFieldInstance(fInst);
+            } else {
+
             }
 
-            sInst.addFieldInstance(fInst);
+
+
+
+
+
+
+
         }
 
         return sInst;

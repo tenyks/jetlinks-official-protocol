@@ -10,13 +10,31 @@ import io.netty.buffer.ByteBuf;
  */
 public class XORCRCCalculator implements CRCCalculator {
 
-    public XORCRCCalculator(int beginIdx, int endIdx) {
+    private final int   beginIdx;
 
+    private final int   endIdx;
+
+    /**
+     *
+     * @param beginIdx
+     * @param endIdx    0和正整数表示从左往右计数，负整数标识从右往左计数
+     */
+    public XORCRCCalculator(int beginIdx, int endIdx) {
+        this.beginIdx = beginIdx;
+        this.endIdx = endIdx;
     }
 
     @Override
     public int apply(ByteBuf buf) {
-        return 0;
+        byte[]  wholeBuf = buf.array();
+
+        byte crc = 0;
+        int eIdx = (endIdx > 0 ? endIdx : wholeBuf.length + endIdx);
+        for (int i = beginIdx; i < eIdx; i++) {
+            crc ^= wholeBuf[i];
+        }
+
+        return crc;
     }
 
 }

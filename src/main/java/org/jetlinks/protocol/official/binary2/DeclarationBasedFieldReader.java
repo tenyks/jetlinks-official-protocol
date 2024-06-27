@@ -8,7 +8,7 @@ public class DeclarationBasedFieldReader implements FieldReader {
 
     private static final Logger log = LoggerFactory.getLogger(DeclarationBasedFieldReader.class);
 
-    private StructFieldDeclaration fieldDcl;
+    private final StructFieldDeclaration fieldDcl;
 
     public DeclarationBasedFieldReader(StructFieldDeclaration fieldDcl) {
         this.fieldDcl = fieldDcl;
@@ -39,7 +39,7 @@ public class DeclarationBasedFieldReader implements FieldReader {
         return new SimpleFieldInstance(fieldDcl, offset, size, val);
     }
 
-    public StructFieldDeclaration getFieldDeclaration() {
+    public StructFieldDeclaration getDeclaration() {
         return fieldDcl;
     }
 
