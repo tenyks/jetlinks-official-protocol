@@ -6,6 +6,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
+ * 重复N次的字段组Reader
+ *
  * @author v-lizy81
  * @version 1.0.0
  * @date 2024/6/27
@@ -17,7 +19,7 @@ public interface NRepeatFieldGroupReader extends StructPartReader {
     NRepeatFieldGroupDeclaration getDeclaration();
 
     @Nullable
-    List<FieldInstance> read(StructInstance structInst, ByteBuf buf);
+    List<FieldInstance> read(ByteBuf buf);
 
     void bind(StructInstance structInst);
 }

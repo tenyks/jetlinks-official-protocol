@@ -37,9 +37,11 @@ public class DeclarationBasedStructReader implements StructReader {
                 DynamicAnchor dynamicAnchor = fgDcl.getDynamicAnchor();
                 if (dynamicAnchor != null) dynamicAnchor.bind(sInst);
 
+                fgReader.bind(sInst);
+
                 List<FieldInstance> fInstList = fgReader.read(buf);
                 if (CollectionUtils.isEmpty(fInstList)) {
-                    log.error("[StructReader]字段读取返回空判定字节流反序列化为失败：fieldGroup={}", fgDcl);
+                    log.error("[StructReader]字段组读取返回空判定字节流反序列化为失败：fieldGroup={}", fgDcl);
                     return null;
                 }
 

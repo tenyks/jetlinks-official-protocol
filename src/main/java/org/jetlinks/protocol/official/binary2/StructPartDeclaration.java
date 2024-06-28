@@ -1,5 +1,7 @@
 package org.jetlinks.protocol.official.binary2;
 
+import org.jetlinks.protocol.common.mapping.ThingAnnotation;
+
 /**
  * 结构组成部分声明
  * @author v-lizy81
@@ -18,5 +20,19 @@ public interface StructPartDeclaration {
      * 动态的参考锚点
      */
     DynamicAnchor   getDynamicAnchor();
+
+    DynamicSize     getDynamicSize();
+
+    /**
+     * 数据长度
+     */
+    short           getSize();
+
+    /**
+     * 数值
+     */
+    short           getOffset();
+
+    Iterable<ThingAnnotation> thingAnnotations();
 
 }

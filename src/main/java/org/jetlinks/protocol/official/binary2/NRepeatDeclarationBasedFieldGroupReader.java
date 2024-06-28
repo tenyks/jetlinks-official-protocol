@@ -21,7 +21,7 @@ public class NRepeatDeclarationBasedFieldGroupReader implements NRepeatFieldGrou
 
     private final List<FieldReader>             fieldReaders;
 
-    private transient StructInstance  boundInstance;
+    private transient StructInstance            boundInstance;
 
     public NRepeatDeclarationBasedFieldGroupReader(NRepeatFieldGroupDeclaration declaration) {
         this.declaration = declaration;
@@ -38,7 +38,7 @@ public class NRepeatDeclarationBasedFieldGroupReader implements NRepeatFieldGrou
 
     @Nullable
     @Override
-    public List<FieldInstance> read(StructInstance structInst, ByteBuf buf) {
+    public List<FieldInstance> read(ByteBuf buf) {
         FieldInstance nRefFieldInst = boundInstance.getFieldInstance(declaration.getNReferenceTo());
         if (nRefFieldInst == null) {
             log.warn("nRefField为空, buf={}", ByteUtils.toHexStr(buf));
@@ -54,10 +54,10 @@ public class NRepeatDeclarationBasedFieldGroupReader implements NRepeatFieldGrou
                 StructFieldDeclaration fDcl = fReader.getDeclaration();
 
                 DynamicAnchor dynamicAnchor = fDcl.getDynamicAnchor();
-                if (dynamicAnchor != null) dynamicAnchor.bind(structInst);
+                if (dynamicAnchor != null) dynamicAnchor.bind(boundInstance);
 
                 DynamicSize dynamicSize = fDcl.getDynamicSize();
-                if (dynamicSize != null) dynamicSize.bind(structInst);
+                if (dynamicSize != null) dynamicSize.bind(boundInstance);
 
                 FieldInstance fInst = fReader.read(buf);
                 if (fInst == null) {
