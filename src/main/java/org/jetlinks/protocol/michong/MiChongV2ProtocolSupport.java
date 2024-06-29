@@ -228,16 +228,16 @@ public class MiChongV2ProtocolSupport {
 
         DefaultFieldDeclaration field;
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
-        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+        structDcl.addField(field.addMeta(ThingAnnotation.EventData()));
 
         field = buildDataFieldDcl("本轮用电剩余时长", "remainTime", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 1));
-        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+        structDcl.addField(field.addMeta(ThingAnnotation.EventData()));
 
         field = buildDataFieldDcl("本轮用电电量", "ec", BaseDataType.UINT8,  (short)(DATA_BEGIN_IDX + 3));
-        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+        structDcl.addField(field.addMeta(ThingAnnotation.EventData()));
 
         field = buildDataFieldDcl("停止的原因编码", "reasonCode", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 5));
-        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+        structDcl.addField(field.addMeta(ThingAnnotation.EventData()));
 
         structDcl.addField(buildSUMFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());

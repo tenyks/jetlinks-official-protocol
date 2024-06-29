@@ -16,6 +16,7 @@ import org.jetlinks.core.message.property.ReportPropertyMessage;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Function;
 
 public abstract class ThingAnnotation {
     public static ThingAnnotation MsgId() {
@@ -252,6 +253,11 @@ public abstract class ThingAnnotation {
 
     private final String  thingValue;
 
+    /**
+     * 赋值给物模型前做值的规一化处理，比如：数值类型转换
+     */
+    private Function<Object, ?> itemValNormalizeProcessor;
+
     protected ThingAnnotation(String thingKey, String thingValue) {
         this.thingKey = thingKey;
         this.thingValue = thingValue;
@@ -279,5 +285,13 @@ public abstract class ThingAnnotation {
 
     public String getThingValue() {
         return thingValue;
+    }
+
+    public Function<Object, ?> getItemValNormalizeProcessor() {
+        return itemValNormalizeProcessor;
+    }
+
+    public void setItemValNormalizeProcessor(Function<Object, ?> itemValNormalizeProcessor) {
+        this.itemValNormalizeProcessor = itemValNormalizeProcessor;
     }
 }
