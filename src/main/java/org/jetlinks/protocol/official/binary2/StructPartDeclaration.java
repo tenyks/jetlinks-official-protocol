@@ -22,7 +22,7 @@ public interface StructPartDeclaration {
     DynamicAnchor   getDynamicAnchor();
 
     DynamicSize     getDynamicSize();
-
+    
     /**
      * 数据长度
      */

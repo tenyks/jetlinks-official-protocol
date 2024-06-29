@@ -13,17 +13,17 @@ import java.util.List;
  * @author v-lizy81
  * @date 2024/6/27 22:40
  */
-public class NRepeatDeclarationBasedFieldGroupReader implements NRepeatFieldGroupReader {
+public class NRepeatDeclarationBasedFieldGroupReader implements NRepeatGroupReader {
 
     private static final Logger log = LoggerFactory.getLogger(NRepeatDeclarationBasedFieldGroupReader.class);
 
-    private final NRepeatFieldGroupDeclaration  declaration;
+    private final NRepeatGroupDeclaration declaration;
 
     private final List<FieldReader>             fieldReaders;
 
     private transient StructInstance            boundInstance;
 
-    public NRepeatDeclarationBasedFieldGroupReader(NRepeatFieldGroupDeclaration declaration) {
+    public NRepeatDeclarationBasedFieldGroupReader(NRepeatGroupDeclaration declaration) {
         this.declaration = declaration;
         this.fieldReaders = new ArrayList<>();
         for (StructFieldDeclaration fDcl : declaration.getIncludedFields()) {
@@ -32,20 +32,21 @@ public class NRepeatDeclarationBasedFieldGroupReader implements NRepeatFieldGrou
     }
 
     @Override
-    public NRepeatFieldGroupDeclaration getDeclaration() {
+    public NRepeatGroupDeclaration getDeclaration() {
         return declaration;
     }
 
     @Nullable
     @Override
     public List<FieldInstance> read(ByteBuf buf) {
-        FieldInstance nRefFieldInst = boundInstance.getFieldInstance(declaration.getNReferenceTo());
-        if (nRefFieldInst == null) {
-            log.warn("nRefField为空, buf={}", ByteUtils.toHexStr(buf));
+        DynamicNRepeat nRepeat = declaration.getDynamicNRepeat();
+        if (nRepeat == null) {
+            log.warn("[NRepeatGroupReader]缺少DynamicNRepeat声明, buf={}", ByteUtils.toHexStr(buf));
             return null;
         }
+        nRepeat.bind(boundInstance);
+        short n = nRepeat.getNRepeat();
 
-        short n = nRefFieldInst.getShortValue();
         List<FieldInstance> rst = new ArrayList<>();
 
         for (short i = 0; i < n; i++) {
@@ -61,13 +62,13 @@ public class NRepeatDeclarationBasedFieldGroupReader implements NRepeatFieldGrou
 
                 FieldInstance fInst = fReader.read(buf);
                 if (fInst == null) {
-                    log.error("[FieldGroupReader]字段读取返回空判定字节流反序列化为失败：field={}", fDcl);
+                    log.error("[NRepeatGroupReader]字段读取返回空判定字节流反序列化为失败：field={}", fDcl);
                     return null;
                 }
             }
 
             if (declaration.getInstancePostProcessor() != null) {
-                grpRst = declaration.getInstancePostProcessor().apply(rst);
+                grpRst = declaration.getInstancePostProcessor().apply((int)i, rst);
             }
 
             rst.addAll(grpRst);

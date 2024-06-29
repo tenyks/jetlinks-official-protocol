@@ -25,6 +25,8 @@ public class MiChongV2ProtocolSupport {
 
     public static final String NAME_AND_VER = "MI_CHONG_V2";
 
+    private static final short  DATA_BEGIN_IDX = 4;
+
     public static DeviceMessageCodec buildDeviceMessageCodec(PluginConfig config) {
         IntercommunicateStrategy strategy = buildIntercommunicateStrategy(config);
         BinaryMessageCodec bmCodec = buildBinaryMessageCodec(config);
@@ -33,7 +35,7 @@ public class MiChongV2ProtocolSupport {
     }
 
     public static BinaryMessageCodec buildBinaryMessageCodec(PluginConfig config) {
-        StructSuit structSuit = buildStructSuitV1();
+        StructSuit structSuit = buildStructSuitV2();
         StructAndMessageMapper mapper = buildMapper(structSuit);
         return new DeclarationBasedBinaryMessageCodec(structSuit, mapper);
     }
@@ -42,38 +44,31 @@ public class MiChongV2ProtocolSupport {
         return new AbstractIntercommunicateStrategy() {};
     }
 
-    public static StructSuit buildStructSuitV1() {
+    public static StructSuit buildStructSuitV2() {
         StructSuit suit = new StructSuit(
-                "E53版IA2协议",
-                "1.0",
-                "document-coap-e53.md",
-                new E53IAxFeatureCodeExtractor()
+                "米充充电桩协议",
+                "V2.0",
+                "document-mqtt-MiChong.md",
+                new MiChongFeatureCodeExtractor()
         );
 
         suit.addStructDeclaration(buildReportDataStructDcl());
 
-        suit.addStructDeclaration(buildPumpInWaterOnStructDcl());
-        suit.addStructDeclaration(buildPumpInWaterOffStructDcl());
+        suit.addStructDeclaration(buildFaultEventStructDcl());
+        suit.addStructDeclaration(buildFaultRestoreEventStructDcl());
+        suit.addStructDeclaration(buildPortRoundEndEventStructDcl());
 
-        suit.addStructDeclaration(buildPumpOutWaterOnStructDcl());
-        suit.addStructDeclaration(buildPumpOutWaterOffStructDcl());
+        suit.addStructDeclaration(buildSwitchOnPortPowerStructDcl());
+        suit.addStructDeclaration(buildSwitchOnPortPowerResponseStructDcl());
 
-        suit.addStructDeclaration(buildFanInAirOnStructDcl());
-        suit.addStructDeclaration(buildFanInAirOffStructDcl());
+        suit.addStructDeclaration(buildSwitchOffPortPowerStructDcl());
+        suit.addStructDeclaration(buildSwitchOffPortPowerResponseStructDcl());
 
-        suit.addStructDeclaration(buildFanOutAirOnStructDcl());
-        suit.addStructDeclaration(buildFanOutAirOffStructDcl());
+        suit.addStructDeclaration(buildLockOrUnlockPortStructDcl());
+        suit.addStructDeclaration(buildLockOrUnlockPortResponseStructDcl());
 
-        suit.addStructDeclaration(buildHeaterAOnStructDcl());
-        suit.addStructDeclaration(buildHeaterAOffStructDcl());
-
-        suit.addStructDeclaration(buildHeaterBOnStructDcl());
-        suit.addStructDeclaration(buildHeaterBOffStructDcl());
-
-        suit.addStructDeclaration(buildLightOnStructDcl());
-        suit.addStructDeclaration(buildLightOffStructDcl());
-
-        suit.addStructDeclaration(buildFunInvReplyDcl());
+        suit.addStructDeclaration(buildReadPortStateStructDcl());
+        suit.addStructDeclaration(buildReadPortStateResponseStructDcl());
 
         return suit;
     }
@@ -119,7 +114,7 @@ public class MiChongV2ProtocolSupport {
     }
 
     /**
-     * 上报端口实时状态
+     * [数据上报] 上报端口实时状态
      */
     private static DefaultStructDeclaration buildReportDataStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("设备每间隔30~60秒上传端口信息", "CMD:0x21");
@@ -132,345 +127,345 @@ public class MiChongV2ProtocolSupport {
         structDcl.addField(buildCMDFieldDcl((byte)0x10));
         structDcl.addField(buildRESULTFieldDcl((byte)0x01));
 
-        DefaultFieldDeclaration field = buildPortNumFieldDcl((byte)0x05);
-        structDcl.addField(field);
+        DefaultFieldDeclaration portNumFieldDcl = buildPortNumFieldDcl(DATA_BEGIN_IDX);
+        structDcl.addField(portNumFieldDcl);
 
-        field = buildIOParamFieldDcl(field.asAnchor(), "温度", "temperature", BaseDataType.FLOAT);
+        DefaultNRepeatFieldGroupDeclaration groupDcl;
+        groupDcl = new DefaultNRepeatFieldGroupDeclaration("端口X的状况", "portXState", (short)6, (short)8);
+        groupDcl.setDynamicNRepeat(portNumFieldDcl.asDynamicNRepeat());
+        groupDcl.setAnchorReference(portNumFieldDcl.asAnchor(), (short)0);
+
+        DynamicAnchor anchor = groupDcl.asAnchor();
+
+        DefaultFieldDeclaration field;
+        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, anchor, (short)0);
+        groupDcl.addIncludedField(field);
+
+        field = buildDataFieldDcl("端口状态", "Status", BaseDataType.UINT8, anchor, (short)1);
+        groupDcl.addIncludedField(field.addMeta(ThingAnnotation.Property()));
+
+        field = buildDataFieldDcl("剩余用电时长", "RemainTime", BaseDataType.UINT16, anchor, (short)3);
+        groupDcl.addIncludedField(field.addMeta(ThingAnnotation.Property()));
+
+        field = buildDataFieldDcl("当前用电功率", "WorkingPower", BaseDataType.UINT16, anchor, (short)5);
+        groupDcl.addIncludedField(field.addMeta(ThingAnnotation.Property()));
+
+        field = buildDataFieldDcl("本轮用电电量", "CurrentRoundEC", BaseDataType.UINT16, anchor, (short)7);
+        groupDcl.addIncludedField(field.addMeta(ThingAnnotation.Property()));
+
+        structDcl.addGroup(groupDcl);
+
+        structDcl.addField(buildSUMFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * [事件上报] 设备故障事件
+     */
+    private static DefaultStructDeclaration buildFaultEventStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("设备上传机器故障码给服务器", "CMD:0x0A");
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("FaultEvent"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte)0x06));
+        structDcl.addField(buildCMDFieldDcl((byte)0x0A));
+        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
+
+        DefaultFieldDeclaration field;
+        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
         structDcl.addField(field.addMeta(ThingAnnotation.Property()));
 
-        field = buildIOParamFieldDcl(field.asAnchor(), "相对湿度", "humidity", BaseDataType.FLOAT);
-        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
-
-        field = buildIOParamFieldDcl(field.asAnchor(), "亮度", "luminance", BaseDataType.FLOAT);
-        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
-
-        field = buildIOParamFieldDcl(field.asAnchor(), "低水位标志", "lowWaterMark", BaseDataType.UINT8);
-        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
-
-        field = buildIOParamFieldDcl(field.asAnchor(), "高水位标志", "highWaterMark", BaseDataType.UINT8);
-        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
-
-        field = buildIOParamFieldDcl(field.asAnchor(), "外设工作标志", "workingFlag", BaseDataType.UINT16);
+        field = buildDataFieldDcl("错误码", "errorCode", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 1));
         structDcl.addField(field.addMeta(ThingAnnotation.Property()));
 
         structDcl.addField(buildSUMFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
 
         return structDcl;
     }
 
     /**
-     * 开启给水指令，下行
+     * [事件上报] 设备故障恢复事件
      */
-    private static DefaultStructDeclaration buildPumpInWaterOnStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启给水指令结构", "CMD:0x11");
-
-        structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("PumpInWaterOn"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0x11));
-
-        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)5);
-        structDcl.addField(field);
-
-        field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-        field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-
-        return structDcl;
-    }
-
-    /**
-     * 关停给水指令，下行
-     */
-    private static DefaultStructDeclaration buildPumpInWaterOffStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停给水指令结构", "CMD:0x12");
-
-        structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("PumpInWaterOff"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0x12));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)0));
-
-        return structDcl;
-    }
-
-    /**
-     * 开启排水指令，下行
-     */
-    private static DefaultStructDeclaration buildPumpOutWaterOnStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启排水指令结构", "CMD:0x13");
-
-        structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("PumpOutWaterOn"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0x13));
-
-        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)6);
-        structDcl.addField(field);
-
-        field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-        field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-        field = buildIOParamFieldDcl(field.asAnchor(), "低水位时自动停止", "autoStopAtLWM", BaseDataType.UINT8).setDefaultValue(0);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-
-        return structDcl;
-    }
-
-    /**
-     * 关停排水指令，下行
-     */
-    private static DefaultStructDeclaration buildPumpOutWaterOffStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停排水指令结构", "CMD:0x14");
-
-        structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("PumpOutWaterOff"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0x14));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)0));
-
-        return structDcl;
-    }
-
-    /**
-     * 开启送风指令，下行
-     */
-    private static DefaultStructDeclaration buildFanInAirOnStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启送风指令结构", "CMD:0x15");
-
-        structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("FanInAirOn"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0x15));
-
-        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)5);
-        structDcl.addField(field);
-
-        field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-        field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-
-        return structDcl;
-    }
-
-    /**
-     * 关停送风指令，下行
-     */
-    private static DefaultStructDeclaration buildFanInAirOffStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停送风指令结构", "CMD:0x16");
-
-        structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("FanInAirOff"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0x16));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)0));
-
-        return structDcl;
-    }
-
-    /**
-     * 开启排风指令，下行
-     */
-    private static DefaultStructDeclaration buildFanOutAirOnStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启排风指令结构", "CMD:0x17");
-
-        structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("FanOutAirOn"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0x17));
-
-        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)5);
-        structDcl.addField(field);
-
-        field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-        field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-
-        return structDcl;
-    }
-
-    /**
-     * 关停排风指令，下行
-     */
-    private static DefaultStructDeclaration buildFanOutAirOffStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停排风指令结构", "CMD:0x18");
-
-        structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("FanOutAirOff"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0x18));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)0));
-
-        return structDcl;
-    }
-
-    /**
-     * 开启加热器A指令，下行
-     */
-    private static DefaultStructDeclaration buildHeaterAOnStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启加热器A指令结构", "CMD:0x19");
-
-        structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("HeaterAOn"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0x19));
-
-        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)5);
-        structDcl.addField(field);
-
-        field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-        field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-
-        return structDcl;
-    }
-
-    /**
-     * 关停加热器A指令，下行
-     */
-    private static DefaultStructDeclaration buildHeaterAOffStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停加热器A指令结构", "CMD:0x1A");
-
-        structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("HeaterAOff"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0x1A));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)0));
-
-        return structDcl;
-    }
-
-    /**
-     * 开启加热器B指令，下行
-     */
-    private static DefaultStructDeclaration buildHeaterBOnStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启加热器B指令结构", "CMD:0x1B");
-
-        structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("HeaterBOn"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0x1B));
-
-        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)5);
-        structDcl.addField(field);
-
-        field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-        field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-
-        return structDcl;
-    }
-
-    /**
-     * 关停加热器B指令，下行
-     */
-    private static DefaultStructDeclaration buildHeaterBOffStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停加热器B指令结构", "CMD:0x1C");
-
-        structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("HeaterBOff"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0x1C));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)0));
-
-        return structDcl;
-    }
-
-    /**
-     * 开启补光指令，下行
-     */
-    private static DefaultStructDeclaration buildLightOnStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启补光指令结构", "CMD:0x1D");
-
-        structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("LightOn"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0x1D));
-
-        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)5);
-        structDcl.addField(field);
-
-        field = buildIOParamFieldDcl(field.asAnchor(), "工作挡位", "degree", BaseDataType.UINT8);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-        field = buildIOParamFieldDcl(field.asAnchor(), "工作时长", "duration", BaseDataType.UINT32);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-
-        return structDcl;
-    }
-
-    /**
-     * 关停补光指令，下行
-     */
-    private static DefaultStructDeclaration buildLightOffStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停补光指令结构", "CMD:0x1E");
-
-        structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("LightOff"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0x1E));
-        structDcl.addField(buildIOParamsPayloadLengthFieldDcl((byte)0));
-
-        return structDcl;
-    }
-
-    /**
-     * 指令下发反馈消息，上行
-     */
-    private static DefaultStructDeclaration buildFunInvReplyDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("指令下发反馈消息结构", "CMD:0xF0");
+    private static DefaultStructDeclaration buildFaultRestoreEventStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("设备上传机器故障码给服务器", "CMD:0x0A");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("FunInvReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("FaultEvent"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildMessageIdFieldDcl());
-        structDcl.addField(buildMessageTypeFieldDcl((byte)0xF0));
+        structDcl.addField(buildLENFieldDcl((byte)0x06));
+        structDcl.addField(buildCMDFieldDcl((byte)0x0A));
+        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
 
-        DefaultFieldDeclaration field = buildIOParamsPayloadLengthFieldDcl((byte)6);
+        DefaultFieldDeclaration field;
+        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
+        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+
+        structDcl.addField(buildSUMFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * 端口当轮用电结束事件
+     */
+    private static DefaultStructDeclaration buildPortRoundEndEventStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("端口用电结束事件", "CMD:0x16");
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("FaultEvent"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte)6));
+        structDcl.addField(buildCMDFieldDcl((byte)0x16));
+        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
+
+        DefaultFieldDeclaration field;
+        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
+        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+
+        field = buildDataFieldDcl("本轮用电剩余时长", "remainTime", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 1));
+        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+
+        field = buildDataFieldDcl("本轮用电电量", "ec", BaseDataType.UINT8,  (short)(DATA_BEGIN_IDX + 3));
+        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+
+        field = buildDataFieldDcl("停止的原因编码", "reasonCode", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 5));
+        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+
+        structDcl.addField(buildSUMFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * 开启端口供电指令
+     */
+    private static DefaultStructDeclaration buildSwitchOnPortPowerStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启端口供电指令", "CMD:0x14");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOnPortPower"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte)7));
+        structDcl.addField(buildCMDFieldDcl((byte)0x14));
+        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
+
+        DefaultFieldDeclaration field;
+        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
         structDcl.addField(field);
 
-        field = buildIOParamFieldDcl(field.asAnchor(), "结果编码", "rstCode", BaseDataType.INT8);
+        field = buildDataFieldDcl("可用金额", "maxMoney", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 1));
+        structDcl.addField(field.setDefaultValue((short) 30000));
+
+        field = buildDataFieldDcl("可用电时长", "maxTime", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 3));
+        structDcl.addField(field);
+
+        field = buildDataFieldDcl("可用电电量", "maxEC", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 5));
+        structDcl.addField(field);
+
+        structDcl.addField(buildSUMFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * 开启端口供电指令回复
+     */
+    private static DefaultStructDeclaration buildSwitchOnPortPowerResponseStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启端口供电指令回复", "CMD:0x14");
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOnPortPowerResponse"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte)2));
+        structDcl.addField(buildCMDFieldDcl((byte)0x14));
+        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
+
+        DefaultFieldDeclaration field;
+        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
         structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput()));
 
-        field = buildIOParamFieldDcl(field.asAnchor(), "指令的编码", "cmdCode", BaseDataType.INT8);
+        field = buildDataFieldDcl("结果编码", "rstCode", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 1));
         structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput()));
 
-        field = buildIOParamFieldDcl(field.asAnchor(), "附加信息", "extInfo", BaseDataType.UINT32);
+        structDcl.addField(buildSUMFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * 关停端口供电指令
+     */
+    private static DefaultStructDeclaration buildSwitchOffPortPowerStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("端口关停供电指令", "CMD:0x0D");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOffPortPower"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte)2));
+        structDcl.addField(buildCMDFieldDcl((byte)0x0D));
+        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
+
+        DefaultFieldDeclaration field;
+        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
+        structDcl.addField(field);
+
+        field = buildDataFieldDcl("类型", "type", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 1));
+        structDcl.addField(field.setDefaultValue((byte)0x00));
+
+        structDcl.addField(buildSUMFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * 关停端口供电指令回复
+     */
+    private static DefaultStructDeclaration buildSwitchOffPortPowerResponseStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停端口供电指令回复", "CMD:0x0D");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOffPortPowerResponse"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte)3));
+        structDcl.addField(buildCMDFieldDcl((byte)0x0D));
+        structDcl.addField(buildRESULTFieldDcl((byte)0x00));
+
+        DefaultFieldDeclaration field;
+        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
         structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput()));
+
+        field = buildDataFieldDcl("本轮用电剩余时长", "remainTime", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 1));
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput()));
+
+        structDcl.addField(buildSUMFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * 查询指定端口的状况的指令
+     */
+    private static DefaultStructDeclaration buildReadPortStateStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("查询指定端口的状况的指令", "CMD:0x15");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("ReadPortState"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte)1));
+        structDcl.addField(buildCMDFieldDcl((byte)0x15));
+        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
+
+        DefaultFieldDeclaration field;
+        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
+        structDcl.addField(field);
+
+        structDcl.addField(buildSUMFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * 查询指定端口的状况的指令响应
+     */
+    private static DefaultStructDeclaration buildReadPortStateResponseStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("查询指定端口的状况的指令响应", "CMD:0x15");
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("ReadPortStateResponse"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte)9));
+        structDcl.addField(buildCMDFieldDcl((byte)0x15));
+        structDcl.addField(buildRESULTFieldDcl((byte)0x00));
+
+        DefaultFieldDeclaration field;
+        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput()));
+
+        field = buildDataFieldDcl("本轮用电剩余时长", "remainTime", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 1));
+        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+
+        field = buildDataFieldDcl("当前用电功率", "workingPower", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 3));
+        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+
+        field = buildDataFieldDcl("本轮用电剩余电量", "remainEC", BaseDataType.UINT16,  (short)(DATA_BEGIN_IDX + 53));
+        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+
+        field = buildDataFieldDcl("本轮用电剩余金额", "remainMoney", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 7));
+        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+
+        structDcl.addField(buildSUMFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * 锁定/解锁指定端口命令
+     */
+    private static DefaultStructDeclaration buildLockOrUnlockPortStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("锁定/解锁指定端口命令", "CMD:0x0C");
+
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("LockOrUnlockPort"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte)2));
+        structDcl.addField(buildCMDFieldDcl((byte)0x0C));
+        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
+
+        DefaultFieldDeclaration field;
+        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
+        structDcl.addField(field);
+
+        field = buildDataFieldDcl("控制标志", "flag", BaseDataType.UINT8, (short) (DATA_BEGIN_IDX + 1));
+        structDcl.addField(field);
+
+        structDcl.addField(buildSUMFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * 锁定/解锁指定端口命令响应
+     */
+    private static DefaultStructDeclaration buildLockOrUnlockPortResponseStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("锁定/解锁指定端口命令响应", "CMD:0x0C");
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("LockOrUnlockPortResponse"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte) 1));
+        structDcl.addField(buildCMDFieldDcl((byte) 0x0C));
+        structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
+
+        DefaultFieldDeclaration field;
+        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput()));
+
+        structDcl.addField(buildSUMFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
 
         return structDcl;
     }
@@ -513,7 +508,7 @@ public class MiChongV2ProtocolSupport {
      * 公共字段：校验
      */
     private static DefaultFieldDeclaration buildSUMFieldDcl() {
-        return new DefaultFieldDeclaration("异或校验", "SUM", BaseDataType.UINT8, (short) 3)
+        return new DefaultFieldDeclaration("异或校验", "SUM", BaseDataType.UINT8, (short) -1)
                 .setDefaultValue((byte)0x00);
     }
 
@@ -525,33 +520,47 @@ public class MiChongV2ProtocolSupport {
         return new XORCRCCalculator(1, -1);
     }
 
-    private static DefaultFieldDeclaration buildIOParamFieldDcl(DynamicAnchor nextToThisAnchor, String name,
-                                                                String code, BaseDataType dataType) {
+    private static DefaultFieldDeclaration buildDataFieldDcl(String name, String code, BaseDataType dataType,
+                                                             DynamicAnchor nextToThisAnchor) {
         return new DefaultFieldDeclaration(name, code, dataType).setAnchorReference(nextToThisAnchor, (short)0);
     }
 
-    private static class E53IAxFeatureCodeExtractor implements FeatureCodeExtractor {
-        private static final short  MAGIC_ID_OF_IA2_V1 = (short)0xfa11;
-        private static final byte[] MAGIC_ID_OF_IA2_V1_HEX = new byte[]{(byte) 0xfa, (byte) 0x11};
-        private static final byte[] MAGIC_ID_OF_IA2_V1_DOUBLE_HEX = new byte[]{
-                (byte) 0x66, (byte) 0x61, (byte)0x31, (byte)0x31
-        };
+    private static DefaultFieldDeclaration buildDataFieldDcl(String name, String code, BaseDataType dataType, short absOffset) {
+        return new DefaultFieldDeclaration(name, code, dataType, absOffset);
+    }
+
+    private static DefaultFieldDeclaration buildDataFieldDcl(String name, String code, BaseDataType dataType,
+                                                             DynamicAnchor anchor, short offsetToAnchor) {
+        return new DefaultFieldDeclaration(name, code, dataType).setAnchorReference(anchor, offsetToAnchor);
+    }
+
+    private static CRCCalculator buildCRCCalculator() {
+        return new XORCRCCalculator(1, -1);
+    }
+
+    private static class MiChongFeatureCodeExtractor implements FeatureCodeExtractor {
+        private static final byte MAGIC_ID_OF_V2_1 = (byte) 0xAA;
+        private static final byte[] MAGIC_ID_OF_V2_1_DOUBLE_HEX = new byte[]{(byte) 0x41, (byte) 0x41};
+
+        private static final byte MAGIC_ID_OF_V2_2 = (byte) 0x55;
+        private static final byte[] MAGIC_ID_OF_V2_2_DOUBLE_HEX = new byte[]{(byte) 0x35, (byte) 0x35};
+
 
         @Override
         public String extract(ByteBuf buf) {
-            byte[] headerBuf = new byte[7];
+            byte[] headerBuf = new byte[6];
 
             buf.readerIndex(0);
             if (buf.readableBytes() < headerBuf.length) {
-                return "WRONG_SIZE:" + Hex.encodeHexString(buf.array());
+                return "[MiChong]WRONG_SIZE:" + Hex.encodeHexString(buf.array());
             }
             buf.readBytes(headerBuf);
 
-            if (headerBuf[0] != MAGIC_ID_OF_IA2_V1_HEX[0] && headerBuf[1] != MAGIC_ID_OF_IA2_V1_HEX[1]) {
-                return "WRONG_MAGIC_ID:" + Hex.encodeHexString(headerBuf);
+            if (headerBuf[0] != MAGIC_ID_OF_V2_1 && headerBuf[0] != MAGIC_ID_OF_V2_2) {
+                return "[MiChong]WRONG_MAGIC_ID:" + Hex.encodeHexString(headerBuf);
             }
 
-            return "CMD:0x" + Integer.toHexString(0x000000ff & headerBuf[4]).toUpperCase();
+            return "CMD:0x" + Integer.toHexString(0x000000ff & headerBuf[2]).toUpperCase();
         }
 
         @Override
@@ -566,26 +575,28 @@ public class MiChongV2ProtocolSupport {
 
             buf.readBytes(headerBuf);
 
-            return (
-                    headerBuf[0] == MAGIC_ID_OF_IA2_V1_DOUBLE_HEX[0] &&
-                    headerBuf[1] == MAGIC_ID_OF_IA2_V1_DOUBLE_HEX[1] &&
-                    headerBuf[2] == MAGIC_ID_OF_IA2_V1_DOUBLE_HEX[2] &&
-                    headerBuf[3] == MAGIC_ID_OF_IA2_V1_DOUBLE_HEX[3]
-            );
+            return (headerBuf[0] == MAGIC_ID_OF_V2_1_DOUBLE_HEX[0] && headerBuf[1] == MAGIC_ID_OF_V2_1_DOUBLE_HEX[1])
+                    ||
+                    (headerBuf[0] == MAGIC_ID_OF_V2_2_DOUBLE_HEX[0] && headerBuf[1] == MAGIC_ID_OF_V2_2_DOUBLE_HEX[1]);
         }
     }
 
-    private static class E53IAxEncodeSigner implements EncodeSigner {
+    private static class MiChongEncodeSigner implements EncodeSigner {
+
+        private final CRCCalculator crcCalculator = buildCRCCalculator();
 
         @Override
         public ByteBuf apply(ByteBuf buf) {
+            int saveReaderIdx = buf.readerIndex();
             int saveWriterIdx = buf.writerIndex();
+            int sumIdx = buf.readableBytes() - 1;
 
-            buf.writerIndex(0);
-            buf.writeByte(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2_V1_HEX[0]);
-            buf.writeByte(E53IAxFeatureCodeExtractor.MAGIC_ID_OF_IA2_V1_HEX[1]);
+            int crc = crcCalculator.apply(buf);
+            buf.writerIndex(sumIdx);
+            buf.writeByte(crc);
 
             buf.writerIndex(saveWriterIdx);
+            buf.readerIndex(saveReaderIdx);
 
             return buf;
         }

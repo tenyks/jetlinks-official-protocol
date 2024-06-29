@@ -14,11 +14,11 @@ public interface StructDeclaration {
 
     StructDeclaration       addField(StructFieldDeclaration field);
 
-    StructDeclaration       addFieldGroup(NRepeatFieldGroupDeclaration fieldGrp);
+    StructDeclaration addGroup(NRepeatGroupDeclaration fieldGrp);
 
     StructFieldDeclaration  getField(String code);
 
-    NRepeatFieldGroupDeclaration  getFieldGroup(String code);
+    NRepeatGroupDeclaration getFieldGroup(String code);
 
     StructPartDeclaration   getPart(String code);
 

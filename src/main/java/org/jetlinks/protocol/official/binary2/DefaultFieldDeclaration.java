@@ -6,7 +6,8 @@ import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.*;
 
-public class DefaultFieldDeclaration implements StructFieldDeclaration, Serializable {
+public class DefaultFieldDeclaration extends AbstractStructPartDeclaration
+        implements StructFieldDeclaration, Serializable {
 
     private static final long serialVersionUID = 1540156939056534169L;
 
@@ -23,34 +24,13 @@ public class DefaultFieldDeclaration implements StructFieldDeclaration, Serializ
     }
 
     public DefaultFieldDeclaration(String name, String code, BaseDataType dataType, Short absOffset) {
-        this.name = name;
-        this.code = code;
-        this.dataType = dataType;
-        this.size = (dataType.size() >0 ? dataType.size() : null);
-        this.absOffset = absOffset;
-        this.thingAnnotations = new ArrayList<>();
+        this(name, code, dataType, absOffset, (dataType.size() >0 ? dataType.size() : null));
     }
 
     public DefaultFieldDeclaration(String name, String code, BaseDataType dataType, Short absOffset, Short size) {
-        this.name = name;
-        this.code = code;
+        super(name, code, absOffset, size);
+
         this.dataType = dataType;
-        this.absOffset = absOffset;
-        this.size = size;
-        this.thingAnnotations = new ArrayList<>();
-    }
-
-    @Nullable
-    @Override
-    public NRepeatFieldGroupDeclaration includingGroup() {
-        return null;
-    }
-
-    public DefaultFieldDeclaration setSizeReference(DynamicSize refSize, short mask) {
-        this.refSize = refSize;
-        this.sizeMask = mask;
-
-        return this;
     }
 
     public DefaultFieldDeclaration setDefaultValue(Object defaultValue) {
@@ -75,6 +55,10 @@ public class DefaultFieldDeclaration implements StructFieldDeclaration, Serializ
         return new PreviousFieldValueAsSize(this);
     }
 
+    public DynamicNRepeat asDynamicNRepeat() {
+        return new PreviousFieldValueAsNRepeat(this);
+    }
+
     public BaseDataType  getDataType() {
         return dataType;
     }
@@ -95,19 +79,32 @@ public class DefaultFieldDeclaration implements StructFieldDeclaration, Serializ
     }
 
     @Override
+    public DefaultFieldDeclaration setAnchorReference(DynamicAnchor anchor, short offset) {
+        super.setAnchorReference(anchor, offset);
+        return this;
+    }
+
+    @Override
+    public DefaultFieldDeclaration setSizeReference(DynamicSize refSize, short mask) {
+        super.setSizeReference(refSize, mask);
+
+        return this;
+    }
+
+    @Override
+    public DefaultFieldDeclaration addMeta(ThingAnnotation tAnn) {
+        super.addMeta(tAnn);
+
+        return this;
+    }
+
+    @Override
     public String toString() {
         return "DefaultFieldDeclaration{" +
-                "name='" + name + '\'' +
-                ", code='" + code + '\'' +
-                ", dataType=" + dataType +
-                ", size=" + size +
-                ", absOffset=" + absOffset +
-                ", refAnchor=" + refAnchor +
-                ", offsetToAnchor=" + offsetToAnchor +
-                ", refSize=" + refSize +
-                ", sizeMask=" + sizeMask +
+                "dataType=" + dataType +
                 ", isPayloadField=" + isPayloadField +
                 ", defaultValue=" + defaultValue +
-                '}';
+                ", validValues=" + validValues +
+                "} " + super.toString();
     }
 }

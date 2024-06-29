@@ -13,10 +13,10 @@ import java.util.List;
  * @date 2024/6/27
  * @since V3.1.0
  */
-public interface NRepeatFieldGroupReader extends StructPartReader {
+public interface NRepeatGroupReader extends StructPartReader {
 
     @Override
-    NRepeatFieldGroupDeclaration getDeclaration();
+    NRepeatGroupDeclaration getDeclaration();
 
     @Nullable
     List<FieldInstance> read(ByteBuf buf);

@@ -1,66 +1,89 @@
 package org.jetlinks.protocol.official.binary2;
 
+import org.jetlinks.protocol.common.mapping.ThingAnnotation;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 /**
  * @author v-lizy81
  * @date 2024/6/28 22:41
  */
-public class DefaultNRepeatFieldGroupDeclaration implements NRepeatFieldGroupDeclaration {
+public class DefaultNRepeatFieldGroupDeclaration extends AbstractStructPartDeclaration implements NRepeatGroupDeclaration {
 
-    private String              name;
+    private DynamicNRepeat  nReferenceTo;
 
-    private String              code;
+    private BiFunction<Integer, List<FieldInstance>, List<FieldInstance>> postProcessor;
 
-    /**
-     * 长度，单位：字节， 空值表示动态长度
-     */
-    private Short               size;
+    private final List<StructFieldDeclaration>   includedFields;
 
-    private StructFieldDeclaration  nReferenceTo;
-
-    private DynamicAnchor       refAnchor;
-
-    private Function<List<FieldInstance>, List<FieldInstance>>  postProcessor;
-
-    @Nullable
-    @Override
-    public StructFieldDeclaration getNReferenceTo() {
-        return nReferenceTo;
+    public DefaultNRepeatFieldGroupDeclaration(String name, String code, Short absOffset, Short size) {
+        super(name, code, absOffset, size);
+        this.includedFields = new ArrayList<>();
     }
 
-    public DefaultNRepeatFieldGroupDeclaration setNReferenceTo(StructFieldDeclaration field) {
-        this.nReferenceTo = field;
-        return this;
-    }
+    public DefaultNRepeatFieldGroupDeclaration  addIncludedField(StructFieldDeclaration fDcl) {
+        if (fDcl != null) this.includedFields.add(fDcl);
 
-    public DefaultNRepeatFieldGroupDeclaration setNReferenceTo(DynamicAnchor anchor) {
-        this.nReferenceTo = field;
         return this;
     }
 
     @Nonnull
     @Override
     public List<StructFieldDeclaration> getIncludedFields() {
-        return null;
+        return includedFields;
     }
 
     @Nullable
     @Override
-    public Function<List<FieldInstance>, List<FieldInstance>> getInstancePostProcessor() {
+    public BiFunction<Integer, List<FieldInstance>, List<FieldInstance>> getInstancePostProcessor() {
         return postProcessor;
     }
 
-    @Override
-    public String getCode() {
-        return code;
+    public DefaultNRepeatFieldGroupDeclaration
+    setInstancePostProcessor(BiFunction<Integer, List<FieldInstance>, List<FieldInstance>> function) {
+        this.postProcessor = function;
+
+        return this;
+    }
+
+    public DynamicAnchor    asAnchor() {
+        return new GroupBeginAnchor(this);
     }
 
     @Override
-    public DynamicAnchor getDynamicAnchor() {
-        return refAnchor;
+    public DynamicNRepeat getDynamicNRepeat() {
+        return nReferenceTo;
+    }
+
+    public DefaultNRepeatFieldGroupDeclaration setDynamicNRepeat(DynamicNRepeat ref) {
+        this.nReferenceTo = ref;
+        return this;
+    }
+
+    @Override
+    public DefaultNRepeatFieldGroupDeclaration setAnchorReference(DynamicAnchor anchor, short offset) {
+        return (DefaultNRepeatFieldGroupDeclaration)super.setAnchorReference(anchor, offset);
+    }
+
+    @Override
+    public DefaultNRepeatFieldGroupDeclaration setSizeReference(DynamicSize refSize, short mask) {
+        return (DefaultNRepeatFieldGroupDeclaration)super.setSizeReference(refSize, mask);
+    }
+
+    @Override
+    public DefaultNRepeatFieldGroupDeclaration addMeta(ThingAnnotation tAnn) {
+        return (DefaultNRepeatFieldGroupDeclaration)super.addMeta(tAnn);
+    }
+
+    @Override
+    public String toString() {
+        return "DefaultNRepeatFieldGroupDeclaration{" +
+                "nReferenceTo=" + nReferenceTo +
+                ", postProcessor=" + postProcessor +
+                "} " + super.toString();
     }
 }

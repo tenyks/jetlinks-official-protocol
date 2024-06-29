@@ -53,7 +53,7 @@ public class DefaultStructDeclaration implements StructDeclaration {
     }
 
     @Override
-    public StructDeclaration addFieldGroup(NRepeatFieldGroupDeclaration fieldGrp) {
+    public StructDeclaration addGroup(NRepeatGroupDeclaration fieldGrp) {
         parts.add(fieldGrp);
         return this;
     }
@@ -66,10 +66,10 @@ public class DefaultStructDeclaration implements StructDeclaration {
     }
 
     @Override
-    public NRepeatFieldGroupDeclaration getFieldGroup(String code) {
+    public NRepeatGroupDeclaration getFieldGroup(String code) {
         StructPartDeclaration part = idxByCodeMap.get(code);
 
-        return (part instanceof NRepeatFieldGroupDeclaration ? (NRepeatFieldGroupDeclaration) part : null);
+        return (part instanceof NRepeatGroupDeclaration ? (NRepeatGroupDeclaration) part : null);
     }
 
     @Override

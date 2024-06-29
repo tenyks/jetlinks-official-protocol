@@ -2,6 +2,7 @@ package org.jetlinks.protocol.official.binary2;
 
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,38 +11,53 @@ import java.util.List;
  */
 public abstract class AbstractStructPartDeclaration implements StructPartDeclaration {
 
-    private String              name;
+    private final String              name;
 
-    private String              code;
+    private final String              code;
 
     /**
      * 长度，单位：字节， 空值表示动态长度
      */
-    private Short               size;
+    private final Short               size;
 
     /**
      * 偏移位置，单位：字节，空值表示仅靠前一字段的结尾
      */
-    private Short               absOffset;
+    private final Short                 absOffset;
 
-    private DynamicAnchor       refAnchor;
+    private DynamicAnchor               refAnchor;
 
-    private short               offsetToAnchor;
+    private short                       offsetToAnchor;
 
-    private DynamicSize         refSize;
+    private DynamicSize                 refSize;
 
-    private short               sizeMask;
+    private short                       sizeMask;
 
-    private List<ThingAnnotation> thingAnnotations;
+    private final List<ThingAnnotation> thingAnnotations;
+
+    protected AbstractStructPartDeclaration(String name, String code, Short absOffset, Short size) {
+        this.name = name;
+        this.code = code;
+        this.absOffset = absOffset;
+        this.size = size;
+        this.thingAnnotations = new ArrayList<>();
+    }
 
     /**
      * @param anchor
      * @param offset 如果为正数参考field的结尾;   如果为负数参考field的开头
      * @return
      */
-    public AbstractStructPartDeclaration setAnchorReference(DynamicAnchor anchor, short offset) {
+    protected AbstractStructPartDeclaration setAnchorReference(DynamicAnchor anchor, short offset) {
         this.refAnchor = anchor;
         this.offsetToAnchor = offset;
+
+        return this;
+    }
+
+    protected AbstractStructPartDeclaration setSizeReference(DynamicSize refSize, short mask) {
+        this.refSize = refSize;
+        this.sizeMask = mask;
 
         return this;
     }
@@ -61,8 +77,10 @@ public abstract class AbstractStructPartDeclaration implements StructPartDeclara
         return thingAnnotations;
     }
 
-    protected void addMeta(ThingAnnotation tAnn) {
+    protected AbstractStructPartDeclaration addMeta(ThingAnnotation tAnn) {
         this.thingAnnotations.add(tAnn);
+
+        return this;
     }
 
     @Override
@@ -87,5 +105,20 @@ public abstract class AbstractStructPartDeclaration implements StructPartDeclara
         }
 
         return refSize.getSize(sizeMask);
+    }
+
+    @Override
+    public String toString() {
+        return "AbstractStructPartDeclaration{" +
+                "name='" + name + '\'' +
+                ", code='" + code + '\'' +
+                ", size=" + size +
+                ", absOffset=" + absOffset +
+                ", refAnchor=" + refAnchor +
+                ", offsetToAnchor=" + offsetToAnchor +
+                ", refSize=" + refSize +
+                ", sizeMask=" + sizeMask +
+                ", thingAnnotations=" + thingAnnotations +
+                '}';
     }
 }

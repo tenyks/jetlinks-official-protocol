@@ -30,9 +30,9 @@ public class DeclarationBasedStructReader implements StructReader {
         StructInstance sInst = new SimpleStructInstance(structDcl);
 
         for (StructPartReader partReader : partReaders) {
-            if (partReader instanceof NRepeatFieldGroupReader) {
-                NRepeatFieldGroupReader fgReader = (NRepeatFieldGroupReader) partReader;
-                NRepeatFieldGroupDeclaration fgDcl = fgReader.getDeclaration();
+            if (partReader instanceof NRepeatGroupReader) {
+                NRepeatGroupReader fgReader = (NRepeatGroupReader) partReader;
+                NRepeatGroupDeclaration fgDcl = fgReader.getDeclaration();
 
                 DynamicAnchor dynamicAnchor = fgDcl.getDynamicAnchor();
                 if (dynamicAnchor != null) dynamicAnchor.bind(sInst);
