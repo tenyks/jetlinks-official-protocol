@@ -22,7 +22,11 @@ public class DeclarationBasedFieldReader implements FieldReader {
         int ri = buf.readerIndex();
         if (offset >= 0) {
             buf.readerIndex(offset);
+        } else {
+            buf.readerIndex(0);
+            buf.readerIndex(buf.readableBytes() + offset);
         }
+
         if (buf.readableBytes() < size) {
             log.error("[FieldReader]字段读取越界：fn={}, offset={}, size={}, buf.readableBytes={}",
                     fieldDcl.getCode(), offset, size, buf.readableBytes());

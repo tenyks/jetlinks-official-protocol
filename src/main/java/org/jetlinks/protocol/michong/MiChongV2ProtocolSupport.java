@@ -3,15 +3,20 @@ package org.jetlinks.protocol.michong;
 import io.netty.buffer.ByteBuf;
 import org.apache.commons.codec.binary.Hex;
 import org.jetlinks.core.message.codec.DeviceMessageCodec;
+import org.jetlinks.core.message.event.EventMessage;
+import org.jetlinks.core.message.event.ThingEventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
-import org.jetlinks.protocol.common.mapping.ThingAnnotation;
+import org.jetlinks.protocol.common.mapping.*;
 import org.jetlinks.protocol.official.PluginConfig;
 import org.jetlinks.protocol.official.binary2.*;
 import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
+import org.jetlinks.protocol.official.common.DictBook;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
 import org.jetlinks.protocol.official.lwm2m.StructLwM2M11DeviceMessageCodec;
+
+import java.util.List;
 
 /**
  * 米充V2协议
@@ -26,6 +31,82 @@ public class MiChongV2ProtocolSupport {
     public static final String NAME_AND_VER = "MI_CHONG_V2";
 
     private static final short  DATA_BEGIN_IDX = 4;
+
+    private static final int    MAX_TIME = 30000;
+    private static final short    MAX_MONEY = 30000;
+
+    /**
+     * 命令是否成功字典
+     */
+    private static final DictBook<Byte, String> CMD_RESULT_DICT = new DictBook<>();
+
+    /**
+     * 端口状态字典
+     */
+    private static final DictBook<Byte, String> STATUS_OF_PORT_DICT = new DictBook<>();
+
+    /**
+     * 开启端口通电指令结果
+     */
+    private static final DictBook<Byte, String> RESULT_OF_SWITCH_ON_PORT_CMD = new DictBook<>();
+
+    /**
+     * 用电结束原因
+     */
+    private static final DictBook<Byte, String> REASON_OF_ROUND_END_CMD = new DictBook<>();
+
+    /**
+     * 故障码或故障恢复码字典
+     */
+    private static final DictBook<Byte, String> FAULT_CODE_DICT = new DictBook<>();
+
+    private static final ThingValueNormalization<Integer> NormToInt = ThingValueNormalizations.ofToInt(-1);
+
+    static {
+        CMD_RESULT_DICT.add((byte) 0x01, "FREE", "命令下发成功");
+        CMD_RESULT_DICT.add((byte) 0x00, "FAIL", "命令下发失败");
+        CMD_RESULT_DICT.add((byte) 0xFF, "FAIL_NET", "命令下发失败：无网络/未链接");
+        CMD_RESULT_DICT.addOtherItemTemplate((srcCode) -> "FAIL_OTHER_" + srcCode.toString(), "其他原因命令下发失败");
+
+        STATUS_OF_PORT_DICT.add((byte) 0x01, "SOP_FREE", "端口空闲");
+        STATUS_OF_PORT_DICT.add((byte) 0x02, "SOP_FAIL_OCCUPIED", "端口使用中");
+        STATUS_OF_PORT_DICT.add((byte) 0x03, "SOP_FAIL_DISABLED", "端口已禁用");
+        STATUS_OF_PORT_DICT.add((byte) 0x04, "SOP_FAIL_FAULT", "端口故障");
+        STATUS_OF_PORT_DICT.addOtherItemTemplate((srcCode) -> "SOP_UNKNOWN" + srcCode.toString(), "端口状态未知");
+
+        RESULT_OF_SWITCH_ON_PORT_CMD.add((byte) 0x00, "SUCCESS", "端口成功通电");
+        RESULT_OF_SWITCH_ON_PORT_CMD.add((byte) 0x0B, "FAIL_CHARGING_FAULT", "端口充电故障");
+        RESULT_OF_SWITCH_ON_PORT_CMD.add((byte) 0x0C, "FAIL_OCCUPIED", "端口已被使用");
+        RESULT_OF_SWITCH_ON_PORT_CMD.addOtherItemTemplate((srcCode) -> "FAIL_OTHER_" + srcCode.toString(), "其他原因命令施工失败");
+
+        REASON_OF_ROUND_END_CMD.add((byte) 0x00, "RC_OUT_OF_TIME", "达到用电最大时长");
+        REASON_OF_ROUND_END_CMD.add((byte) 0x01, "RC_MANUAL_STOP", "手动停止：拔插头或禁止停止等");
+        REASON_OF_ROUND_END_CMD.add((byte) 0x02, "RC_AUTO_STOP_CHARGE_FULL", "自动停止：充电已满");
+        REASON_OF_ROUND_END_CMD.add((byte) 0x0B, "RC_STOP_BY_FAULT", "故障原因停止：设备故障或端口故障等");
+        REASON_OF_ROUND_END_CMD.addOtherItemTemplate((srcCode) -> "RC_STOP_BY_OTHER" + srcCode.toString(), "其他原因停止");
+
+        FAULT_CODE_DICT.add((byte) 0xA0, "FC_STOP_FAULT", "停止充电异常：继电器粘连、短路等");
+        FAULT_CODE_DICT.add((byte) 0x20, "OK_STOP_FAULT", "停止充电恢复正常");
+        FAULT_CODE_DICT.add((byte) 0xA1, "FC_HIGH_TEMPERATURE", "高温异常");
+        FAULT_CODE_DICT.add((byte) 0x21, "OK_HIGH_TEMPERATURE", "高温恢复正常");
+        FAULT_CODE_DICT.add((byte) 0xA2, "FC_LOW_TEMPERATURE", "低温异常");
+        FAULT_CODE_DICT.add((byte) 0x22, "OK_LOW_TEMPERATURE", "低温恢复正常");
+        FAULT_CODE_DICT.add((byte) 0xA3, "FC_IDLE_LOAD", "空载异常：充电头脱落、拔出等");
+        FAULT_CODE_DICT.add((byte) 0x23, "OK_IDLE_LOAD", "负载恢复正常");
+        FAULT_CODE_DICT.add((byte) 0xA4, "FC_FIRE_ALARM", "消防报警：烟感等");
+        FAULT_CODE_DICT.add((byte) 0x24, "OK_FIRE_ALARM", "消防报警恢复正常");
+        FAULT_CODE_DICT.add((byte) 0xA5, "FC_OVER_LOAD", "过载异常：端口或总功率");
+        FAULT_CODE_DICT.add((byte) 0x25, "OK_OVER_LOAD", "过载恢复正常");
+        FAULT_CODE_DICT.addOtherItemBuilder(srcCode -> {
+            if (srcCode > (byte) 0xA0) {
+                return new DictBook.Item<>(srcCode, "FC_OTHER_" + srcCode.toString(),
+                        "其他故障" + srcCode.toString());
+            } else {
+                return new DictBook.Item<>(srcCode, "OK_OTHER_" + srcCode.toString(),
+                        srcCode.toString() + "故障恢复正常");
+            }
+        });
+    }
 
     public static DeviceMessageCodec buildDeviceMessageCodec(PluginConfig config) {
         IntercommunicateStrategy strategy = buildIntercommunicateStrategy(config);
@@ -55,7 +136,7 @@ public class MiChongV2ProtocolSupport {
         suit.addStructDeclaration(buildReportDataStructDcl());
 
         suit.addStructDeclaration(buildFaultEventStructDcl());
-        suit.addStructDeclaration(buildFaultRestoreEventStructDcl());
+//        suit.addStructDeclaration(buildFaultRestoreEventStructDcl());
         suit.addStructDeclaration(buildPortRoundEndEventStructDcl());
 
         suit.addStructDeclaration(buildSwitchOnPortPowerStructDcl());
@@ -77,7 +158,6 @@ public class MiChongV2ProtocolSupport {
         DefaultStructAndThingMapping structAndThingMapping = new DefaultStructAndThingMapping();
 
         //Encode
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "PumpInWaterOn", structSuit.getStructDeclaration("开启给水指令结构"));
         structAndThingMapping.addMapping(FunctionInvokeMessage.class, "PumpInWaterOff", structSuit.getStructDeclaration("关停给水指令结构"));
 
         structAndThingMapping.addMapping(FunctionInvokeMessage.class, "PumpOutWaterOn", structSuit.getStructDeclaration("开启排水指令结构"));
@@ -100,7 +180,7 @@ public class MiChongV2ProtocolSupport {
 
         //Decode
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("数据上报消息结构"), ReportPropertyMessage.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("指令下发反馈消息结构"), FunctionInvokeMessageReply.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("设备故障或恢复事件"), EventMessage.class);
 
         for (StructDeclaration structDcl : structSuit.structDeclarations()) {
             if (!structDcl.getName().endsWith("回复结构")) continue;
@@ -117,15 +197,15 @@ public class MiChongV2ProtocolSupport {
      * [数据上报] 上报端口实时状态
      */
     private static DefaultStructDeclaration buildReportDataStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("设备每间隔30~60秒上传端口信息", "CMD:0x21");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("数据上报消息结构", "CMD:0x21");
 
         structDcl.enableDecode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("ReportData"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte)0x00));
-        structDcl.addField(buildCMDFieldDcl((byte)0x10));
-        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
+        structDcl.addField(buildLENFieldDcl((byte) 0));
+        structDcl.addField(buildCMDFieldDcl((byte) 0x10));
+        structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
 
         DefaultFieldDeclaration portNumFieldDcl = buildPortNumFieldDcl(DATA_BEGIN_IDX);
         structDcl.addField(portNumFieldDcl);
@@ -133,25 +213,43 @@ public class MiChongV2ProtocolSupport {
         DefaultNRepeatFieldGroupDeclaration groupDcl;
         groupDcl = new DefaultNRepeatFieldGroupDeclaration("端口X的状况", "portXState", (short)6, (short)8);
         groupDcl.setDynamicNRepeat(portNumFieldDcl.asDynamicNRepeat());
-        groupDcl.setAnchorReference(portNumFieldDcl.asAnchor(), (short)0);
+        groupDcl.setAnchorReference(portNumFieldDcl.asAnchor(), (short) 0);
+        groupDcl.setInstancePostProcessor((idx, fieldInstances) -> {
+            int portNo = 0;
+            for (FieldInstance fInst : fieldInstances) {
+                if (fInst.getCode().equals("PortNo")) {
+                    portNo = fInst.getIntValue();
+                }
+            }
+
+            String prefix = String.format("port%d", portNo);
+            fieldInstances.forEach(v -> ((AbstractFieldInstance) v).setCodePrefix(prefix));
+
+            return fieldInstances;
+        });
 
         DynamicAnchor anchor = groupDcl.asAnchor();
 
         DefaultFieldDeclaration field;
-        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, anchor, (short)0);
+        field = buildDataFieldDcl("端口号", "PortNo", BaseDataType.UINT8, anchor, (short)0);
         groupDcl.addIncludedField(field);
 
+        ThingItemMapping<String> portStatusMapping = ThingItemMappings.ofDictExtendPostfix(STATUS_OF_PORT_DICT, "Desc");
         field = buildDataFieldDcl("端口状态", "Status", BaseDataType.UINT8, anchor, (short)1);
-        groupDcl.addIncludedField(field.addMeta(ThingAnnotation.Property()));
+        field.addMeta(ThingAnnotation.Property(portStatusMapping));
+        groupDcl.addIncludedField(field);
 
-        field = buildDataFieldDcl("剩余用电时长", "RemainTime", BaseDataType.UINT16, anchor, (short)3);
-        groupDcl.addIncludedField(field.addMeta(ThingAnnotation.Property()));
+        field = buildDataFieldDcl("剩余用电时长", "RemainTime", BaseDataType.UINT16, anchor, (short)2);
+        field.addMeta(ThingAnnotation.Property(NormToInt));
+        groupDcl.addIncludedField(field);
 
-        field = buildDataFieldDcl("当前用电功率", "WorkingPower", BaseDataType.UINT16, anchor, (short)5);
-        groupDcl.addIncludedField(field.addMeta(ThingAnnotation.Property()));
+        field = buildDataFieldDcl("当前用电功率", "WorkingPower", BaseDataType.UINT16, anchor, (short)4);
+        field.addMeta(ThingAnnotation.Property(NormToInt));
+        groupDcl.addIncludedField(field);
 
-        field = buildDataFieldDcl("本轮用电电量", "CurrentRoundEC", BaseDataType.UINT16, anchor, (short)7);
-        groupDcl.addIncludedField(field.addMeta(ThingAnnotation.Property()));
+        field = buildDataFieldDcl("本轮用电电量", "CurrentRoundEC", BaseDataType.UINT16, anchor, (short)6);
+        field.addMeta(ThingAnnotation.Property(NormToInt));
+        groupDcl.addIncludedField(field);
 
         structDcl.addGroup(groupDcl);
 
@@ -162,49 +260,29 @@ public class MiChongV2ProtocolSupport {
     }
 
     /**
-     * [事件上报] 设备故障事件
+     * [事件上报] 设备故障或恢复事件
      */
     private static DefaultStructDeclaration buildFaultEventStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("设备上传机器故障码给服务器", "CMD:0x0A");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("设备故障或恢复事件", "CMD:0x0A");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("FaultEvent"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("FaultEvent"));//TODO 根据条件
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte)0x06));
-        structDcl.addField(buildCMDFieldDcl((byte)0x0A));
-        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
+        structDcl.addField(buildLENFieldDcl((byte) 6));
+        structDcl.addField(buildCMDFieldDcl((byte) 0x0A));
+        structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
+
+        ThingValueNormalization<Integer> normToInt = ThingValueNormalizations.ofToInt(-1);
 
         DefaultFieldDeclaration field;
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
-        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+        field.addMeta(ThingAnnotation.Property(normToInt));
+        structDcl.addField(field);
 
-        field = buildDataFieldDcl("错误码", "errorCode", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 1));
-        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
-
-        structDcl.addField(buildSUMFieldDcl());
-        structDcl.setCRCCalculator(buildCRCCalculator());
-
-        return structDcl;
-    }
-
-    /**
-     * [事件上报] 设备故障恢复事件
-     */
-    private static DefaultStructDeclaration buildFaultRestoreEventStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("设备上传机器故障码给服务器", "CMD:0x0A");
-
-        structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("FaultEvent"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte)0x06));
-        structDcl.addField(buildCMDFieldDcl((byte)0x0A));
-        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
-
-        DefaultFieldDeclaration field;
-        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
-        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+        field = buildDataFieldDcl("故障码", "faultCode", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 1));
+        field.addMeta(ThingAnnotation.EventData(ThingItemMappings.ofDictExtend(FAULT_CODE_DICT, "faultDesc")));
+        structDcl.addField(field);
 
         structDcl.addField(buildSUMFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
@@ -228,16 +306,19 @@ public class MiChongV2ProtocolSupport {
 
         DefaultFieldDeclaration field;
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
-        structDcl.addField(field.addMeta(ThingAnnotation.EventData()));
+        structDcl.addField(field.addMeta(ThingAnnotation.EventData(NormToInt)));
 
         field = buildDataFieldDcl("本轮用电剩余时长", "remainTime", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 1));
-        structDcl.addField(field.addMeta(ThingAnnotation.EventData()));
+        structDcl.addField(field.addMeta(ThingAnnotation.EventData(NormToInt)));
 
         field = buildDataFieldDcl("本轮用电电量", "ec", BaseDataType.UINT8,  (short)(DATA_BEGIN_IDX + 3));
-        structDcl.addField(field.addMeta(ThingAnnotation.EventData()));
+        structDcl.addField(field.addMeta(ThingAnnotation.EventData(NormToInt)));
 
         field = buildDataFieldDcl("停止的原因编码", "reasonCode", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 5));
-        structDcl.addField(field.addMeta(ThingAnnotation.EventData()));
+        field.addMeta(ThingAnnotation.EventData(
+            ThingItemMappings.ofDictExtend(REASON_OF_ROUND_END_CMD, "reasonDesc")
+        ));
+        structDcl.addField(field);
 
         structDcl.addField(buildSUMFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
@@ -261,16 +342,16 @@ public class MiChongV2ProtocolSupport {
 
         DefaultFieldDeclaration field;
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
-        structDcl.addField(field);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
 
         field = buildDataFieldDcl("可用金额", "maxMoney", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 1));
-        structDcl.addField(field.setDefaultValue((short) 30000));
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()).setDefaultValue(MAX_MONEY));
 
         field = buildDataFieldDcl("可用电时长", "maxTime", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 3));
-        structDcl.addField(field);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
 
         field = buildDataFieldDcl("可用电电量", "maxEC", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 5));
-        structDcl.addField(field);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
 
         structDcl.addField(buildSUMFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
@@ -279,10 +360,10 @@ public class MiChongV2ProtocolSupport {
     }
 
     /**
-     * 开启端口供电指令回复
+     * 开启端口供电指令回复结构
      */
     private static DefaultStructDeclaration buildSwitchOnPortPowerResponseStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启端口供电指令回复", "CMD:0x14");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启端口供电指令回复结构", "CMD:0x14");
 
         structDcl.enableDecode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOnPortPowerResponse"));
@@ -294,10 +375,13 @@ public class MiChongV2ProtocolSupport {
 
         DefaultFieldDeclaration field;
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput()));
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput(NormToInt)));
 
         field = buildDataFieldDcl("结果编码", "rstCode", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 1));
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput()));
+        field.addMeta(ThingAnnotation.FuncOutput(
+                ThingItemMappings.ofDictExtend(CMD_RESULT_DICT, "rstDesc"))
+        );
+        structDcl.addField(field);
 
         structDcl.addField(buildSUMFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
@@ -321,7 +405,7 @@ public class MiChongV2ProtocolSupport {
 
         DefaultFieldDeclaration field;
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
-        structDcl.addField(field);
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
 
         field = buildDataFieldDcl("类型", "type", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 1));
         structDcl.addField(field.setDefaultValue((byte)0x00));
@@ -333,10 +417,10 @@ public class MiChongV2ProtocolSupport {
     }
 
     /**
-     * 关停端口供电指令回复
+     * 关停端口供电指令回复结构
      */
     private static DefaultStructDeclaration buildSwitchOffPortPowerResponseStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停端口供电指令回复", "CMD:0x0D");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停端口供电指令回复结构", "CMD:0x0D");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOffPortPowerResponse"));
@@ -348,10 +432,10 @@ public class MiChongV2ProtocolSupport {
 
         DefaultFieldDeclaration field;
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput()));
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput(NormToInt)));
 
         field = buildDataFieldDcl("本轮用电剩余时长", "remainTime", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 1));
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput()));
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput(NormToInt)));
 
         structDcl.addField(buildSUMFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
@@ -384,34 +468,34 @@ public class MiChongV2ProtocolSupport {
     }
 
     /**
-     * 查询指定端口的状况的指令响应
+     * 查询指定端口的状况的指令响应结构
      */
     private static DefaultStructDeclaration buildReadPortStateResponseStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("查询指定端口的状况的指令响应", "CMD:0x15");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("查询指定端口的状况的指令响应结构", "CMD:0x15");
 
         structDcl.enableDecode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("ReadPortStateResponse"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte)9));
-        structDcl.addField(buildCMDFieldDcl((byte)0x15));
-        structDcl.addField(buildRESULTFieldDcl((byte)0x00));
+        structDcl.addField(buildLENFieldDcl((byte) 9));
+        structDcl.addField(buildCMDFieldDcl((byte) 0x15));
+        structDcl.addField(buildRESULTFieldDcl((byte) 0x00));
 
         DefaultFieldDeclaration field;
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput()));
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput(NormToInt)));
 
         field = buildDataFieldDcl("本轮用电剩余时长", "remainTime", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 1));
-        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+        structDcl.addField(field.addMeta(ThingAnnotation.Property(NormToInt)));
 
         field = buildDataFieldDcl("当前用电功率", "workingPower", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 3));
-        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+        structDcl.addField(field.addMeta(ThingAnnotation.Property(NormToInt)));
 
         field = buildDataFieldDcl("本轮用电剩余电量", "remainEC", BaseDataType.UINT16,  (short)(DATA_BEGIN_IDX + 53));
-        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+        structDcl.addField(field.addMeta(ThingAnnotation.Property(NormToInt)));
 
         field = buildDataFieldDcl("本轮用电剩余金额", "remainMoney", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 7));
-        structDcl.addField(field.addMeta(ThingAnnotation.Property()));
+        structDcl.addField(field.addMeta(ThingAnnotation.Property(NormToInt)));
 
         structDcl.addField(buildSUMFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
@@ -447,10 +531,10 @@ public class MiChongV2ProtocolSupport {
     }
 
     /**
-     * 锁定/解锁指定端口命令响应
+     * 锁定/解锁指定端口命令响应结构
      */
     private static DefaultStructDeclaration buildLockOrUnlockPortResponseStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("锁定/解锁指定端口命令响应", "CMD:0x0C");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("锁定/解锁指定端口命令响应结构", "CMD:0x0C");
 
         structDcl.enableDecode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("LockOrUnlockPortResponse"));
@@ -462,7 +546,7 @@ public class MiChongV2ProtocolSupport {
 
         DefaultFieldDeclaration field;
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput()));
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput(NormToInt)));
 
         structDcl.addField(buildSUMFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());

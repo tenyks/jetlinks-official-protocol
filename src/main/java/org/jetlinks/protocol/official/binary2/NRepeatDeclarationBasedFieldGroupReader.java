@@ -55,7 +55,7 @@ public class NRepeatDeclarationBasedFieldGroupReader implements NRepeatGroupRead
                 StructFieldDeclaration fDcl = fReader.getDeclaration();
 
                 DynamicAnchor dynamicAnchor = fDcl.getDynamicAnchor();
-                if (dynamicAnchor != null) dynamicAnchor.bind(boundInstance);
+                if (dynamicAnchor != null) dynamicAnchor.bind(boundInstance, i);
 
                 DynamicSize dynamicSize = fDcl.getDynamicSize();
                 if (dynamicSize != null) dynamicSize.bind(boundInstance);
@@ -65,10 +65,12 @@ public class NRepeatDeclarationBasedFieldGroupReader implements NRepeatGroupRead
                     log.error("[NRepeatGroupReader]字段读取返回空判定字节流反序列化为失败：field={}", fDcl);
                     return null;
                 }
+
+                grpRst.add(fInst);
             }
 
             if (declaration.getInstancePostProcessor() != null) {
-                grpRst = declaration.getInstancePostProcessor().apply((int)i, rst);
+                grpRst = declaration.getInstancePostProcessor().apply((int)i, grpRst);
             }
 
             rst.addAll(grpRst);

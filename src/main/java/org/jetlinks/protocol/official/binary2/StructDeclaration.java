@@ -31,6 +31,8 @@ public interface StructDeclaration {
 
     Iterable<StructPartDeclaration>     parts();
 
+    Iterable<StructFieldDeclaration>     fields();
+
     CRCCalculator                       getCRCCalculator();
 
     boolean     isEnableEncode();

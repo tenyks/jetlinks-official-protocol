@@ -2,7 +2,7 @@ package org.jetlinks.protocol.official.binary2;
 
 public class SimpleFieldInstance extends AbstractFieldInstance {
 
-    private Object  value;
+    private final Object  value;
 
     public SimpleFieldInstance(StructFieldDeclaration fieldDcl, Short offset, Short size, Object value) {
         super(fieldDcl, offset, size);
@@ -19,4 +19,9 @@ public class SimpleFieldInstance extends AbstractFieldInstance {
         return value;
     }
 
+    @Override
+    public String toString() {
+        return String.format("SimpleFieldInstance[code=%s,value=%s,offset=%d,size=%d,dcl=%s]",
+                getCode(), getValue(), getOffset(), getSize(), getDeclaration());
+    }
 }

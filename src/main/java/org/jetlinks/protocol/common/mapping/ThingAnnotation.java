@@ -13,9 +13,11 @@ import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.function.FunctionParameter;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
+import reactor.util.function.Tuple2;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public abstract class ThingAnnotation {
@@ -174,6 +176,76 @@ public abstract class ThingAnnotation {
         };
     }
 
+    public static <T> ThingAnnotation FuncOutput(ThingValueNormalization<T> norm) {
+        return new ThingAnnotation("output", null) {
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                FunctionInvokeMessageReply fiMsg = (FunctionInvokeMessageReply)msg;
+
+                if (itemKey == null) return fiMsg.getOutput();
+
+                JSONObject outputObject = (JSONObject) fiMsg.getOutput();
+                if (outputObject == null) return null;
+
+                return outputObject.get(itemKey);
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                FunctionInvokeMessageReply fiMsg = (FunctionInvokeMessageReply)msg;
+
+                if (itemKey == null) {
+                    fiMsg.setOutput(itemVal);
+                    return ;
+                }
+
+                JSONObject outputObj = (JSONObject) fiMsg.getOutput();
+                if (outputObj == null) {
+                    outputObj = new JSONObject();
+                    fiMsg.setOutput(outputObj);
+                }
+                outputObj.put(itemKey, norm.apply(itemVal));
+            }
+        };
+    }
+
+    public static ThingAnnotation FuncOutput(ThingItemMapping<String> itemMapping) {
+        return new ThingAnnotation("output", null) {
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                FunctionInvokeMessageReply fiMsg = (FunctionInvokeMessageReply)msg;
+
+                if (itemKey == null) return fiMsg.getOutput();
+
+                JSONObject outputObject = (JSONObject) fiMsg.getOutput();
+                if (outputObject == null) return null;
+
+                return outputObject.get(itemKey);
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                FunctionInvokeMessageReply fiMsg = (FunctionInvokeMessageReply)msg;
+
+                if (itemKey == null) {
+                    fiMsg.setOutput(itemVal);
+                    return ;
+                }
+
+                JSONObject outputObj = (JSONObject) fiMsg.getOutput();
+                if (outputObj == null) {
+                    outputObj = new JSONObject();
+                    fiMsg.setOutput(outputObj);
+                }
+
+                List<Tuple2<String, String>> items = itemMapping.apply(itemKey, itemVal);
+                for (Tuple2<String, String> item : items) {
+                    outputObj.put(item.getT1(), item.getT2());
+                }
+            }
+        };
+    }
+
     public static ThingAnnotation Event(String thingValue) {
         return new ThingAnnotation("event", thingValue) {
             @Override
@@ -227,6 +299,75 @@ public abstract class ThingAnnotation {
         };
     }
 
+    public static <T> ThingAnnotation EventData(ThingValueNormalization<T> norm) {
+        return new ThingAnnotation("data", null) {
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                EventMessage eMsg = (EventMessage) msg;
+                if (itemKey == null) return eMsg.getData();
+
+                JSONObject jsonObj = (JSONObject)eMsg.getData();
+                if (jsonObj == null) return null;
+
+                return jsonObj.get(itemKey);
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                EventMessage eMsg = (EventMessage) msg;
+
+                if (itemKey == null) {
+                    eMsg.setData(itemVal);
+                    return ;
+                }
+
+                JSONObject jsonObj = (JSONObject)eMsg.getData();
+                if (jsonObj == null) {
+                    jsonObj = new JSONObject();
+                    eMsg.setData(jsonObj);
+                }
+
+                jsonObj.put(itemKey, norm.apply(itemVal));
+            }
+        };
+    }
+
+    public static ThingAnnotation EventData(ThingItemMapping<String> itemMapping) {
+        return new ThingAnnotation("data", null) {
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                EventMessage eMsg = (EventMessage) msg;
+                if (itemKey == null) return eMsg.getData();
+
+                JSONObject jsonObj = (JSONObject)eMsg.getData();
+                if (jsonObj == null) return null;
+
+                return jsonObj.get(itemKey);
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                EventMessage eMsg = (EventMessage) msg;
+
+                if (itemKey == null) {
+                    eMsg.setData(itemVal);
+                    return ;
+                }
+
+                JSONObject jsonObj = (JSONObject)eMsg.getData();
+                if (jsonObj == null) {
+                    jsonObj = new JSONObject();
+                    eMsg.setData(jsonObj);
+                }
+
+                List<Tuple2<String, String>> items = itemMapping.apply(itemKey, itemVal);
+                for (Tuple2<String, String> item : items) {
+                    jsonObj.put(item.getT1(), item.getT2());
+                }
+            }
+        };
+    }
+
     public static ThingAnnotation Property() {
         return new ThingAnnotation("properties", null) {
             @Override
@@ -236,6 +377,54 @@ public abstract class ThingAnnotation {
                 if (rpMsg.getProperties() == null) rpMsg.setProperties(new HashMap<>());
 
                 rpMsg.getProperties().put(itemKey, itemVal);
+            }
+
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                ReportPropertyMessage rpMsg = (ReportPropertyMessage) msg;
+
+                if (rpMsg.getProperties() == null) return null;
+
+                return rpMsg.getProperties().get(itemKey);
+            }
+        };
+    }
+
+    public static <T> ThingAnnotation Property(ThingValueNormalization<T> normalization) {
+        return new ThingAnnotation("properties", null) {
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                ReportPropertyMessage rpMsg = (ReportPropertyMessage) msg;
+
+                if (rpMsg.getProperties() == null) rpMsg.setProperties(new HashMap<>());
+
+                rpMsg.getProperties().put(itemKey, normalization.apply(itemVal));
+            }
+
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                ReportPropertyMessage rpMsg = (ReportPropertyMessage) msg;
+
+                if (rpMsg.getProperties() == null) return null;
+
+                return rpMsg.getProperties().get(itemKey);
+            }
+        };
+    }
+
+    public static ThingAnnotation Property(ThingItemMapping<String> itemMapping) {
+        return new ThingAnnotation("properties", null) {
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                ReportPropertyMessage rpMsg = (ReportPropertyMessage) msg;
+
+                if (rpMsg.getProperties() == null) rpMsg.setProperties(new HashMap<>());
+
+                Map<String, Object> properties = rpMsg.getProperties();
+                List<Tuple2<String, String>> items = itemMapping.apply(itemKey, itemVal);
+                for (Tuple2<String, String> item : items) {
+                    properties.put(item.getT1(), item.getT2());
+                }
             }
 
             @Override

@@ -2,13 +2,13 @@ package org.jetlinks.protocol.official.binary2;
 
 public abstract class AbstractFieldInstance implements FieldInstance {
 
-    private StructFieldDeclaration fieldDcl;
+    private final StructFieldDeclaration fieldDcl;
 
-    private String  preferCode;
+    private String  codePrefix;
 
-    private Short   offset;
+    private final Short   offset;
 
-    private Short   size;
+    private final Short   size;
 
     public AbstractFieldInstance(StructFieldDeclaration fieldDcl, Short offset, Short size) {
         this.fieldDcl = fieldDcl;
@@ -16,12 +16,12 @@ public abstract class AbstractFieldInstance implements FieldInstance {
         this.size = size;
     }
 
-    public String getPreferCode() {
-        return preferCode;
+    public String getCodePrefix() {
+        return codePrefix;
     }
 
-    public void setPreferCode(String preferCode) {
-        this.preferCode = preferCode;
+    public void setCodePrefix(String codePrefix) {
+        this.codePrefix = codePrefix;
     }
 
     @Override
@@ -41,7 +41,7 @@ public abstract class AbstractFieldInstance implements FieldInstance {
 
     @Override
     public String getCode() {
-        return (preferCode != null ? preferCode : fieldDcl.getCode());
+        return (codePrefix != null ? codePrefix + fieldDcl.getCode() : fieldDcl.getCode());
     }
 
     @Override

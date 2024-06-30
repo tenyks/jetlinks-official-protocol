@@ -17,17 +17,25 @@ public class GroupBeginAnchor implements DynamicAnchor {
 
     private StructInstance          currentStructInst;
 
+    private short     groupIdx = 0;
+
     public GroupBeginAnchor(@Nonnull GroupDeclaration targetGroup) {
         this.targetGroup = targetGroup;
     }
 
     @Override
     public short getAbsoluteOffset(short relativeOffset) {
-        return targetGroup.getOffset();
+        return (short)(this.groupIdx * targetGroup.getSize() + targetGroup.getOffset() + relativeOffset);
     }
 
     @Override
     public void bind(StructInstance structInst) {
+        this.currentStructInst = structInst;
+    }
+
+    @Override
+    public void bind(StructInstance structInst, short groupIdx) {
+        this.groupIdx = groupIdx;
         this.currentStructInst = structInst;
     }
 }

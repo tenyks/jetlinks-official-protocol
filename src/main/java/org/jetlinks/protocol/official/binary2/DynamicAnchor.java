@@ -12,4 +12,8 @@ public interface DynamicAnchor {
 
     void bind(StructInstance structInst);
 
+    default void bind(StructInstance structInst, short groupIdx) {
+        bind(structInst);
+    }
+
 }

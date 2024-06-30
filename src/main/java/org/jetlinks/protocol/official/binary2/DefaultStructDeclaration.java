@@ -3,10 +3,8 @@ package org.jetlinks.protocol.official.binary2;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class DefaultStructDeclaration implements StructDeclaration {
 
@@ -115,6 +113,13 @@ public class DefaultStructDeclaration implements StructDeclaration {
     @Override
     public Iterable<StructPartDeclaration> parts() {
         return parts;
+    }
+
+    @Override
+    public Iterable<StructFieldDeclaration> fields() {
+        List<StructFieldDeclaration> fields = parts.stream().filter((item) -> item instanceof StructFieldDeclaration)
+                .map((item) -> (StructFieldDeclaration)item).collect(Collectors.toList());
+        return fields;
     }
 
     @Override
