@@ -211,7 +211,7 @@ public class MiChongV2ProtocolSupport {
         structDcl.addField(portNumFieldDcl);
 
         DefaultNRepeatFieldGroupDeclaration groupDcl;
-        groupDcl = new DefaultNRepeatFieldGroupDeclaration("端口X的状况", "portXState", (short)6, (short)8);
+        groupDcl = new DefaultNRepeatFieldGroupDeclaration("端口X的状况", "portXState", (short)5, (short)8);
         groupDcl.setDynamicNRepeat(portNumFieldDcl.asDynamicNRepeat());
         groupDcl.setAnchorReference(portNumFieldDcl.asAnchor(), (short) 0);
         groupDcl.setInstancePostProcessor((idx, fieldInstances) -> {

@@ -1,17 +1,22 @@
 package org.jetlinks.protocol.official.binary2;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SimpleStructInstance implements StructInstance {
 
-    private StructDeclaration            structDcl;
+    private final StructDeclaration            structDcl;
 
-    private Map<StructFieldDeclaration, FieldInstance>   fieldInstMap;
+    private final Map<StructFieldDeclaration, FieldInstance>   fieldInstMap;
+
+    private final List<FieldInstance>           fieldInstList;
 
     public SimpleStructInstance(StructDeclaration dcl) {
         this.structDcl = dcl;
         this.fieldInstMap = new HashMap<>();
+        this.fieldInstList = new ArrayList<>();
     }
 
     @Override
@@ -32,6 +37,7 @@ public class SimpleStructInstance implements StructInstance {
     @Override
     public void addFieldInstance(FieldInstance inst) {
         fieldInstMap.put(inst.getDeclaration(), inst);
+        fieldInstList.add(inst);
     }
 
     @Override
@@ -45,14 +51,22 @@ public class SimpleStructInstance implements StructInstance {
         StringBuilder buf = new StringBuilder();
         buf.append(structDcl.getFeatureCode()).append('[');
         boolean isFirst = true;
-        for (FieldInstance fInst : fieldInstMap.values()) {
+        for (FieldInstance fInst : fieldInstList) {
             if (!isFirst) buf.append(',');
 
-            buf.append(fInst.getDeclaration().getCode()).append('=');
-            if (fInst.getValue() instanceof Byte) {
-                buf.append(Integer.toHexString((Byte)fInst.getValue()));
-            } else {
-                buf.append(fInst.getValue());
+            buf.append(fInst.getCode()).append('=');
+            Object fVal = fInst.getValue();
+            buf.append(fVal);
+
+            if (fVal instanceof Byte) {
+                buf.append("|0x");
+                buf.append(Integer.toHexString((Byte) fVal).toUpperCase());
+            } else if (fVal instanceof Short) {
+                buf.append("|0x");
+                buf.append(Integer.toHexString((Short) fVal).toUpperCase());
+            } else if (fVal instanceof Integer) {
+                buf.append("|0x");
+                buf.append(Integer.toHexString((Integer) fVal).toUpperCase());
             }
 
             isFirst = false;

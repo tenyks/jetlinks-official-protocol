@@ -25,7 +25,8 @@ public class GroupBeginAnchor implements DynamicAnchor {
 
     @Override
     public short getAbsoluteOffset(short relativeOffset) {
-        return (short)(this.groupIdx * targetGroup.getSize() + targetGroup.getOffset() + relativeOffset);
+        short rst = (short)(this.groupIdx * targetGroup.getSize() + targetGroup.getOffset() + relativeOffset);
+        return rst;
     }
 
     @Override
