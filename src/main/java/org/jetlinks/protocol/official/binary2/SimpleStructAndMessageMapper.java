@@ -58,7 +58,7 @@ public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
     public DeviceMessage toDeviceMessage(@Nullable MapperContext context, StructInstance structInst) {
         DeviceMessage msg = structAndThingMapping.map(structInst.getDeclaration());
         if (msg == null) {
-            log.warn("[CodecMapper]{} not mapping to DeviceMessage", structInst.getDeclaration().getName());
+            log.warn("[CodecMapper]{}没有映射到DeviceMessage", structInst.getDeclaration().getName());
             return null;
         }
 
@@ -83,7 +83,7 @@ public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
             Object itemVal = fieldValueAndPropertyMapping.toPropertyValue(context, fieldInst);
 
             for (ThingAnnotation tAnn : fieldInst.getDeclaration().thingAnnotations()) {
-                String itemKey = fieldAndPropertyMapping.toProperty(fieldInst.getDeclaration());
+                String itemKey = fieldAndPropertyMapping.toProperty(fieldInst);
 
                 tAnn.invokeSetter(null, msg, itemKey, itemVal);
             }

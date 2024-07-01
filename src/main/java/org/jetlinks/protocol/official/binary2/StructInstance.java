@@ -1,6 +1,7 @@
 package org.jetlinks.protocol.official.binary2;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * 结构体实例
@@ -11,11 +12,21 @@ import javax.validation.constraints.NotNull;
 public interface StructInstance {
 
     @NotNull
-    StructDeclaration    getDeclaration();
+    StructDeclaration       getDeclaration();
 
     Iterable<FieldInstance> filedInstances();
 
-    FieldInstance getFieldInstance(StructFieldDeclaration fieldDcl);
+    default FieldInstance   getFieldInstance(StructFieldDeclaration fieldDcl) {
+        return getFieldInstance(fieldDcl, 0);
+    }
+
+    default FieldInstance           getFieldInstance(StructFieldDeclaration fieldDcl, int idx) {
+        List<FieldInstance> items = getFieldInstances(fieldDcl);
+
+        return (items != null && items.size() > idx ? items.get(idx) : null);
+    }
+
+    List<FieldInstance>     getFieldInstances(StructFieldDeclaration fieldDcl);
 
     void addFieldInstance(FieldInstance inst);
 

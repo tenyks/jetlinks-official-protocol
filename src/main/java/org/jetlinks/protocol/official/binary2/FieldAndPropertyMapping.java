@@ -10,6 +10,8 @@ public interface FieldAndPropertyMapping {
 
     String toProperty(StructFieldDeclaration fieldDcl);
 
+    String toProperty(FieldInstance fieldInst);
+
     StructFieldDeclaration toField(StructDeclaration structDcl, String property);
 
 }

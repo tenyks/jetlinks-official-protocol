@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import org.apache.commons.codec.binary.Hex;
 import org.jetlinks.core.message.codec.DeviceMessageCodec;
 import org.jetlinks.core.message.event.EventMessage;
-import org.jetlinks.core.message.event.ThingEventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
@@ -15,8 +14,6 @@ import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
 import org.jetlinks.protocol.official.common.DictBook;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
 import org.jetlinks.protocol.official.lwm2m.StructLwM2M11DeviceMessageCodec;
-
-import java.util.List;
 
 /**
  * 米充V2协议
@@ -38,67 +35,67 @@ public class MiChongV2ProtocolSupport {
     /**
      * 命令是否成功字典
      */
-    private static final DictBook<Byte, String> CMD_RESULT_DICT = new DictBook<>();
+    private static final DictBook<Short, String> CMD_RESULT_DICT = new DictBook<>();
 
     /**
      * 端口状态字典
      */
-    private static final DictBook<Byte, String> STATUS_OF_PORT_DICT = new DictBook<>();
+    private static final DictBook<Short, String> STATUS_OF_PORT_DICT = new DictBook<>();
 
     /**
      * 开启端口通电指令结果
      */
-    private static final DictBook<Byte, String> RESULT_OF_SWITCH_ON_PORT_CMD = new DictBook<>();
+    private static final DictBook<Short, String> RESULT_OF_SWITCH_ON_PORT_CMD = new DictBook<>();
 
     /**
      * 用电结束原因
      */
-    private static final DictBook<Byte, String> REASON_OF_ROUND_END_CMD = new DictBook<>();
+    private static final DictBook<Short, String> REASON_OF_ROUND_END_CMD = new DictBook<>();
 
     /**
      * 故障码或故障恢复码字典
      */
-    private static final DictBook<Byte, String> FAULT_CODE_DICT = new DictBook<>();
+    private static final DictBook<Short, String> FAULT_CODE_DICT = new DictBook<>();
 
     private static final ThingValueNormalization<Integer> NormToInt = ThingValueNormalizations.ofToInt(-1);
 
     static {
-        CMD_RESULT_DICT.add((byte) 0x01, "FREE", "命令下发成功");
-        CMD_RESULT_DICT.add((byte) 0x00, "FAIL", "命令下发失败");
-        CMD_RESULT_DICT.add((byte) 0xFF, "FAIL_NET", "命令下发失败：无网络/未链接");
+        CMD_RESULT_DICT.add((short) 0x01, "FREE", "命令下发成功");
+        CMD_RESULT_DICT.add((short) 0x00, "FAIL", "命令下发失败");
+        CMD_RESULT_DICT.add((short) 0xFF, "FAIL_NET", "命令下发失败：无网络/未链接");
         CMD_RESULT_DICT.addOtherItemTemplate((srcCode) -> "FAIL_OTHER_" + srcCode.toString(), "其他原因命令下发失败");
 
-        STATUS_OF_PORT_DICT.add((byte) 0x01, "SOP_FREE", "端口空闲");
-        STATUS_OF_PORT_DICT.add((byte) 0x02, "SOP_FAIL_OCCUPIED", "端口使用中");
-        STATUS_OF_PORT_DICT.add((byte) 0x03, "SOP_FAIL_DISABLED", "端口已禁用");
-        STATUS_OF_PORT_DICT.add((byte) 0x04, "SOP_FAIL_FAULT", "端口故障");
+        STATUS_OF_PORT_DICT.add((short) 0x01, "SOP_FREE", "端口空闲");
+        STATUS_OF_PORT_DICT.add((short) 0x02, "SOP_FAIL_OCCUPIED", "端口使用中");
+        STATUS_OF_PORT_DICT.add((short) 0x03, "SOP_FAIL_DISABLED", "端口已禁用");
+        STATUS_OF_PORT_DICT.add((short) 0x04, "SOP_FAIL_FAULT", "端口故障");
         STATUS_OF_PORT_DICT.addOtherItemTemplate((srcCode) -> "SOP_UNKNOWN" + srcCode.toString(), "端口状态未知");
 
-        RESULT_OF_SWITCH_ON_PORT_CMD.add((byte) 0x00, "SUCCESS", "端口成功通电");
-        RESULT_OF_SWITCH_ON_PORT_CMD.add((byte) 0x0B, "FAIL_CHARGING_FAULT", "端口充电故障");
-        RESULT_OF_SWITCH_ON_PORT_CMD.add((byte) 0x0C, "FAIL_OCCUPIED", "端口已被使用");
+        RESULT_OF_SWITCH_ON_PORT_CMD.add((short) 0x00, "SUCCESS", "端口成功通电");
+        RESULT_OF_SWITCH_ON_PORT_CMD.add((short) 0x0B, "FAIL_CHARGING_FAULT", "端口充电故障");
+        RESULT_OF_SWITCH_ON_PORT_CMD.add((short) 0x0C, "FAIL_OCCUPIED", "端口已被使用");
         RESULT_OF_SWITCH_ON_PORT_CMD.addOtherItemTemplate((srcCode) -> "FAIL_OTHER_" + srcCode.toString(), "其他原因命令施工失败");
 
-        REASON_OF_ROUND_END_CMD.add((byte) 0x00, "RC_OUT_OF_TIME", "达到用电最大时长");
-        REASON_OF_ROUND_END_CMD.add((byte) 0x01, "RC_MANUAL_STOP", "手动停止：拔插头或禁止停止等");
-        REASON_OF_ROUND_END_CMD.add((byte) 0x02, "RC_AUTO_STOP_CHARGE_FULL", "自动停止：充电已满");
-        REASON_OF_ROUND_END_CMD.add((byte) 0x0B, "RC_STOP_BY_FAULT", "故障原因停止：设备故障或端口故障等");
+        REASON_OF_ROUND_END_CMD.add((short) 0x00, "RC_OUT_OF_TIME", "达到用电最大时长");
+        REASON_OF_ROUND_END_CMD.add((short) 0x01, "RC_MANUAL_STOP", "手动停止：拔插头或禁止停止等");
+        REASON_OF_ROUND_END_CMD.add((short) 0x02, "RC_AUTO_STOP_CHARGE_FULL", "自动停止：充电已满");
+        REASON_OF_ROUND_END_CMD.add((short) 0x0B, "RC_STOP_BY_FAULT", "故障原因停止：设备故障或端口故障等");
         REASON_OF_ROUND_END_CMD.addOtherItemTemplate((srcCode) -> "RC_STOP_BY_OTHER" + srcCode.toString(), "其他原因停止");
 
-        FAULT_CODE_DICT.add((byte) 0xA0, "FC_STOP_FAULT", "停止充电异常：继电器粘连、短路等");
-        FAULT_CODE_DICT.add((byte) 0x20, "OK_STOP_FAULT", "停止充电恢复正常");
-        FAULT_CODE_DICT.add((byte) 0xA1, "FC_HIGH_TEMPERATURE", "高温异常");
-        FAULT_CODE_DICT.add((byte) 0x21, "OK_HIGH_TEMPERATURE", "高温恢复正常");
-        FAULT_CODE_DICT.add((byte) 0xA2, "FC_LOW_TEMPERATURE", "低温异常");
-        FAULT_CODE_DICT.add((byte) 0x22, "OK_LOW_TEMPERATURE", "低温恢复正常");
-        FAULT_CODE_DICT.add((byte) 0xA3, "FC_IDLE_LOAD", "空载异常：充电头脱落、拔出等");
-        FAULT_CODE_DICT.add((byte) 0x23, "OK_IDLE_LOAD", "负载恢复正常");
-        FAULT_CODE_DICT.add((byte) 0xA4, "FC_FIRE_ALARM", "消防报警：烟感等");
-        FAULT_CODE_DICT.add((byte) 0x24, "OK_FIRE_ALARM", "消防报警恢复正常");
-        FAULT_CODE_DICT.add((byte) 0xA5, "FC_OVER_LOAD", "过载异常：端口或总功率");
-        FAULT_CODE_DICT.add((byte) 0x25, "OK_OVER_LOAD", "过载恢复正常");
+        FAULT_CODE_DICT.add((short) 0xA0, "FC_STOP_FAULT", "停止充电异常：继电器粘连、短路等");
+        FAULT_CODE_DICT.add((short) 0x20, "OK_STOP_FAULT", "停止充电恢复正常");
+        FAULT_CODE_DICT.add((short) 0xA1, "FC_HIGH_TEMPERATURE", "高温异常");
+        FAULT_CODE_DICT.add((short) 0x21, "OK_HIGH_TEMPERATURE", "高温恢复正常");
+        FAULT_CODE_DICT.add((short) 0xA2, "FC_LOW_TEMPERATURE", "低温异常");
+        FAULT_CODE_DICT.add((short) 0x22, "OK_LOW_TEMPERATURE", "低温恢复正常");
+        FAULT_CODE_DICT.add((short) 0xA3, "FC_IDLE_LOAD", "空载异常：充电头脱落、拔出等");
+        FAULT_CODE_DICT.add((short) 0x23, "OK_IDLE_LOAD", "负载恢复正常");
+        FAULT_CODE_DICT.add((short) 0xA4, "FC_FIRE_ALARM", "消防报警：烟感等");
+        FAULT_CODE_DICT.add((short) 0x24, "OK_FIRE_ALARM", "消防报警恢复正常");
+        FAULT_CODE_DICT.add((short) 0xA5, "FC_OVER_LOAD", "过载异常：端口或总功率");
+        FAULT_CODE_DICT.add((short) 0x25, "OK_OVER_LOAD", "过载恢复正常");
         FAULT_CODE_DICT.addOtherItemBuilder(srcCode -> {
-            if (srcCode > (byte) 0xA0) {
+            if (srcCode > (short) 0xA0) {
                 return new DictBook.Item<>(srcCode, "FC_OTHER_" + srcCode.toString(),
                         "其他故障" + srcCode.toString());
             } else {
@@ -134,22 +131,20 @@ public class MiChongV2ProtocolSupport {
         );
 
         suit.addStructDeclaration(buildReportDataStructDcl());
-
-        suit.addStructDeclaration(buildFaultEventStructDcl());
-//        suit.addStructDeclaration(buildFaultRestoreEventStructDcl());
+        suit.addStructDeclaration(buildFaultOrRestoreEventStructDcl());
         suit.addStructDeclaration(buildPortRoundEndEventStructDcl());
 
         suit.addStructDeclaration(buildSwitchOnPortPowerStructDcl());
-        suit.addStructDeclaration(buildSwitchOnPortPowerResponseStructDcl());
+        suit.addStructDeclaration(buildSwitchOnPortPowerReplyStructDcl());
 
         suit.addStructDeclaration(buildSwitchOffPortPowerStructDcl());
-        suit.addStructDeclaration(buildSwitchOffPortPowerResponseStructDcl());
+        suit.addStructDeclaration(buildSwitchOffPortPowerReplyStructDcl());
 
         suit.addStructDeclaration(buildLockOrUnlockPortStructDcl());
-        suit.addStructDeclaration(buildLockOrUnlockPortResponseStructDcl());
+        suit.addStructDeclaration(buildLockOrUnlockPortReplyStructDcl());
 
         suit.addStructDeclaration(buildReadPortStateStructDcl());
-        suit.addStructDeclaration(buildReadPortStateResponseStructDcl());
+        suit.addStructDeclaration(buildReadPortStateReplyStructDcl());
 
         return suit;
     }
@@ -157,33 +152,19 @@ public class MiChongV2ProtocolSupport {
     public static StructAndMessageMapper    buildMapper(StructSuit structSuit) {
         DefaultStructAndThingMapping structAndThingMapping = new DefaultStructAndThingMapping();
 
-        //Encode
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "PumpInWaterOff", structSuit.getStructDeclaration("关停给水指令结构"));
-
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "PumpOutWaterOn", structSuit.getStructDeclaration("开启排水指令结构"));
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "PumpOutWaterOff", structSuit.getStructDeclaration("关停排水指令结构"));
-
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "FanInAirOn", structSuit.getStructDeclaration("开启送风指令结构"));
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "FanInAirOff", structSuit.getStructDeclaration("关停送风指令结构"));
-
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "FanOutAirOn", structSuit.getStructDeclaration("开启排风指令结构"));
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "FanOutAirOff", structSuit.getStructDeclaration("关停排风指令结构"));
-
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "HeaterAOn", structSuit.getStructDeclaration("开启加热器A指令结构"));
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "HeaterAOff", structSuit.getStructDeclaration("关停加热器A指令结构"));
-
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "HeaterBOn", structSuit.getStructDeclaration("开启加热器B指令结构"));
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "HeaterBOff", structSuit.getStructDeclaration("关停加热器B指令结构"));
-
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "LightOn", structSuit.getStructDeclaration("开启补光指令结构"));
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "LightOff", structSuit.getStructDeclaration("关停补光指令结构"));
-
-        //Decode
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("数据上报消息结构"), ReportPropertyMessage.class);
+        //上行消息：Decode
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("数据上报消息：上报端口实时状态"), ReportPropertyMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("设备故障或恢复事件"), EventMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("端口当轮用电结束事件"), EventMessage.class);
 
+        //下行指令：Encode
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "SwitchOnPortPower", structSuit.getStructDeclaration("开启端口供电指令"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "SwitchOffPortPower", structSuit.getStructDeclaration("关停端口供电指令"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "ReadPortState", structSuit.getStructDeclaration("读端口状况的指令"));
+
+        //指令恢复：Decode
         for (StructDeclaration structDcl : structSuit.structDeclarations()) {
-            if (!structDcl.getName().endsWith("回复结构")) continue;
+            if (!structDcl.getName().endsWith("指令回复")) continue;
             structAndThingMapping.addMapping(structDcl, FunctionInvokeMessageReply.class);
         }
 
@@ -194,10 +175,10 @@ public class MiChongV2ProtocolSupport {
     }
 
     /**
-     * [数据上报] 上报端口实时状态
+     * 数据上报消息：上报端口实时状态
      */
     private static DefaultStructDeclaration buildReportDataStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("数据上报消息结构", "CMD:0x21");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("数据上报消息：上报端口实时状态", "CMD:0x21");
 
         structDcl.enableDecode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("ReportData"));
@@ -240,15 +221,15 @@ public class MiChongV2ProtocolSupport {
         groupDcl.addIncludedField(field);
 
         field = buildDataFieldDcl("剩余用电时长", "RemainTime", BaseDataType.UINT16, anchor, (short)2);
-        field.addMeta(ThingAnnotation.Property(NormToInt));
+        field.addMeta(ThingAnnotation.Property());
         groupDcl.addIncludedField(field);
 
         field = buildDataFieldDcl("当前用电功率", "WorkingPower", BaseDataType.UINT16, anchor, (short)4);
-        field.addMeta(ThingAnnotation.Property(NormToInt));
+        field.addMeta(ThingAnnotation.Property());
         groupDcl.addIncludedField(field);
 
         field = buildDataFieldDcl("本轮用电电量", "CurrentRoundEC", BaseDataType.UINT16, anchor, (short)6);
-        field.addMeta(ThingAnnotation.Property(NormToInt));
+        field.addMeta(ThingAnnotation.Property());
         groupDcl.addIncludedField(field);
 
         structDcl.addGroup(groupDcl);
@@ -262,26 +243,26 @@ public class MiChongV2ProtocolSupport {
     /**
      * [事件上报] 设备故障或恢复事件
      */
-    private static DefaultStructDeclaration buildFaultEventStructDcl() {
+    private static DefaultStructDeclaration buildFaultOrRestoreEventStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("设备故障或恢复事件", "CMD:0x0A");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("FaultEvent"));//TODO 根据条件
+        structDcl.addThingAnnotation(ThingAnnotation.Event("FaultOrRestoreEvent"));//TODO 根据条件
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 6));
+        structDcl.addField(buildLENFieldDcl((byte) 5));
         structDcl.addField(buildCMDFieldDcl((byte) 0x0A));
         structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
 
-        ThingValueNormalization<Integer> normToInt = ThingValueNormalizations.ofToInt(-1);
-
         DefaultFieldDeclaration field;
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
-        field.addMeta(ThingAnnotation.Property(normToInt));
+        field.addMeta(ThingAnnotation.EventData(NormToInt));
         structDcl.addField(field);
 
         field = buildDataFieldDcl("故障码", "faultCode", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 1));
-        field.addMeta(ThingAnnotation.EventData(ThingItemMappings.ofDictExtend(FAULT_CODE_DICT, "faultDesc")));
+        field.addMeta(ThingAnnotation.EventData(
+                ThingItemMappings.ofDictExtend(FAULT_CODE_DICT, "faultDesc")
+        ));
         structDcl.addField(field);
 
         structDcl.addField(buildSUMFieldDcl());
@@ -294,7 +275,7 @@ public class MiChongV2ProtocolSupport {
      * 端口当轮用电结束事件
      */
     private static DefaultStructDeclaration buildPortRoundEndEventStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("端口用电结束事件", "CMD:0x16");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("端口当轮用电结束事件", "CMD:0x16");
 
         structDcl.enableDecode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("FaultEvent"));
@@ -336,9 +317,9 @@ public class MiChongV2ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOnPortPower"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte)7));
-        structDcl.addField(buildCMDFieldDcl((byte)0x14));
-        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
+        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildCMDFieldDcl((byte) 0x14));
+        structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
 
         DefaultFieldDeclaration field;
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
@@ -360,13 +341,13 @@ public class MiChongV2ProtocolSupport {
     }
 
     /**
-     * 开启端口供电指令回复结构
+     * 开启端口供电指令响应
      */
-    private static DefaultStructDeclaration buildSwitchOnPortPowerResponseStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启端口供电指令回复结构", "CMD:0x14");
+    private static DefaultStructDeclaration buildSwitchOnPortPowerReplyStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("开启端口供电指令响应", "CMD:0x14");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOnPortPowerResponse"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOnPortPowerReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte)2));
@@ -393,7 +374,7 @@ public class MiChongV2ProtocolSupport {
      * 关停端口供电指令
      */
     private static DefaultStructDeclaration buildSwitchOffPortPowerStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("端口关停供电指令", "CMD:0x0D");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停端口供电指令", "CMD:0x0D");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOffPortPower"));
@@ -417,18 +398,18 @@ public class MiChongV2ProtocolSupport {
     }
 
     /**
-     * 关停端口供电指令回复结构
+     * 关停端口供电指令响应
      */
-    private static DefaultStructDeclaration buildSwitchOffPortPowerResponseStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停端口供电指令回复结构", "CMD:0x0D");
+    private static DefaultStructDeclaration buildSwitchOffPortPowerReplyStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("关停端口供电指令响应", "CMD:0x0D");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOffPortPowerResponse"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOffPortPowerReply"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte)3));
-        structDcl.addField(buildCMDFieldDcl((byte)0x0D));
-        structDcl.addField(buildRESULTFieldDcl((byte)0x00));
+        structDcl.addField(buildLENFieldDcl((byte) 3));
+        structDcl.addField(buildCMDFieldDcl((byte) 0x0D));
+        structDcl.addField(buildRESULTFieldDcl((byte) 0x00));
 
         DefaultFieldDeclaration field;
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
@@ -444,18 +425,18 @@ public class MiChongV2ProtocolSupport {
     }
 
     /**
-     * 查询指定端口的状况的指令
+     * 读端口状况的指令
      */
     private static DefaultStructDeclaration buildReadPortStateStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("查询指定端口的状况的指令", "CMD:0x15");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("读端口状况的指令", "CMD:0x15");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("ReadPortState"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte)1));
-        structDcl.addField(buildCMDFieldDcl((byte)0x15));
-        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
+        structDcl.addField(buildLENFieldDcl((byte) 1));
+        structDcl.addField(buildCMDFieldDcl((byte) 0x15));
+        structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
 
         DefaultFieldDeclaration field;
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
@@ -468,13 +449,13 @@ public class MiChongV2ProtocolSupport {
     }
 
     /**
-     * 查询指定端口的状况的指令响应结构
+     * 读端口状况的指令响应
      */
-    private static DefaultStructDeclaration buildReadPortStateResponseStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("查询指定端口的状况的指令响应结构", "CMD:0x15");
+    private static DefaultStructDeclaration buildReadPortStateReplyStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("读端口状况的指令响应", "CMD:0x15");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReadPortStateResponse"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("ReadPortStateReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 9));
@@ -513,9 +494,9 @@ public class MiChongV2ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("LockOrUnlockPort"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte)2));
-        structDcl.addField(buildCMDFieldDcl((byte)0x0C));
-        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
+        structDcl.addField(buildLENFieldDcl((byte) 2));
+        structDcl.addField(buildCMDFieldDcl((byte) 0x0C));
+        structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
 
         DefaultFieldDeclaration field;
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
@@ -531,13 +512,13 @@ public class MiChongV2ProtocolSupport {
     }
 
     /**
-     * 锁定/解锁指定端口命令响应结构
+     * 锁定/解锁指定端口命令响应
      */
-    private static DefaultStructDeclaration buildLockOrUnlockPortResponseStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("锁定/解锁指定端口命令响应结构", "CMD:0x0C");
+    private static DefaultStructDeclaration buildLockOrUnlockPortReplyStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("锁定/解锁指定端口命令响应", "CMD:0x0C");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("LockOrUnlockPortResponse"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("LockOrUnlockPortReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 1));
@@ -629,7 +610,6 @@ public class MiChongV2ProtocolSupport {
         private static final byte MAGIC_ID_OF_V2_2 = (byte) 0x55;
         private static final byte[] MAGIC_ID_OF_V2_2_DOUBLE_HEX = new byte[]{(byte) 0x35, (byte) 0x35};
 
-
         @Override
         public String extract(ByteBuf buf) {
             byte[] headerBuf = new byte[6];
@@ -644,7 +624,7 @@ public class MiChongV2ProtocolSupport {
                 return "[MiChong]WRONG_MAGIC_ID:" + Hex.encodeHexString(headerBuf);
             }
 
-            return "CMD:0x" + Integer.toHexString(0x000000ff & headerBuf[2]).toUpperCase();
+            return "CMD:0x" + String.format("%02X", 0x000000ff & headerBuf[2]);
         }
 
         @Override

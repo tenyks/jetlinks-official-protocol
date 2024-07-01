@@ -9,7 +9,7 @@ public class SimpleStructInstance implements StructInstance {
 
     private final StructDeclaration            structDcl;
 
-    private final Map<StructFieldDeclaration, FieldInstance>   fieldInstMap;
+    private final Map<StructFieldDeclaration, List<FieldInstance>>   fieldInstMap;
 
     private final List<FieldInstance>           fieldInstList;
 
@@ -26,17 +26,19 @@ public class SimpleStructInstance implements StructInstance {
 
     @Override
     public Iterable<FieldInstance> filedInstances() {
-        return fieldInstMap.values();
+        return fieldInstList;
     }
 
     @Override
-    public FieldInstance getFieldInstance(StructFieldDeclaration fieldDcl) {
+    public List<FieldInstance>  getFieldInstances(StructFieldDeclaration fieldDcl) {
         return fieldInstMap.get(fieldDcl);
     }
 
     @Override
     public void addFieldInstance(FieldInstance inst) {
-        fieldInstMap.put(inst.getDeclaration(), inst);
+        List<FieldInstance> items = fieldInstMap.computeIfAbsent(inst.getDeclaration(), k -> new ArrayList<>());
+        items.add(inst);
+
         fieldInstList.add(inst);
     }
 

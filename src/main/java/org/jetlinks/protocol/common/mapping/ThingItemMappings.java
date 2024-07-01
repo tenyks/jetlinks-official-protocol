@@ -18,11 +18,11 @@ public class ThingItemMappings {
     /**
      * 标志字典翻译为xxxCode和xxxDesc字段
      */
-    public static ThingItemMapping<String> ofDictExtend(final DictBook<Byte, String> dictBook, final String itemDescKey) {
+    public static ThingItemMapping<String> ofDictExtend(final DictBook<Short, String> dictBook, final String itemDescKey) {
         return new ThingItemMapping<String>() {
             @Override
             public List<Tuple2<String, String>> apply(String itemKey, Object itemVal) {
-                DictBook.Item<Byte, String> item = dictBook.getOrCreate(itemVal);
+                DictBook.Item<Short, String> item = dictBook.getOrCreate(itemVal);
 
                 if (item != null) {
                     return Arrays.asList(
@@ -40,11 +40,11 @@ public class ThingItemMappings {
         };
     }
 
-    public static ThingItemMapping<String> ofDictExtendPostfix(final DictBook<Byte, String> dictBook, final String itemDescKeyPostfix) {
+    public static ThingItemMapping<String> ofDictExtendPostfix(final DictBook<Short, String> dictBook, final String itemDescKeyPostfix) {
         return new ThingItemMapping<String>() {
             @Override
             public List<Tuple2<String, String>> apply(String itemKey, Object itemVal) {
-                DictBook.Item<Byte, String> item = dictBook.getOrCreate(itemVal);
+                DictBook.Item<Short, String> item = dictBook.getOrCreate(itemVal);
 
                 String itemDescKey = itemKey + itemDescKeyPostfix;
                 if (item != null) {

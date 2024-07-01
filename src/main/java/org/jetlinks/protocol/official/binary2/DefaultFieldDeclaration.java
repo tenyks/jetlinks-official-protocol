@@ -11,7 +11,7 @@ public class DefaultFieldDeclaration extends AbstractStructPartDeclaration
 
     private static final long serialVersionUID = 1540156939056534169L;
 
-    private BaseDataType        dataType;
+    private final BaseDataType        dataType;
 
     private boolean             isPayloadField;
 

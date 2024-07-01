@@ -11,6 +11,11 @@ public class DefaultFieldAndPropertyMapping implements FieldAndPropertyMapping {
     }
 
     @Override
+    public String toProperty(FieldInstance fieldInst) {
+        return fieldInst.getCode();
+    }
+
+    @Override
     public StructFieldDeclaration toField(StructDeclaration structDcl, String property) {
         return structDcl.getField(property);
     }
