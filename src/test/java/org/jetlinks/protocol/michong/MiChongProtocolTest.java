@@ -1,11 +1,13 @@
 package org.jetlinks.protocol.michong;
 
 import io.netty.buffer.ByteBuf;
+import me.tenyks.core.utils.ShortCodeGenerator;
 import org.apache.commons.codec.DecoderException;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.codec.DeviceMessageDecoder;
 import org.jetlinks.core.message.codec.MessageDecodeContext;
 import org.jetlinks.core.message.codec.MessageEncodeContext;
+import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.utils.BytesUtils;
 import org.jetlinks.protocol.e53.E53IAxProtocolSupport;
 import org.jetlinks.protocol.official.PluginConfig;
@@ -14,6 +16,8 @@ import org.jetlinks.protocol.official.TestMessageEncodeContext;
 import org.jetlinks.protocol.official.binary2.BinaryMessageCodec;
 import org.jetlinks.protocol.official.binary2.StructInstance;
 import org.jetlinks.protocol.official.binary2.StructSuit;
+import org.jetlinks.protocol.official.core.ByteUtils;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -27,8 +31,6 @@ import java.util.Properties;
 public class MiChongProtocolTest {
 
     private StructSuit suit = MiChongV2ProtocolSupport.buildStructSuitV2();
-
-    private DeviceMessageDecoder decoder = MiChongV2ProtocolSupport.buildDeviceMessageCodec(new PluginConfig(new Properties()));
 
     private BinaryMessageCodec codec = MiChongV2ProtocolSupport.buildBinaryMessageCodec(new PluginConfig(new Properties()));
 
@@ -96,5 +98,49 @@ public class MiChongProtocolTest {
         devMsg = codec.decode(decodeCtx, input);
         System.out.println(devMsg);
         //{"data":{"portNo":5,"faultCode":"OK_LOW_TEMPERATURE","faultDesc":"低温恢复正常"},"messageType":"EVENT","event":"FaultOrRestoreEvent","deviceId":"devId-001","timestamp":1719837666147}
+    }
+
+    @Test
+    public void decodePortRoundEndEvent() throws DecoderException {
+        String payload = "AA 08 16 01 03 01 02 01 03 01 18";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0x16[SOP=170|0xAA,LEN=8|0x8,CMD=22|0x16,RESULT=1|0x1,portNo=3|0x3,remainTime=258|0x102,ec=259|0x103,reasonCode=1|0x1,SUM=24|0x18]
+
+        DeviceMessage devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //{"data":{"portNo":3,"remainTime":258,"reasonCode":"RC_MANUAL_STOP","ec":259,"reasonDesc":"手动停止：拔插头或禁止停止等"},"messageType":"EVENT","event":"PortRoundEndEvent","deviceId":"devId-001","timestamp":1719843997493}
+
+        payload = "AA 08 16 01 04 01 02 01 03 00 18";
+        input = BytesUtils.fromHexStrWithTrim(payload);
+
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0x16[SOP=170|0xAA,LEN=8|0x8,CMD=22|0x16,RESULT=1|0x1,portNo=4|0x4,remainTime=258|0x102,ec=259|0x103,reasonCode=0|0x0,SUM=24|0x18]
+
+        devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //{"data":{"portNo":4,"remainTime":258,"reasonCode":"RC_OUT_OF_TIME","ec":259,"reasonDesc":"达到最大用电时长"},"messageType":"EVENT","event":"PortRoundEndEvent","deviceId":"devId-001","timestamp":1719843997653}
+    }
+
+    @Test
+    public void encodeSwitchOnPortPower() throws DecoderException {
+        FunctionInvokeMessage funInvMsg;
+        funInvMsg = new FunctionInvokeMessage().functionId("SwitchOnPortPower");
+        funInvMsg.addInput("portNo", (short)8);
+        funInvMsg.addInput("availableTime", 259);
+        funInvMsg.addInput("availableEC", 258);
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        ByteBuf rst = codec.encode(encodeCtx, funInvMsg);
+        String x = ByteUtils.toHexStrPretty(rst);
+        System.out.println(x);
+        //AA 0A 14 01 08 75 30 01 03 01 02 53
+
+        String expected = "AA 0A 14 01 08 75 30 01 03 01 02 53";
+        Assert.assertEquals(expected, x);
     }
 }

@@ -76,8 +76,8 @@ public class MiChongV2ProtocolSupport {
         RESULT_OF_SWITCH_ON_PORT_CMD.add((short) 0x0C, "FAIL_OCCUPIED", "端口已被使用");
         RESULT_OF_SWITCH_ON_PORT_CMD.addOtherItemTemplate((srcCode) -> "FAIL_OTHER_" + srcCode.toString(), "其他原因命令施工失败");
 
-        REASON_OF_ROUND_END_CMD.add((short) 0x00, "RC_OUT_OF_TIME", "达到用电最大时长");
-        REASON_OF_ROUND_END_CMD.add((short) 0x01, "RC_MANUAL_STOP", "手动停止：拔插头或禁止停止等");
+        REASON_OF_ROUND_END_CMD.add((short) 0x00, "RC_OUT_OF_TIME", "达到最大用电时长");
+        REASON_OF_ROUND_END_CMD.add((short) 0x01, "RC_MANUAL_STOP", "手动停止：拔插头或紧急停止等");
         REASON_OF_ROUND_END_CMD.add((short) 0x02, "RC_AUTO_STOP_CHARGE_FULL", "自动停止：充电已满");
         REASON_OF_ROUND_END_CMD.add((short) 0x0B, "RC_STOP_BY_FAULT", "故障原因停止：设备故障或端口故障等");
         REASON_OF_ROUND_END_CMD.addOtherItemTemplate((srcCode) -> "RC_STOP_BY_OTHER" + srcCode.toString(), "其他原因停止");
@@ -145,6 +145,8 @@ public class MiChongV2ProtocolSupport {
 
         suit.addStructDeclaration(buildReadPortStateStructDcl());
         suit.addStructDeclaration(buildReadPortStateReplyStructDcl());
+
+        suit.setSigner(new MiChongEncodeSigner());
 
         return suit;
     }
@@ -278,21 +280,21 @@ public class MiChongV2ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("端口当轮用电结束事件", "CMD:0x16");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("FaultEvent"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("PortRoundEndEvent"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte)6));
-        structDcl.addField(buildCMDFieldDcl((byte)0x16));
-        structDcl.addField(buildRESULTFieldDcl((byte)0x01));
+        structDcl.addField(buildLENFieldDcl((byte) 6));
+        structDcl.addField(buildCMDFieldDcl((byte) 0x16));
+        structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
 
         DefaultFieldDeclaration field;
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
         structDcl.addField(field.addMeta(ThingAnnotation.EventData(NormToInt)));
 
-        field = buildDataFieldDcl("本轮用电剩余时长", "remainTime", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 1));
+        field = buildDataFieldDcl("本轮用电剩余时长", "remainTime", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 1));
         structDcl.addField(field.addMeta(ThingAnnotation.EventData(NormToInt)));
 
-        field = buildDataFieldDcl("本轮用电电量", "ec", BaseDataType.UINT8,  (short)(DATA_BEGIN_IDX + 3));
+        field = buildDataFieldDcl("本轮用电电量", "ec", BaseDataType.UINT16,  (short)(DATA_BEGIN_IDX + 3));
         structDcl.addField(field.addMeta(ThingAnnotation.EventData(NormToInt)));
 
         field = buildDataFieldDcl("停止的原因编码", "reasonCode", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 5));
@@ -325,17 +327,16 @@ public class MiChongV2ProtocolSupport {
         field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
         structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
 
-        field = buildDataFieldDcl("可用金额", "maxMoney", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 1));
+        field = buildDataFieldDcl("可用金额", "availableMoney", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 1));
         structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()).setDefaultValue(MAX_MONEY));
 
-        field = buildDataFieldDcl("可用电时长", "maxTime", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 3));
+        field = buildDataFieldDcl("可用电时长", "availableTime", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 3));
         structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
 
-        field = buildDataFieldDcl("可用电电量", "maxEC", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 5));
+        field = buildDataFieldDcl("可用电电量", "availableEC", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 5));
         structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
 
         structDcl.addField(buildSUMFieldDcl());
-        structDcl.setCRCCalculator(buildCRCCalculator());
 
         return structDcl;
     }

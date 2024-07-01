@@ -20,6 +20,19 @@ public class ByteUtils {
         return Hex.encodeHexString(tmp);
     }
 
+    public static String toHexStrPretty(ByteBuf buf) {
+        //TODO 优化性能
+        String tmp = toHexStr(buf);
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < tmp.length(); i++) {
+            sb.append(tmp.charAt(i));
+            if (i % 2 == 1) sb.append(' ');
+        }
+
+        return sb.toString().trim().toUpperCase();
+    }
+
     private static final byte[] sta_4 = new byte[]{
             0x00, 0x08, 0x04, 0x0C, 0x02, 0x0A, 0x06, 0x0E,
             0x01, 0x09, 0x05, 0x0D, 0x03, 0x0B, 0x07, 0x0F
