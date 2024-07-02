@@ -25,12 +25,13 @@ import org.jetlinks.protocol.official.lwm2m.StructLwM2M11DeviceMessageCodec;
  */
 public class MiChongV2ProtocolSupport {
 
-    public static final String NAME_AND_VER = "MI_CHONG_V2";
+    public static final String      NAME_AND_VER = "MI_CHONG_V2";
 
-    private static final short  DATA_BEGIN_IDX = 4;
+    private static final short      DATA_BEGIN_IDX = 4;
 
-    private static final int    MAX_TIME = 30000;
-    private static final short    MAX_MONEY = 30000;
+    private static final int        MAX_TIME = 30000;
+
+    private static final short      MAX_MONEY = 30000;
 
     /**
      * 命令是否成功字典
@@ -140,6 +141,7 @@ public class MiChongV2ProtocolSupport {
         suit.addStructDeclaration(buildReportDataStructDcl());
         suit.addStructDeclaration(buildFaultOrRestoreEventStructDcl());
         suit.addStructDeclaration(buildPortRoundEndEventStructDcl());
+        suit.addStructDeclaration(buildPingEventStructDcl());
 
         suit.addStructDeclaration(buildSwitchOnPortPowerStructDcl());
         suit.addStructDeclaration(buildSwitchOnPortPowerReplyStructDcl());
@@ -165,6 +167,7 @@ public class MiChongV2ProtocolSupport {
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("数据上报消息：上报端口实时状态"), ReportPropertyMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("设备故障或恢复事件"), EventMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("端口当轮用电结束事件"), EventMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("Ping事件"), EventMessage.class);
 
         //下行指令：Encode
         structAndThingMapping.addMapping(FunctionInvokeMessage.class, "SwitchOnPortPower", structSuit.getStructDeclaration("开启端口供电指令"));
@@ -276,6 +279,31 @@ public class MiChongV2ProtocolSupport {
         field.addMeta(ThingAnnotation.EventData(
                 ThingItemMappings.ofDictExtend(FAULT_CODE_DICT, "faultDesc")
         ));
+        structDcl.addField(field);
+
+        structDcl.addField(buildSUMFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * Ping事件，需返回系统的时间戳
+     */
+    private static DefaultStructDeclaration buildPingEventStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("Ping事件", "CMD:0x0B");
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("PingEvent"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte) 1));
+        structDcl.addField(buildCMDFieldDcl((byte) 0x0A));
+        structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
+
+        DefaultFieldDeclaration field;
+        field = buildDataFieldDcl("占位参数", "void", BaseDataType.UINT8, DATA_BEGIN_IDX);
+        field.addMeta(ThingAnnotation.EventData());
         structDcl.addField(field);
 
         structDcl.addField(buildSUMFieldDcl());
@@ -602,10 +630,6 @@ public class MiChongV2ProtocolSupport {
                 .setDefaultValue((byte)0x00);
     }
 
-    private static CRCCalculator    buildCRCCalculatorInst() {
-        return new XORCRCCalculator(1, -1);
-    }
-
     private static DefaultFieldDeclaration buildDataFieldDcl(String name, String code, BaseDataType dataType,
                                                              DynamicAnchor nextToThisAnchor) {
         return new DefaultFieldDeclaration(name, code, dataType).setAnchorReference(nextToThisAnchor, (short)0);
@@ -620,7 +644,7 @@ public class MiChongV2ProtocolSupport {
         return new DefaultFieldDeclaration(name, code, dataType).setAnchorReference(anchor, offsetToAnchor);
     }
 
-    private static CRCCalculator buildCRCCalculator() {
+    private static CRCCalculator    buildCRCCalculator() {
         return new XORCRCCalculator(1, -1);
     }
 

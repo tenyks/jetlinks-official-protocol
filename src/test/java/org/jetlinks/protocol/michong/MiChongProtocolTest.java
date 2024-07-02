@@ -127,6 +127,21 @@ public class MiChongProtocolTest {
     }
 
     @Test
+    public void decodePingEvent() throws DecoderException {
+        String payload = "AA 04 0B 01 01 05";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0x0B[SOP=170|0xAA,LEN=4|0x4,CMD=11|0xB,RESULT=1|0x1,void=1|0x1,SUM=5|0x5]
+
+        DeviceMessage devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //{"data":{"void":1},"messageType":"EVENT","event":"PingEvent","deviceId":"devId-001","timestamp":1719922231799}
+    }
+
+    @Test
     public void encodeSwitchOnPortPower() throws DecoderException {
         FunctionInvokeMessage funInvMsg;
         funInvMsg = new FunctionInvokeMessage().functionId("SwitchOnPortPower");
