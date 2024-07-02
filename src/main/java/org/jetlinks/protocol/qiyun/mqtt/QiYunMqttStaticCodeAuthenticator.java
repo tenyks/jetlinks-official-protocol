@@ -26,7 +26,9 @@ public class QiYunMqttStaticCodeAuthenticator implements Authenticator {
 
     public static final DefaultConfigMetadata CONFIG = new DefaultConfigMetadata(
             "MQTT静态码认证配置",
-            "支持使用MQTT协议的clientId、username和password进行设备认证，规则示意如：username==productId && clientId==deviceId && password==secret")
+            "MQTT认证时需要的配置：\n" +
+                    " 使用MQTT协议的clientId、username和password进行设备认证，\n" +
+                    " 规则示意如：username==productId && clientId==deviceId && password==secret")
             .add("secret", "鉴权码", "32个字符的随机数字和字符串", new PasswordType());
 
     @Override

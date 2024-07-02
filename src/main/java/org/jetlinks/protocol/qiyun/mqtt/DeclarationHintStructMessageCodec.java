@@ -17,6 +17,7 @@ import org.jetlinks.supports.protocol.codec.MessageContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.List;
@@ -66,18 +67,18 @@ public class DeclarationHintStructMessageCodec {
         return Flux.empty();
     }
 
-    public Flux<MqttMessage> encode(MessageCodecContext context, DeviceMessage thingMsg) {
+    public Mono<MqttMessage> encode(MessageCodecContext context, DeviceMessage thingMsg) {
         MessageCodecDeclaration<MqttRoute, MqttMessage> dcl = findDownstreamRoute(thingMsg);
         if (dcl == null) {
             log.info("[OverMQTT]没有匹配的路由，忽略消息：{}", thingMsg);
-            return Flux.empty();
+            return Mono.empty();
         }
 
         ByteBuf buf;
         MqttRoute route = dcl.getRoute();
         try {
             buf = backendCodec.encode(context, thingMsg);
-            if (buf == null) return Flux.empty();
+            if (buf == null) return Mono.empty();
 
             DeviceOperator device = context.getDevice();
             String productId = device.getProduct().block().getId();

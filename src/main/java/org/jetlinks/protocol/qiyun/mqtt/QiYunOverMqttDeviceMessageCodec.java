@@ -1,9 +1,17 @@
 package org.jetlinks.protocol.qiyun.mqtt;
 
+import io.netty.buffer.Unpooled;
+import org.jetlinks.core.device.DeviceConfigKey;
+import org.jetlinks.core.message.DeviceMessage;
+import org.jetlinks.core.message.DisconnectDeviceMessage;
 import org.jetlinks.core.message.Message;
 import org.jetlinks.core.message.codec.*;
 import org.jetlinks.core.message.codec.mqtt.MqttMessage;
+import org.jetlinks.core.message.codec.mqtt.SimpleMqttMessage;
+import org.jetlinks.protocol.official.TopicPayload;
+import org.jetlinks.protocol.official.core.TopicMessageCodec;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
 
@@ -35,7 +43,7 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
 
     @Override
     public Transport getSupportTransport() {
-        return null;
+        return transport;
     }
 
     @Nonnull
@@ -51,7 +59,42 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
 
     @Nonnull
     @Override
-    public Flux<? extends EncodedMessage> encode(@Nonnull MessageEncodeContext context) {
-        return Flux.empty();
+    public Mono<? extends EncodedMessage> encode(@Nonnull MessageEncodeContext context) {
+        return Mono.defer(() -> {
+            Message message = context.getMessage();
+
+            if (message instanceof DisconnectDeviceMessage) {
+                return ((ToDeviceMessageContext) context)
+                        .disconnect()
+                        .then(Mono.empty());
+            }
+
+            if (message instanceof DeviceMessage) {
+                DeviceMessage deviceMessage = ((DeviceMessage) message);
+
+                codec.encode(context, (DeviceMessage) message);
+                if (convertResult == null) {
+                    return Mono.empty();
+                }
+
+                return Mono
+                        .justOrEmpty(deviceMessage.getHeader("productId").map(String::valueOf))
+                        .switchIfEmpty(context.getDevice(deviceMessage.getDeviceId())
+                                .flatMap(device -> device.getSelfConfig(DeviceConfigKey.productId))
+                        )
+                        .defaultIfEmpty("null")
+                        .map(productId -> SimpleMqttMessage
+                                .builder()
+                                .clientId(deviceMessage.getDeviceId())
+                                .topic("/".concat(productId).concat(convertResult.getTopic()))
+                                .payloadType(MessagePayloadType.JSON)
+                                .payload(Unpooled.wrappedBuffer(convertResult.getPayload()))
+                                .build());
+            } else {
+                return Mono.empty();
+            }
+        };
     }
+
+
 }

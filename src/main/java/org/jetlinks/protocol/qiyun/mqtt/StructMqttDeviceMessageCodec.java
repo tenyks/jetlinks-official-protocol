@@ -15,8 +15,10 @@ import org.jetlinks.supports.protocol.codec.MessageContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,15 +66,11 @@ public class StructMqttDeviceMessageCodec {
     }
 
     @Nonnull
-    public Flux<? extends Message> decode(@Nonnull MessageDecodeContext context) {
-        MqttMessage message = (MqttMessage) context.getMessage();
-
+    public Flux<? extends Message> decode(MessageCodecContext context, @NotNull MqttMessage message) {
         return codec.decode(context, message);
     }
 
-    public Flux<? extends EncodedMessage> encode(@Nonnull MessageEncodeContext context) {
-        DeviceMessage message = (DeviceMessage) context.getMessage();
-
+    public Mono<? extends EncodedMessage> encode(@Nonnull MessageEncodeContext context, DeviceMessage message) {
         return codec.encode(context, message);
     }
 
