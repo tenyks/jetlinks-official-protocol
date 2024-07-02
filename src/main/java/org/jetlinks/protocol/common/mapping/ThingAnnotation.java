@@ -143,6 +143,37 @@ public abstract class ThingAnnotation {
         };
     }
 
+    public static ThingAnnotation FuncInput(final ThingValueNormalization<Byte> norm) {
+        return new ThingAnnotation("inputs", null) {
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                //TODO 优化性能
+
+                if (itemKey == null) return null;
+
+                FunctionInvokeMessage fiMsg = (FunctionInvokeMessage)msg;
+                List<FunctionParameter> inputParams = fiMsg.getInputs();
+                if (CollectionUtils.isEmpty(inputParams)) return null;
+
+                for (FunctionParameter fParam : inputParams) {
+                    if (itemKey.equals(fParam.getName())) {
+                        return norm.apply(fParam.getValue());
+                    }
+                }
+
+                return null;
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                if (itemKey == null) return ;
+
+                FunctionInvokeMessage fiMsg = (FunctionInvokeMessage)msg;
+                fiMsg.addInput(itemKey, itemVal);
+            }
+        };
+    }
+
     public static ThingAnnotation FuncOutput() {
         return new ThingAnnotation("output", null) {
             @Override
@@ -238,6 +269,7 @@ public abstract class ThingAnnotation {
                     fiMsg.setOutput(outputObj);
                 }
 
+                itemMapping.bind(context.getStructInstance());
                 List<Tuple2<String, String>> items = itemMapping.apply(itemKey, itemVal);
                 for (Tuple2<String, String> item : items) {
                     outputObj.put(item.getT1(), item.getT2());
@@ -360,6 +392,7 @@ public abstract class ThingAnnotation {
                     eMsg.setData(jsonObj);
                 }
 
+                itemMapping.bind(context.getStructInstance());
                 List<Tuple2<String, String>> items = itemMapping.apply(itemKey, itemVal);
                 for (Tuple2<String, String> item : items) {
                     jsonObj.put(item.getT1(), item.getT2());
@@ -421,6 +454,7 @@ public abstract class ThingAnnotation {
                 if (rpMsg.getProperties() == null) rpMsg.setProperties(new HashMap<>());
 
                 Map<String, Object> properties = rpMsg.getProperties();
+                itemMapping.bind(context.getStructInstance());
                 List<Tuple2<String, String>> items = itemMapping.apply(itemKey, itemVal);
                 for (Tuple2<String, String> item : items) {
                     properties.put(item.getT1(), item.getT2());
@@ -446,6 +480,8 @@ public abstract class ThingAnnotation {
      * 赋值给物模型前做值的规一化处理，比如：数值类型转换
      */
     private Function<Object, ?> itemValNormalizeProcessor;
+
+    private boolean required = false;
 
     protected ThingAnnotation(String thingKey, String thingValue) {
         this.thingKey = thingKey;
@@ -482,5 +518,14 @@ public abstract class ThingAnnotation {
 
     public void setItemValNormalizeProcessor(Function<Object, ?> itemValNormalizeProcessor) {
         this.itemValNormalizeProcessor = itemValNormalizeProcessor;
+    }
+
+    public boolean isRequired() {
+        return required;
+    }
+
+    public ThingAnnotation setRequired(boolean required) {
+        this.required = required;
+        return this;
     }
 }

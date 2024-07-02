@@ -1,7 +1,6 @@
 package org.jetlinks.protocol.official.common;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -28,11 +27,15 @@ public class DictBook<T, R> {
     private Function<T, Item<T, R>> otherBuildFun;
 
     public DictBook<T, R> add(T srcCode, R dstCode, String description) {
+        return add(srcCode, dstCode, description, false);
+    }
+
+    public DictBook<T, R> add(T srcCode, R dstCode, String description, boolean asPassed) {
         if (srcCode == null || dstCode == null) {
             throw new IllegalArgumentException("参数不全。[0x08DB2061]");
         }
 
-        index.put(srcCode, new Item<>(srcCode, dstCode, description));
+        index.put(srcCode, new Item<>(srcCode, dstCode, description, asPassed));
 
         return this;
     }
@@ -65,6 +68,8 @@ public class DictBook<T, R> {
         if (otherMapFun != null) {
             item = new Item<>((T) srcCode, otherMapFun.apply((T) srcCode), otherDescription + "(" + srcCode.toString() + ")");
             index.put(item.srcCode, item);
+
+            return item;
         }
 
         return null;
@@ -77,10 +82,23 @@ public class DictBook<T, R> {
 
         private final String description;
 
+        /**
+         * 表示条件通过
+         */
+        private final boolean   asPassed;
+
         public Item(T srcCode, R outputCode, String description) {
             this.srcCode = srcCode;
             this.outputCode = outputCode;
             this.description = description;
+            this.asPassed = false;
+        }
+
+        public Item(T srcCode, R outputCode, String description, boolean asPassed) {
+            this.srcCode = srcCode;
+            this.outputCode = outputCode;
+            this.description = description;
+            this.asPassed = asPassed;
         }
 
         public T getSrcCode() {
@@ -95,12 +113,17 @@ public class DictBook<T, R> {
             return description;
         }
 
+        public boolean isAsPassed() {
+            return asPassed;
+        }
+
         @Override
         public String toString() {
-            return "DictBook.Item{" +
+            return "Item{" +
                     "srcCode=" + srcCode +
                     ", outputCode=" + outputCode +
                     ", description='" + description + '\'' +
+                    ", asPassed=" + asPassed +
                     '}';
         }
     }

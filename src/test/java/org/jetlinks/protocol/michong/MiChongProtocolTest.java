@@ -143,4 +143,224 @@ public class MiChongProtocolTest {
         String expected = "AA 0A 14 01 08 75 30 01 03 01 02 53";
         Assert.assertEquals(expected, x);
     }
+
+    @Test
+    public void decodeSwitchOnPortPowerReply() throws DecoderException {
+        String payload = "AA 05 14 01 08 01 53";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0x14[SOP=170|0xAA,LEN=5|0x5,CMD=20|0x14,RESULT=1|0x1,portNo=8|0x8,rstCode=1|0x1,SUM=83|0x53]
+
+        DeviceMessage devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //{"output":{"portNo":8,"rstDesc":"命令施工成功且端口成功通电","rstCode":"SUCCESS"},"messageType":"INVOKE_FUNCTION_REPLY","success":true,"deviceId":"devId-001","timestamp":1719903301448}
+
+        payload = "AA 05 14 01 08 0B 53";
+        input = BytesUtils.fromHexStrWithTrim(payload);
+
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0x14[SOP=170|0xAA,LEN=5|0x5,CMD=20|0x14,RESULT=1|0x1,portNo=8|0x8,rstCode=11|0xB,SUM=83|0x53]
+
+        devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //{"output":{"portNo":8,"rstDesc":"命令施工结束但端口充电故障","rstCode":"FAIL_CHARGING_FAULT"},"messageType":"INVOKE_FUNCTION_REPLY","success":true,"deviceId":"devId-001","timestamp":1719903301610}
+
+        payload = "AA 05 14 00 08 01 53";
+        input = BytesUtils.fromHexStrWithTrim(payload);
+
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0x14[SOP=170|0xAA,LEN=5|0x5,CMD=20|0x14,RESULT=0|0x0,portNo=8|0x8,rstCode=1|0x1,SUM=83|0x53]
+
+        devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //{"output":{"portNo":8,"rstDesc":"命令下发失败","rstCode":"FAIL"},"messageType":"INVOKE_FUNCTION_REPLY","success":true,"deviceId":"devId-001","timestamp":1719903301610}
+
+        payload = "AA 05 14 0C 08 0E 53";
+        input = BytesUtils.fromHexStrWithTrim(payload);
+
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0x14[SOP=170|0xAA,LEN=5|0x5,CMD=20|0x14,RESULT=12|0xC,portNo=8|0x8,rstCode=1|0x1,SUM=83|0x53]
+
+        devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //{"output":{"portNo":8,"rstDesc":"其他原因命令下发失败(12)","rstCode":"FAIL_OTHER_12"},"messageType":"INVOKE_FUNCTION_REPLY","success":true,"deviceId":"devId-001","timestamp":1719903463920}
+    }
+
+    @Test
+    public void encodeSwitchOffPortPower() throws DecoderException {
+        FunctionInvokeMessage funInvMsg;
+        funInvMsg = new FunctionInvokeMessage().functionId("SwitchOffPortPower");
+        funInvMsg.addInput("portNo", (byte)131);
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        ByteBuf rst = codec.encode(encodeCtx, funInvMsg);
+        String real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+        //AA 05 0D 01 83 00 8A
+
+        String expected = "AA 05 0D 01 83 00 8A";
+        Assert.assertEquals(expected, real);
+
+        funInvMsg = new FunctionInvokeMessage().functionId("SwitchOffPortPower");
+        funInvMsg.addInput("portNo", (short)132);
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        rst = codec.encode(encodeCtx, funInvMsg);
+        real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+        //AA 05 0D 01 83 00 8A
+
+        expected = "AA 05 0D 01 84 00 8D";
+        Assert.assertEquals(expected, real);
+    }
+
+    @Test
+    public void decodeSwitchOffPortPowerReply() throws DecoderException {
+        String payload = "AA 06 0D 01 A1 01 E0 53";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0x0D[SOP=170|0xAA,LEN=6|0x6,CMD=13|0xD,RESULT=1|0x1,portNo=161|0xA1,remainTime=480|0x1E0,SUM=83|0x53]
+
+        DeviceMessage devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //{"output":{"rstDesc":"命令施工成功","portNo":161,"rstCode":"SUCCESS","remainTime":480},"messageType":"INVOKE_FUNCTION_REPLY","success":true,"deviceId":"devId-001","timestamp":1719908739829}
+
+        payload = "AA 06 0D 00 00 01 E1 54";
+        input = BytesUtils.fromHexStrWithTrim(payload);
+
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0x0D[SOP=170|0xAA,LEN=6|0x6,CMD=13|0xD,RESULT=0|0x0,portNo=0|0x0,remainTime=481|0x1E1,SUM=84|0x54]
+
+        devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //{"output":{"rstDesc":"命令下发或施工失败","portNo":0,"rstCode":"FAIL","remainTime":481},"messageType":"INVOKE_FUNCTION_REPLY","success":true,"deviceId":"devId-001","timestamp":1719908917761}
+    }
+
+    @Test
+    public void encodeReadPortState() throws DecoderException {
+        FunctionInvokeMessage funInvMsg;
+        funInvMsg = new FunctionInvokeMessage().functionId("ReadPortState");
+        funInvMsg.addInput("portNo", (byte)1);
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        ByteBuf rst = codec.encode(encodeCtx, funInvMsg);
+        String real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+
+        String expected = "AA 04 15 01 01 11";
+        Assert.assertEquals(expected, real);
+
+        funInvMsg = new FunctionInvokeMessage().functionId("ReadPortState");
+        funInvMsg.addInput("portNo", (short)2);
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        rst = codec.encode(encodeCtx, funInvMsg);
+        real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+
+        expected = "AA 04 15 01 02 12";
+        Assert.assertEquals(expected, real);
+    }
+
+    @Test
+    public void decodeReadPortStateReply() throws DecoderException {
+        String payload = "AA 0C 15 01 03 00 01 00 02 00 03 01 04 53";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0x15[SOP=170|0xAA,LEN=12|0xC,CMD=21|0x15,RESULT=1|0x1,portNo=3|0x3,remainTime=1|0x1,workingPower=2|0x2,remainEC=3|0x3,remainMoney=260|0x104,SUM=83|0x53]
+
+        DeviceMessage devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //{"output":{"rstDesc":"命令施工成功","portNo":3,"rstCode":"SUCCESS","workingPower":2,"remainEC":3,"remainTime":1,"remainMoney":260},"messageType":"INVOKE_FUNCTION_REPLY","success":true,"deviceId":"devId-001","timestamp":1719910750369}
+
+        payload = "AA 0C 15 FF 03 00 01 00 02 00 03 01 04 53";
+        input = BytesUtils.fromHexStrWithTrim(payload);
+
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0x15[SOP=170|0xAA,LEN=12|0xC,CMD=21|0x15,RESULT=255|0xFF,portNo=3|0x3,remainTime=1|0x1,workingPower=2|0x2,remainEC=3|0x3,remainMoney=260|0x104,SUM=83|0x53]
+
+        devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //{"output":{"rstDesc":"命令下发失败：无网络/未链接","portNo":3,"rstCode":"FAIL_NET","workingPower":2,"remainEC":3,"remainTime":1,"remainMoney":260},"messageType":"INVOKE_FUNCTION_REPLY","success":true,"deviceId":"devId-001","timestamp":1719910750522}
+    }
+
+    @Test
+    public void encodeLockOrUnlockPort() throws DecoderException {
+        FunctionInvokeMessage funInvMsg;
+        funInvMsg = new FunctionInvokeMessage().functionId("LockOrUnlockPort");
+        funInvMsg.addInput("portNo", (byte) 1);
+        funInvMsg.addInput("flag", "LOCK");
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        ByteBuf rst = codec.encode(encodeCtx, funInvMsg);
+        String real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+
+        String expected = "AA 05 0C 01 01 00 09";
+        Assert.assertEquals(expected, real);
+
+        funInvMsg = new FunctionInvokeMessage().functionId("LockOrUnlockPort");
+        funInvMsg.addInput("portNo", (byte) 2);
+        funInvMsg.addInput("flag", "UNLOCK");
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        rst = codec.encode(encodeCtx, funInvMsg);
+        real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+
+        expected = "AA 05 0C 01 02 01 0B";
+        Assert.assertEquals(expected, real);
+
+        funInvMsg = new FunctionInvokeMessage().functionId("LockOrUnlockPort");
+        funInvMsg.addInput("portNo", (byte) 1);
+        funInvMsg.addInput("flag", "UNK");
+        funInvMsg.setMessageId(ShortCodeGenerator.INSTANCE.next());
+
+        rst = codec.encode(encodeCtx, funInvMsg);
+        Assert.assertNull(rst);
+    }
+
+    @Test
+    public void decodeLockOrUnlockPortReply() throws DecoderException {
+        String payload = "AA 04 0C 01 04 09";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0x0C[SOP=170|0xAA,LEN=4|0x4,CMD=12|0xC,RESULT=1|0x1,portNo=4|0x4,SUM=9|0x9]
+
+        DeviceMessage devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //{"output":{"rstDesc":"命令施工成功","portNo":4,"rstCode":"SUCCESS"},"messageType":"INVOKE_FUNCTION_REPLY","success":true,"deviceId":"devId-001","timestamp":1719921058863}
+
+        payload = "AA 04 0C 00 04 09";
+        input = BytesUtils.fromHexStrWithTrim(payload);
+
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+        //CMD:0x0C[SOP=170|0xAA,LEN=4|0x4,CMD=12|0xC,RESULT=0|0x0,portNo=4|0x4,SUM=9|0x9]
+
+        devMsg = codec.decode(decodeCtx, input);
+        System.out.println(devMsg);
+        //{"output":{"rstDesc":"命令下发或施工失败","portNo":4,"rstCode":"FAIL"},"messageType":"INVOKE_FUNCTION_REPLY","success":true,"deviceId":"devId-001","timestamp":1719921149418}
+    }
+
+
+
+
 }

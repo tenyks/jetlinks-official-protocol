@@ -1,9 +1,12 @@
 package org.jetlinks.protocol.official.binary2;
 
+import com.alibaba.fastjson.JSON;
 import org.jetlinks.core.message.CommonDeviceMessage;
 import org.jetlinks.core.message.CommonDeviceMessageReply;
 import org.jetlinks.core.message.DeviceMessage;
+import org.jetlinks.protocol.common.mapping.DefaultThingContext;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
+import org.jetlinks.protocol.common.mapping.ThingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +48,11 @@ public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
             for (ThingAnnotation tAnn : fieldDcl.thingAnnotations()) {
                 Object itemVal = tAnn.invokeGetter(null, message, itemKey);
 
+                if (itemVal == null && tAnn.isRequired()) {
+                    log.warn("[CodecMapper]必要参数({})取值为空或不合法，devMsg={}", fieldDcl.getCode(), message.toString());
+                    return null;
+                }
+
                 Object fieldVal = fieldValueAndPropertyMapping.toFieldValue(context, fieldDcl, itemVal);
                 FieldInstance fieldInst = new SimpleFieldInstance(fieldDcl, fieldVal);
                 structInst.addFieldInstance(fieldInst);
@@ -70,10 +78,12 @@ public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
             }
         }
 
+        ThingContext thingContext = new DefaultThingContext(structInst.getDeclaration(), structInst);
+
         Iterable<ThingAnnotation> structThAnns = structInst.getDeclaration().thingAnnotations();
         if (structThAnns != null) {
             for (ThingAnnotation tAnn : structThAnns) {
-                tAnn.invokeSetter(null, msg);
+                tAnn.invokeSetter(thingContext, msg);
             }
         }
 
@@ -85,7 +95,7 @@ public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
             for (ThingAnnotation tAnn : fieldInst.getDeclaration().thingAnnotations()) {
                 String itemKey = fieldAndPropertyMapping.toProperty(fieldInst);
 
-                tAnn.invokeSetter(null, msg, itemKey, itemVal);
+                tAnn.invokeSetter(thingContext, msg, itemKey, itemVal);
             }
         }
 
