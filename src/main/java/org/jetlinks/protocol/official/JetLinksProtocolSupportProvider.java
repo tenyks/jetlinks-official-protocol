@@ -12,8 +12,11 @@ import org.jetlinks.core.spi.ServiceContext;
 import org.jetlinks.protocol.dataSky.DataSkyDedicatedMessageCodec;
 import org.jetlinks.protocol.dataSky.DataSkyProtocolSupport;
 import org.jetlinks.protocol.e53.E53IAxProtocolSupport;
+import org.jetlinks.protocol.michong.MiChongV2ProtocolSupport;
+import org.jetlinks.protocol.official.binary2.BinaryMessageCodec;
 import org.jetlinks.protocol.official.http.QiYunHttpDeviceMessageCodec;
 import org.jetlinks.protocol.official.lwm2m.QiYunLwM2MAuthenticator;
+import org.jetlinks.protocol.qiyun.mqtt.QiYunMqttStaticCodeAuthenticator;
 import org.jetlinks.protocol.qiyun.mqtt.QiYunOverMqttDeviceMessageCodec;
 import org.jetlinks.protocol.xuebao.XueBaoWaWaProtocolSupport;
 import org.jetlinks.protocol.official.core.TopicMessageCodec;
@@ -56,20 +59,36 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
             support.setName("JetLinks V3.0");
             support.setDescription("JetLinks Protocol Version 3.0");
 
-            support.addRoutes(DefaultTransport.MQTT, Arrays
-                    .stream(TopicMessageCodec.values())
-                    .map(TopicMessageCodec::getRoute)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList())
-            );
-            support.setDocument(DefaultTransport.MQTT,
-                                "document-mqtt.md",
-                                JetLinksProtocolSupportProvider.class.getClassLoader());
+            //MQTT
+            if (MiChongV2ProtocolSupport.NAME_AND_VER.equals(pluginConfig.getMQTTCodec())) {
+                QiYunOverMqttDeviceMessageCodec codec;
+                codec = MiChongV2ProtocolSupport.buildDeviceMessageCodec(pluginConfig);
 
-            support.addAuthenticator(DefaultTransport.MQTT, new JetLinksAuthenticator());
-            support.addConfigMetadata(DefaultTransport.MQTT, JetLinksMqttDeviceMessageCodec.mqttConfig);
+                support.addRoutes(DefaultTransport.MQTT, codec.collectRoutes());
+                support.setDocument(DefaultTransport.MQTT,
+                        "document-mqtt-MiChong.md",
+                        JetLinksProtocolSupportProvider.class.getClassLoader());
 
+                support.addAuthenticator(DefaultTransport.MQTT, new QiYunMqttStaticCodeAuthenticator());
+                support.addConfigMetadata(DefaultTransport.MQTT, QiYunMqttStaticCodeAuthenticator.CONFIG);
+                support.addMessageCodecSupport(codec);
+            } else {
+                support.addRoutes(DefaultTransport.MQTT, Arrays
+                        .stream(TopicMessageCodec.values())
+                        .map(TopicMessageCodec::getRoute)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList())
+                );
+                support.setDocument(DefaultTransport.MQTT,
+                        "document-mqtt.md",
+                        JetLinksProtocolSupportProvider.class.getClassLoader());
 
+                support.addAuthenticator(DefaultTransport.MQTT, new JetLinksAuthenticator());
+                support.addConfigMetadata(DefaultTransport.MQTT, JetLinksMqttDeviceMessageCodec.mqttConfig);
+                support.addMessageCodecSupport(new JetLinksMqttDeviceMessageCodec());
+            }
+
+            //HTTP
             support.addRoutes(DefaultTransport.HTTP, Stream
                     .of(TopicMessageCodec.reportProperty,
                         TopicMessageCodec.event,
@@ -109,9 +128,6 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
             //UDP
             support.addConfigMetadata(DefaultTransport.UDP, UDPDeviceMessageCodec.udpConfig);
             support.addMessageCodecSupport(new UDPDeviceMessageCodec());
-
-            //MQTT
-            support.addMessageCodecSupport(new JetLinksMqttDeviceMessageCodec());
 
             //HTTP
             String httpCodec = pluginConfig.getHttpCodec();
@@ -158,10 +174,6 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
                 createJsonParserSuit(),
                 createJsonWriterSuit()
         );
-    }
-
-    private QiYunOverMqttDeviceMessageCodec createQiYunOverMqttDeviceMessageCodec() {
-        return null;
     }
 
     private PayloadParserSuit createJsonParserSuit() {

@@ -18,6 +18,8 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 祺云标准协议之OverMQTT传输，用于MQTT边缘网关或DTU对接
@@ -39,6 +41,8 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
     private final Transport transport;
 
     private final DeclarationHintStructMessageCodec  codec;
+
+    private final List<MqttRoute>   routes;
 
     public QiYunOverMqttDeviceMessageCodec(Transport transport, String manufacturerCode,
                                            BinaryMessageCodec backendCodec) {
@@ -64,12 +68,17 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
                 .payloadContentType(MessageContentType.STRUCT)
         );
 
+        this.routes = dclList.stream().map(MessageCodecDeclaration::getRoute).collect(Collectors.toList());
         this.codec = new DeclarationHintStructMessageCodec(manufacturerCode, dclList, backendCodec);
     }
 
     @Override
     public Transport getSupportTransport() {
         return transport;
+    }
+
+    public List<MqttRoute>  collectRoutes() {
+        return routes;
     }
 
     @Nonnull

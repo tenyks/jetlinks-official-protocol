@@ -21,6 +21,9 @@ public class PluginConfig {
     public static final String UDP_CODEC_KEY = "udp.codec";
     public static final String HTTP_CODEC_KEY = "http.codec";
     public static final String LWM2M_CODEC_KEY = "lwm2m.codec";
+    public static final String MQTT_CODEC_KEY = "mqtt.codec";
+    public static final String MQTT_MANUFACTURER_KEY = "mqtt.manufacturer";
+
 
     private static final Logger log = LoggerFactory.getLogger(PluginConfig.class);
 
@@ -76,6 +79,14 @@ public class PluginConfig {
 
     public String getLwM2MCodec() {
         return getConfig(LWM2M_CODEC_KEY);
+    }
+
+    public String getMQTTCodec() {
+        return getConfig(MQTT_CODEC_KEY);
+    }
+
+    public String getMQTTManufacturer() {
+        return getConfig(MQTT_MANUFACTURER_KEY);
     }
 
 }

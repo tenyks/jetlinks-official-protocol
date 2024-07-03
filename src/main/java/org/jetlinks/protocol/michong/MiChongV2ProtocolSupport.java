@@ -3,6 +3,7 @@ package org.jetlinks.protocol.michong;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.apache.commons.codec.binary.Hex;
+import org.jetlinks.core.message.codec.DefaultTransport;
 import org.jetlinks.core.message.codec.DeviceMessageCodec;
 import org.jetlinks.core.message.event.EventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
@@ -15,6 +16,7 @@ import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
 import org.jetlinks.protocol.official.common.DictBook;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
 import org.jetlinks.protocol.official.lwm2m.StructLwM2M11DeviceMessageCodec;
+import org.jetlinks.protocol.qiyun.mqtt.QiYunOverMqttDeviceMessageCodec;
 
 /**
  * 米充V2协议
@@ -26,7 +28,7 @@ import org.jetlinks.protocol.official.lwm2m.StructLwM2M11DeviceMessageCodec;
  */
 public class MiChongV2ProtocolSupport {
 
-    public static final String      NAME_AND_VER = "MI_CHONG_V2";
+    public static final String      NAME_AND_VER = "MI_CHONG_V2.0.0";
 
     private static final short      DATA_BEGIN_IDX = 4;
 
@@ -116,11 +118,11 @@ public class MiChongV2ProtocolSupport {
         });
     }
 
-    public static DeviceMessageCodec buildDeviceMessageCodec(PluginConfig config) {
-        IntercommunicateStrategy strategy = buildIntercommunicateStrategy(config);
+    public static QiYunOverMqttDeviceMessageCodec buildDeviceMessageCodec(PluginConfig config) {
+//        IntercommunicateStrategy strategy = buildIntercommunicateStrategy(config);
         BinaryMessageCodec bmCodec = buildBinaryMessageCodec(config);
 
-        return new StructLwM2M11DeviceMessageCodec(bmCodec, strategy);
+        return new QiYunOverMqttDeviceMessageCodec(DefaultTransport.MQTT, config.getMQTTManufacturer(), bmCodec);
     }
 
     public static BinaryMessageCodec buildBinaryMessageCodec(PluginConfig config) {

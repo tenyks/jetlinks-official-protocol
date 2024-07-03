@@ -23,7 +23,8 @@ public class QiYunMqttStaticCodeAuthenticator implements Authenticator {
 
     private static final Logger log = LoggerFactory.getLogger(QiYunMqttStaticCodeAuthenticator.class);
 
-    public static final AuthenticationResponse DEVICE_NOT_FOUND = AuthenticationResponse.error(403, "设备不存在");
+    public static final AuthenticationResponse AUTH_METHOD_NOT_SUPPORT = AuthenticationResponse.error(400, "不支持的认证方式");
+    public static final AuthenticationResponse AUTH_FAIL = AuthenticationResponse.error(403, "设备认证不通过");
 
     public static final DefaultConfigMetadata CONFIG = new DefaultConfigMetadata(
             "MQTT静态码认证配置",
@@ -35,53 +36,55 @@ public class QiYunMqttStaticCodeAuthenticator implements Authenticator {
     @Override
     public Mono<AuthenticationResponse> authenticate(@Nonnull AuthenticationRequest request, @Nonnull DeviceOperator device) {
         if (!(request instanceof MqttAuthenticationRequest)) {
-            return Mono.just(AuthenticationResponse.error(400, "不支持的认证方式"));
+            return Mono.just(AUTH_METHOD_NOT_SUPPORT);
         }
 
-        MqttAuthenticationRequest req = ((MqttAuthenticationRequest) request);
+        final MqttAuthenticationRequest req = ((MqttAuthenticationRequest) request);
         final String clientId = req.getClientId();
         final String username = req.getUsername();
         final String password = req.getPassword();
 
         if (!clientId.equals(device.getDeviceId())) {
             log.info("[MQTT][U+P]设备认证不通过，不匹配的设备：clientId({}) != deviceId({})", clientId, device.getDeviceId());
-            return Mono.just(AuthenticationResponse.error(403, "设备认证不通过"));
+            return Mono.just(AUTH_FAIL);
         }
 
         return device.getProduct()
-                .flatMap((product) -> {
+                .zipWith(device.getConfig("secret").switchIfEmpty(Mono.just(Value.simple(""))))
+                .map(tuple -> {
+                    DeviceProductOperator product = tuple.getT1();
                     String productId = product.getId();
                     if (!productId.equals(username)) {
                         log.info("[MQTT][U+P]设备认证不通过，不匹配的产品：username({}) != productId({})", username, productId);
-                        return AuthenticationResponse.error(403, "设备认证不通过");
+                        return AUTH_FAIL;
                     }
 
-                    return device.getConfig("secret")
-                            .flatMap(secret -> {
-                                if (secret == null || !secret.as(String.class).equals(password)) {
-                                    log.info("[MQTT][U+P]设备认证不通过，密码与密钥不匹配：password({}) != secret({})", password, secret);
-                                    return AuthenticationResponse.error(403, "设备认证不通过");
-                                } else {
-                                    log.debug("[MQTT][U+P]设备认证通过：clientId=deviceId={}", clientId);
-                                    return AuthenticationResponse.success(device.getDeviceId());
-                                }
-                            })
-                            .switchIfEmpty(Mono.defer(() -> {
-                                log.warn("[MQTT][U+P]设备认证不通过，设备未设置secret：clientId={}", clientId);
-                                return Mono.just(AuthenticationResponse.error(403, "设备认证不通过"));
-                            })).take(Duration.ofSeconds(5));
+                    Value secret = tuple.getT2();
+                    if ("".equals(secret.asString())) {
+                        log.warn("[MQTT][U+P]设备认证不通过，设备未设置secret：clientId={}", clientId);
+                        return AUTH_FAIL;
+                    }
+
+                    if (!secret.as(String.class).equals(password)) {
+                        log.info("[MQTT][U+P]设备认证不通过，密码与鉴权码不匹配：password({}) != secret({})", password, secret);
+                        return AUTH_FAIL;
+                    }
+
+                    log.debug("[MQTT][U+P]设备认证通过：clientId=deviceId={}", clientId);
+                    return AuthenticationResponse.success(device.getDeviceId());
                 });
     }
 
     @Override
-    public Mono<AuthenticationResponse> authenticate(@Nonnull AuthenticationRequest request, @Nonnull DeviceRegistry registry) {
+    public Mono<AuthenticationResponse> authenticate(@Nonnull AuthenticationRequest request,
+                                                     @Nonnull DeviceRegistry registry) {
         MqttAuthenticationRequest mqtt = ((MqttAuthenticationRequest) request);
 
         return registry.getDevice(mqtt.getClientId())
                 .flatMap(device -> authenticate(request, device))
                 .switchIfEmpty(Mono.defer(() -> {
                     log.warn("[MQTT][U+P]设备认证不通过，未登记的设备：clientId={}", mqtt.getClientId());
-                    return Mono.just(AuthenticationResponse.error(403, "设备认证不通过"));
+                    return Mono.just(AUTH_FAIL);
                 }));
     }
 
