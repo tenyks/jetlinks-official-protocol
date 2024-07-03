@@ -12,18 +12,18 @@ import org.jetlinks.core.message.DeviceOnlineMessage;
  */
 public interface IntercommunicateStrategy {
 
-    boolean canFireLogin(DeviceMessage msg);
+    boolean     canFireLogin(DeviceMessage msg);
 
     DeviceOnlineMessage buildLoginMessage(DeviceMessage sourceMsg);
 
-    boolean needAckWhileLoginSuccess();
+    boolean     needAckWhileLoginSuccess();
 
-    boolean needAckWhileLoginFail();
+    boolean     needAckWhileLoginFail();
 
-    boolean needCloseConnectionWhileSendAckFail();
+    boolean     needCloseConnectionWhileSendAckFail();
 
-    boolean isAckWhileIgnored();
+    boolean     isAckWhileIgnored();
 
-    boolean ackWhileReceived();
+    boolean     ackWhileReceived();
 
 }

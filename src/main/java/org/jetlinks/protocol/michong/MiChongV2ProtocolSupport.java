@@ -75,7 +75,7 @@ public class MiChongV2ProtocolSupport {
 
         STATUS_OF_PORT_DICT.add((short) 0x01, "SOP_FREE", "端口空闲");
         STATUS_OF_PORT_DICT.add((short) 0x02, "SOP_FAIL_OCCUPIED", "端口使用中");
-        STATUS_OF_PORT_DICT.add((short) 0x03, "SOP_FAIL_DISABLED", "端口已禁用");
+        STATUS_OF_PORT_DICT.add((short) 0x03, "SOP_FAIL_LOCKED", "端口已禁用");
         STATUS_OF_PORT_DICT.add((short) 0x04, "SOP_FAIL_FAULT", "端口故障");
         STATUS_OF_PORT_DICT.addOtherItemTemplate((srcCode) -> "SOP_UNKNOWN" + srcCode.toString(), "端口状态未知");
 
@@ -236,7 +236,7 @@ public class MiChongV2ProtocolSupport {
         field.addMeta(ThingAnnotation.Property(portStatusMapping));
         groupDcl.addIncludedField(field);
 
-        field = buildDataFieldDcl("剩余用电时长", "RemainTime", BaseDataType.UINT16, anchor, (short)2);
+        field = buildDataFieldDcl("当轮用电剩余时长", "RemainTime", BaseDataType.UINT16, anchor, (short)2);
         field.addMeta(ThingAnnotation.Property());
         groupDcl.addIncludedField(field);
 
@@ -244,7 +244,7 @@ public class MiChongV2ProtocolSupport {
         field.addMeta(ThingAnnotation.Property());
         groupDcl.addIncludedField(field);
 
-        field = buildDataFieldDcl("本轮用电电量", "CurrentRoundEC", BaseDataType.UINT16, anchor, (short)6);
+        field = buildDataFieldDcl("当轮用电电量", "CurrentRoundEC", BaseDataType.UINT16, anchor, (short)6);
         field.addMeta(ThingAnnotation.Property());
         groupDcl.addIncludedField(field);
 
