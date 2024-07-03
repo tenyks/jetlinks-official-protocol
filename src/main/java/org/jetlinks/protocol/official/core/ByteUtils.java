@@ -11,9 +11,7 @@ public class ByteUtils {
 
         int originReaderIdx = buf.readerIndex();
 
-        buf.readerIndex(0);
-        byte[] tmp = new byte[buf.writerIndex()];
-        buf.readBytes(tmp);
+        byte[] tmp = buf.array();
 
         buf.readerIndex(originReaderIdx);
 

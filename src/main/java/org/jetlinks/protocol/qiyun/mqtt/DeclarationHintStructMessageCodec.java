@@ -1,27 +1,28 @@
 package org.jetlinks.protocol.qiyun.mqtt;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import org.jetlinks.core.device.DeviceConfigKey;
 import org.jetlinks.core.device.DeviceOperator;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.codec.MessageCodecContext;
-import org.jetlinks.core.message.codec.lwm2m.LwM2MDownlinkMessage;
-import org.jetlinks.core.message.codec.lwm2m.LwM2MUplinkMessage;
-import org.jetlinks.core.message.codec.lwm2m.SimpleLwM2MDownlinkMessage;
+import org.jetlinks.core.message.codec.MessagePayloadType;
 import org.jetlinks.core.message.codec.mqtt.MqttMessage;
 import org.jetlinks.core.message.codec.mqtt.SimpleMqttMessage;
-import org.jetlinks.core.route.LwM2MRoute;
 import org.jetlinks.core.route.MqttRoute;
 import org.jetlinks.protocol.official.binary2.BinaryMessageCodec;
 import org.jetlinks.supports.protocol.codec.MessageCodecDeclaration;
 import org.jetlinks.supports.protocol.codec.MessageContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author v-lizy81
@@ -50,52 +51,53 @@ public class DeclarationHintStructMessageCodec {
         dclList.forEach(item -> dclIdx.put(item.getThingMessageType(), item));
     }
 
-    public Flux<DeviceMessage> decode(MessageCodecContext context, MqttMessage message) {
-        MessageCodecDeclaration<MqttRoute, MqttMessage> dcl;
-        dcl = findUpstreamRoute(message);
-
+    public Tuple2<Optional<DeviceMessage>, Optional<MqttMessage>> decode(MessageCodecContext context, MqttMessage message) {
+        MessageCodecDeclaration<MqttRoute, MqttMessage> dcl = findUpstreamRoute(message);
         if (dcl == null) {
-            log.info("[OverMQTT]没有匹配的路由，忽略消息：{}", message);
-            return Flux.empty();
+            log.warn("[OverMQTT]没有匹配的路由，忽略消息：{}", message);
+            return Tuples.of(Optional.empty(), Optional.empty());
         }
 
         if (MessageContentType.STRUCT.equals(dcl.getPayloadContentType())) {
             DeviceMessage devMsg = backendCodec.decode(context, message.getPayload());
-            return devMsg != null ? Flux.just(devMsg) : Flux.empty();
+            return Tuples.of(Optional.of(devMsg), Optional.empty());
         }
 
-        return Flux.empty();
+        return Tuples.of(Optional.empty(), Optional.empty());
     }
 
     public Mono<MqttMessage> encode(MessageCodecContext context, DeviceMessage thingMsg) {
         MessageCodecDeclaration<MqttRoute, MqttMessage> dcl = findDownstreamRoute(thingMsg);
         if (dcl == null) {
-            log.info("[OverMQTT]没有匹配的路由，忽略消息：{}", thingMsg);
+            log.warn("[OverMQTT]没有匹配的路由，忽略消息：{}", thingMsg);
             return Mono.empty();
         }
 
         ByteBuf buf;
-        MqttRoute route = dcl.getRoute();
         try {
             buf = backendCodec.encode(context, thingMsg);
             if (buf == null) return Mono.empty();
-
-            DeviceOperator device = context.getDevice();
-            String productId = device.getProduct().block().getId();
-            String deviceId = device.getDeviceId();
-
-            SimpleMqttMessage msg = new SimpleMqttMessage();
-            msg.setTopic(route.getTopicTemplate().concreteTopic(manufacturerCode, productId, deviceId));
-            msg.setPayload(buf);
-
-            return Flux.just(msg);
         } catch (Exception e) {
-            return Flux.error(e);
+            return Mono.error(e);
         }
+
+        MqttRoute route = dcl.getRoute();
+
+        return Mono
+                .justOrEmpty(thingMsg.getHeader("productId").map(String::valueOf))
+                .switchIfEmpty(context.getDevice(thingMsg.getDeviceId())
+                        .flatMap(device -> device.getSelfConfig(DeviceConfigKey.productId))
+                ).defaultIfEmpty("null")
+                .map(productId -> SimpleMqttMessage.builder()
+                        .clientId(thingMsg.getDeviceId())
+                        .topic(route.getTopicTemplate().concreteTopic(manufacturerCode, productId, thingMsg.getDeviceId()))
+                        .payloadType(MessagePayloadType.HEX)
+                        .payload(Unpooled.wrappedBuffer(buf))
+                        .build()
+                );
     }
 
-    protected MessageCodecDeclaration<MqttRoute, MqttMessage>
-    findUpstreamRoute(MqttMessage msg) {
+    protected MessageCodecDeclaration<MqttRoute, MqttMessage> findUpstreamRoute(MqttMessage msg) {
         for (MessageCodecDeclaration<MqttRoute, MqttMessage> dcl : dclList) {
             if (dcl.isRouteAcceptable(msg, null)) {
                 return dcl;
@@ -105,8 +107,7 @@ public class DeclarationHintStructMessageCodec {
         return null;
     }
 
-    protected MessageCodecDeclaration<MqttRoute, MqttMessage>
-    findDownstreamRoute(DeviceMessage thingMsg) {
+    protected MessageCodecDeclaration<MqttRoute, MqttMessage> findDownstreamRoute(DeviceMessage thingMsg) {
         return dclIdx.get(thingMsg.getClass());
     }
 

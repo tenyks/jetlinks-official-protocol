@@ -1,6 +1,7 @@
 package org.jetlinks.protocol.michong;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.apache.commons.codec.binary.Hex;
 import org.jetlinks.core.message.codec.DeviceMessageCodec;
 import org.jetlinks.core.message.event.EventMessage;
@@ -59,6 +60,8 @@ public class MiChongV2ProtocolSupport {
      * 故障码或故障恢复码字典
      */
     private static final DictBook<Short, String> FAULT_CODE_DICT = new DictBook<>();
+
+    private static final MiChongEncodeSigner    Signer = new MiChongEncodeSigner();
 
     private static final ThingValueNormalization<Integer> NormToInt = ThingValueNormalizations.ofToInt(-1);
 
@@ -310,6 +313,22 @@ public class MiChongV2ProtocolSupport {
         structDcl.setCRCCalculator(buildCRCCalculator());
 
         return structDcl;
+    }
+
+    public static ByteBuf   buildPongReply() {
+        byte[] buf = new byte[] {
+                (byte)0xAA, (byte)0x04, (byte)0x0B, (byte)0x01,
+                (byte)0x01, (byte)0x02, (byte)0x03, (byte)0x04,
+                (byte)0x00
+        };
+
+        ByteBuf rst = Unpooled.wrappedBuffer(buf);
+        rst.writerIndex(DATA_BEGIN_IDX);
+
+        BaseDataType.UINT32.write(rst, (int) (System.currentTimeMillis() / 1000));
+        Signer.apply(rst);
+
+        return rst;
     }
 
     /**
@@ -698,11 +717,11 @@ public class MiChongV2ProtocolSupport {
         public ByteBuf apply(ByteBuf buf) {
             int saveReaderIdx = buf.readerIndex();
             int saveWriterIdx = buf.writerIndex();
-            int sumIdx = buf.readableBytes() - 1;
 
             int crc = crcCalculator.apply(buf);
-            buf.writerIndex(sumIdx);
-            buf.writeByte(crc);
+
+            buf.writerIndex(buf.capacity() - 1);
+            buf.writeByte((byte)crc);
 
             buf.writerIndex(saveWriterIdx);
             buf.readerIndex(saveReaderIdx);

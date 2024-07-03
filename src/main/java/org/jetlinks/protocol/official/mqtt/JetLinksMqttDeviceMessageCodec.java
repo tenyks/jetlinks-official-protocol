@@ -138,13 +138,12 @@ public class JetLinksMqttDeviceMessageCodec implements DeviceMessageCodec {
                                                message.getTopic().split("/"),
                                                payload,
                                                mapper,
-                                               reply -> doReply(context, reply)))
-                ;
+                                               reply -> doReply(context, reply))
+                );
 
     }
 
     private Mono<Void> doReply(MessageCodecContext context, TopicPayload reply) {
-
         if (context instanceof FromDeviceMessageContext) {
             return ((FromDeviceMessageContext) context)
                     .getSession()

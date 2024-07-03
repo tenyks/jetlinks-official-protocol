@@ -2,7 +2,10 @@ package org.jetlinks.protocol.official;
 
 import org.jetlinks.core.defaults.CompositeProtocolSupport;
 import org.jetlinks.core.message.codec.DefaultTransport;
+import org.jetlinks.core.message.codec.mqtt.MqttMessage;
+import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.route.HttpRoute;
+import org.jetlinks.core.route.MqttRoute;
 import org.jetlinks.core.route.WebsocketRoute;
 import org.jetlinks.core.spi.ProtocolSupportProvider;
 import org.jetlinks.core.spi.ServiceContext;
@@ -11,6 +14,7 @@ import org.jetlinks.protocol.dataSky.DataSkyProtocolSupport;
 import org.jetlinks.protocol.e53.E53IAxProtocolSupport;
 import org.jetlinks.protocol.official.http.QiYunHttpDeviceMessageCodec;
 import org.jetlinks.protocol.official.lwm2m.QiYunLwM2MAuthenticator;
+import org.jetlinks.protocol.qiyun.mqtt.QiYunOverMqttDeviceMessageCodec;
 import org.jetlinks.protocol.xuebao.XueBaoWaWaProtocolSupport;
 import org.jetlinks.protocol.official.core.TopicMessageCodec;
 import org.jetlinks.protocol.official.http.JetLinksHttpDeviceMessageCodec;
@@ -19,6 +23,9 @@ import org.jetlinks.protocol.official.mqtt.JetLinksMqttDeviceMessageCodec;
 import org.jetlinks.protocol.official.tcp.TcpDeviceMessageCodec;
 import org.jetlinks.protocol.official.udp.UDPDeviceMessageCodec;
 import org.jetlinks.supports.official.JetLinksDeviceMetadataCodec;
+import org.jetlinks.supports.protocol.SimpleMessageCodecDeclaration;
+import org.jetlinks.supports.protocol.codec.MessageCodecDeclaration;
+import org.jetlinks.supports.protocol.codec.MessageContentType;
 import org.jetlinks.supports.protocol.serial.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +33,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import reactor.core.publisher.Mono;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -153,6 +158,10 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
                 createJsonParserSuit(),
                 createJsonWriterSuit()
         );
+    }
+
+    private QiYunOverMqttDeviceMessageCodec createQiYunOverMqttDeviceMessageCodec() {
+        return null;
     }
 
     private PayloadParserSuit createJsonParserSuit() {

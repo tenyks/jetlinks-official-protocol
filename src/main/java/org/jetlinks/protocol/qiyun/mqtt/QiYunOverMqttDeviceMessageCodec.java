@@ -1,19 +1,23 @@
 package org.jetlinks.protocol.qiyun.mqtt;
 
-import io.netty.buffer.Unpooled;
-import org.jetlinks.core.device.DeviceConfigKey;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.DisconnectDeviceMessage;
 import org.jetlinks.core.message.Message;
 import org.jetlinks.core.message.codec.*;
 import org.jetlinks.core.message.codec.mqtt.MqttMessage;
 import org.jetlinks.core.message.codec.mqtt.SimpleMqttMessage;
+import org.jetlinks.core.message.function.FunctionInvokeMessage;
+import org.jetlinks.core.route.MqttRoute;
 import org.jetlinks.protocol.official.TopicPayload;
-import org.jetlinks.protocol.official.core.TopicMessageCodec;
-import reactor.core.publisher.Flux;
+import org.jetlinks.protocol.official.binary2.BinaryMessageCodec;
+import org.jetlinks.supports.protocol.SimpleMessageCodecDeclaration;
+import org.jetlinks.supports.protocol.codec.MessageCodecDeclaration;
+import org.jetlinks.supports.protocol.codec.MessageContentType;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 祺云标准协议之OverMQTT传输，用于MQTT边缘网关或DTU对接
@@ -34,11 +38,33 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
 
     private final Transport transport;
 
-    private final StructMqttDeviceMessageCodec  codec;
+    private final DeclarationHintStructMessageCodec  codec;
 
-    public QiYunOverMqttDeviceMessageCodec(Transport transport, StructMqttDeviceMessageCodec  codec) {
+    public QiYunOverMqttDeviceMessageCodec(Transport transport, String manufacturerCode,
+                                           BinaryMessageCodec backendCodec) {
         this.transport = transport;
-        this.codec = codec;
+
+        List<MessageCodecDeclaration<MqttRoute, MqttMessage>> dclList = new ArrayList<>();
+
+        dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
+                .route(MqttRoute.builder("tt_v1/+/+/+/uplink")
+                        .upstream(true)
+                        .group("OverMQTT上行的消息")
+                        .description("通过MQTT协议封装上行传输的消息")
+                        .build())
+                .payloadContentType(MessageContentType.STRUCT)
+        );
+        dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
+                .route(MqttRoute.builder("tt_v1/+/+/+/downlink")
+                        .downstream(true)
+                        .group("OverMQTT下行的消息")
+                        .description("通过MQTT协议封装下行行传输的消息")
+                        .build())
+                .thingMessageType(FunctionInvokeMessage.class)
+                .payloadContentType(MessageContentType.STRUCT)
+        );
+
+        this.codec = new DeclarationHintStructMessageCodec(manufacturerCode, dclList, backendCodec);
     }
 
     @Override
@@ -48,13 +74,11 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
 
     @Nonnull
     @Override
-    public Flux<? extends Message> decode(@Nonnull MessageDecodeContext context) {
+    public Mono<? extends Message> decode(@Nonnull MessageDecodeContext context) {
         MqttMessage message = (MqttMessage) context.getMessage();
-        String[] topicParts = message.getTopic().split("/");
 
-        byte[] payload = message.payloadAsBytes();
-
-        return codec.decode(context);
+//        return codec.decode(context, message);
+        return Mono.empty();
     }
 
     @Nonnull
@@ -64,37 +88,38 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
             Message message = context.getMessage();
 
             if (message instanceof DisconnectDeviceMessage) {
-                return ((ToDeviceMessageContext) context)
-                        .disconnect()
-                        .then(Mono.empty());
+                return ((ToDeviceMessageContext) context).disconnect().then(Mono.empty());
             }
 
             if (message instanceof DeviceMessage) {
                 DeviceMessage deviceMessage = ((DeviceMessage) message);
 
-                codec.encode(context, (DeviceMessage) message);
-                if (convertResult == null) {
-                    return Mono.empty();
-                }
-
-                return Mono
-                        .justOrEmpty(deviceMessage.getHeader("productId").map(String::valueOf))
-                        .switchIfEmpty(context.getDevice(deviceMessage.getDeviceId())
-                                .flatMap(device -> device.getSelfConfig(DeviceConfigKey.productId))
-                        )
-                        .defaultIfEmpty("null")
-                        .map(productId -> SimpleMqttMessage
-                                .builder()
-                                .clientId(deviceMessage.getDeviceId())
-                                .topic("/".concat(productId).concat(convertResult.getTopic()))
-                                .payloadType(MessagePayloadType.JSON)
-                                .payload(Unpooled.wrappedBuffer(convertResult.getPayload()))
-                                .build());
+                return codec.encode(context, deviceMessage);
             } else {
                 return Mono.empty();
             }
-        };
+        });
     }
 
-
+    private Mono<Void> doReply(MessageCodecContext context, TopicPayload reply) {
+        if (context instanceof FromDeviceMessageContext) {
+            return ((FromDeviceMessageContext) context)
+                    .getSession()
+                    .send(SimpleMqttMessage
+                            .builder()
+                            .topic(reply.getTopic())
+                            .payload(reply.getPayload())
+                            .build())
+                    .then();
+        } else if (context instanceof ToDeviceMessageContext) {
+            return ((ToDeviceMessageContext) context)
+                    .sendToDevice(SimpleMqttMessage
+                            .builder()
+                            .topic(reply.getTopic())
+                            .payload(reply.getPayload())
+                            .build())
+                    .then();
+        }
+        return Mono.empty();
+    }
 }

@@ -375,7 +375,13 @@ public class MiChongProtocolTest {
         //{"output":{"rstDesc":"命令下发或施工失败","portNo":4,"rstCode":"FAIL"},"messageType":"INVOKE_FUNCTION_REPLY","success":true,"deviceId":"devId-001","timestamp":1719921149418}
     }
 
+    @Test
+    public void buildPongReply() {
+        ByteBuf rst;
 
+        rst = MiChongV2ProtocolSupport.buildPongReply();
+        System.out.println(ByteUtils.toHexStrPretty(rst));
+    }
 
 
 }
