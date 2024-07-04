@@ -10,6 +10,15 @@ public interface FieldInstance {
 
     short  getShortValue();
 
+    default String getStringValue() {
+        return getStringValue(null);
+    }
+
+    default String getStringValue(String defVal) {
+        Object val = getValue();
+        return (val instanceof String ? (String) val : (val != null ? val.toString() : defVal));
+    }
+
     String getCode();
 
     Short getOffset();

@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.apache.commons.codec.binary.Hex;
 import org.jetlinks.core.message.codec.DefaultTransport;
-import org.jetlinks.core.message.codec.DeviceMessageCodec;
 import org.jetlinks.core.message.event.EventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
@@ -15,7 +14,6 @@ import org.jetlinks.protocol.official.binary2.*;
 import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
 import org.jetlinks.protocol.official.common.DictBook;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
-import org.jetlinks.protocol.official.lwm2m.StructLwM2M11DeviceMessageCodec;
 import org.jetlinks.protocol.qiyun.mqtt.QiYunOverMqttDeviceMessageCodec;
 
 /**
@@ -35,6 +33,8 @@ public class MiChongV2ProtocolSupport {
     private static final int        MAX_TIME = 30000;
 
     private static final short      MAX_MONEY = 30000;
+
+    private static final String     CODE_OF_CMD_FIELD = "CMD";
 
     /**
      * 命令是否成功字典
@@ -66,6 +66,7 @@ public class MiChongV2ProtocolSupport {
     private static final MiChongEncodeSigner    Signer = new MiChongEncodeSigner();
 
     private static final ThingValueNormalization<Integer> NormToInt = ThingValueNormalizations.ofToInt(-1);
+
 
     static {
         CMD_RESULT_DICT.add((short) 0x01, "SUCCESS", "命令下发成功", true);
@@ -174,17 +175,32 @@ public class MiChongV2ProtocolSupport {
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("端口当轮用电结束事件"), EventMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("Ping事件"), EventMessage.class);
 
+        MessageIdMappingAnnotation msgIdMappingAnn = new AbstractMessageIdMappingAnnotation.OfFunction(
+                structInst -> structInst.getFieldStringValueWithDef(CODE_OF_CMD_FIELD, "NO_CMD_FIELD")
+        );
+
         //下行指令：Encode
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "SwitchOnPortPower", structSuit.getStructDeclaration("开启端口供电指令"));
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "SwitchOffPortPower", structSuit.getStructDeclaration("关停端口供电指令"));
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "ReadPortState", structSuit.getStructDeclaration("读端口状况指令"));
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "LockOrUnlockPort", structSuit.getStructDeclaration("锁定或解锁指定端口指令"));
+        DefaultStructDeclaration targetStructDcl = (DefaultStructDeclaration)structSuit.getStructDeclaration("开启端口供电指令");
+        targetStructDcl.addMetaAnnotation(msgIdMappingAnn);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "SwitchOnPortPower", targetStructDcl);
 
-        //
+        targetStructDcl = (DefaultStructDeclaration) structSuit.getStructDeclaration("关停端口供电指令");
+        targetStructDcl.addMetaAnnotation(msgIdMappingAnn);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "SwitchOffPortPower", targetStructDcl);
 
-        //指令恢复：Decode
+        targetStructDcl = (DefaultStructDeclaration) structSuit.getStructDeclaration("读端口状况指令");
+        targetStructDcl.addMetaAnnotation(msgIdMappingAnn);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "ReadPortState", targetStructDcl);
+
+        targetStructDcl = (DefaultStructDeclaration) structSuit.getStructDeclaration("锁定或解锁指定端口指令");
+        targetStructDcl.addMetaAnnotation(msgIdMappingAnn);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "LockOrUnlockPort", targetStructDcl);
+
+        //指令响应：Decode
         for (StructDeclaration structDcl : structSuit.structDeclarations()) {
             if (!structDcl.getName().endsWith("指令响应")) continue;
+
+            ((DefaultStructDeclaration) structDcl).addMetaAnnotation(msgIdMappingAnn);
             structAndThingMapping.addMapping(structDcl, FunctionInvokeMessageReply.class);
         }
 
@@ -209,8 +225,8 @@ public class MiChongV2ProtocolSupport {
         structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
 
         DefaultFieldDeclaration portNumFieldDcl;
-        portNumFieldDcl = new DefaultFieldDeclaration("设备端口数", "PORT_NUM", BaseDataType.UINT8, DATA_BEGIN_IDX);
-        structDcl.addField(portNumFieldDcl);
+        portNumFieldDcl = new DefaultFieldDeclaration("设备端口数", "portNum", BaseDataType.UINT8, DATA_BEGIN_IDX);
+        structDcl.addField(portNumFieldDcl.addMeta(ThingAnnotation.Property(NormToInt)));
 
         DefaultNRepeatFieldGroupDeclaration groupDcl;
         groupDcl = new DefaultNRepeatFieldGroupDeclaration("端口X的状况", "portXState", (short)5, (short)8);
@@ -538,7 +554,6 @@ public class MiChongV2ProtocolSupport {
         structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput(NormToInt)));
 
         structDcl.addField(buildSUMFieldDcl());
-        structDcl.setCRCCalculator(buildCRCCalculator());
 
         return structDcl;
     }
@@ -624,7 +639,7 @@ public class MiChongV2ProtocolSupport {
      * 公共字段：命令
      */
     private static DefaultFieldDeclaration buildCMDFieldDcl(byte cmdCode) {
-        return new DefaultFieldDeclaration("命令", "CMD", BaseDataType.UINT8, (short) 2)
+        return new DefaultFieldDeclaration("命令", CODE_OF_CMD_FIELD, BaseDataType.UINT8, (short) 2)
                     .setDefaultValue(cmdCode);
     }
 
@@ -647,8 +662,8 @@ public class MiChongV2ProtocolSupport {
      * 公共字段：校验
      */
     private static DefaultFieldDeclaration buildSUMFieldDcl() {
-        return new DefaultFieldDeclaration("异或校验", "SUM", BaseDataType.UINT8, (short) -1)
-                .setDefaultValue((byte)0x00);
+        return new DefaultFieldDeclaration("异或校验", "SUM", BaseDataType.UINT8, (short)-1)
+                .setDefaultValue((byte) 0x00);
     }
 
     private static DefaultFieldDeclaration buildDataFieldDcl(String name, String code, BaseDataType dataType,
@@ -722,7 +737,7 @@ public class MiChongV2ProtocolSupport {
 
             int crc = crcCalculator.apply(buf);
 
-            buf.writerIndex(buf.capacity() - 1);
+            buf.writerIndex(saveWriterIdx - 1);
             buf.writeByte((byte)crc);
 
             buf.writerIndex(saveWriterIdx);

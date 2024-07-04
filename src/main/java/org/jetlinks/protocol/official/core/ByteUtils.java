@@ -11,11 +11,13 @@ public class ByteUtils {
 
         int originReaderIdx = buf.readerIndex();
 
-        byte[] tmp = buf.array();
+        byte[] tmp = new byte[buf.writerIndex()];
+        buf.readerIndex(0);
+        buf.readBytes(tmp);
 
         buf.readerIndex(originReaderIdx);
 
-        return Hex.encodeHexString(tmp);
+        return Hex.encodeHexString(tmp, false);
     }
 
     public static String toHexStrPretty(ByteBuf buf) {

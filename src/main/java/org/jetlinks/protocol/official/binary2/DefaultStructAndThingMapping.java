@@ -18,9 +18,9 @@ public class DefaultStructAndThingMapping implements StructAndThingMapping {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultStructAndThingMapping.class);
 
-    private Map<StructDeclaration, Class<? extends DeviceMessage>>    struct2ClassMap;
+    private final Map<StructDeclaration, Class<? extends DeviceMessage>>    struct2ClassMap;
 
-    private Map<String, StructDeclaration>  class2StructMap;
+    private final Map<String, StructDeclaration>  class2StructMap;
 
     public DefaultStructAndThingMapping() {
         this.struct2ClassMap = new HashMap<>();

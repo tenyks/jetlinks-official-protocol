@@ -66,6 +66,7 @@ public abstract class ThingAnnotation {
             }
         };
     }
+
     public static ThingAnnotation ServiceId(String thingValue) {
         return new ThingAnnotation("serviceId", thingValue) {
             @Override

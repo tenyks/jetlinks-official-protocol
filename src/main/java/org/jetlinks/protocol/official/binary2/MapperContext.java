@@ -6,13 +6,15 @@ public interface MapperContext {
 
     String  getSessionId();
 
-    void putAttribute(String key, Object value);
+    void    putAttribute(String key, Object value);
 
-    Object getAttribute(String key);
+    Object  getAttribute(String key);
 
-    void touch();
+    void    touch();
 
-    Short acquireAndBindThingMessageId(String messageId);
+    Short   acquireAndBindThingMessageId(String messageId);
 
-    String getThingMessageId(Short shortMsgId);
+    String  getThingMessageId(Short shortMsgId);
+
+    
 }

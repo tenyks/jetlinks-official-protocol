@@ -16,8 +16,8 @@ import javax.annotation.Nullable;
  */
 public interface StructAndMessageMapper {
 
-    StructInstance toStructInstance(@Nullable MapperContext context, DeviceMessage message);
+    StructInstance  toStructInstance(@Nullable MapperContext context, DeviceMessage message);
 
-    DeviceMessage toDeviceMessage(@Nullable MapperContext context, StructInstance structInst);
+    DeviceMessage   toDeviceMessage(@Nullable MapperContext context, StructInstance structInst);
 
 }

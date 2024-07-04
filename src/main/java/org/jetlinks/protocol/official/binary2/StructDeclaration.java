@@ -12,10 +12,6 @@ import javax.validation.constraints.NotNull;
  */
 public interface StructDeclaration {
 
-    StructDeclaration       addField(StructFieldDeclaration field);
-
-    StructDeclaration addGroup(NRepeatGroupDeclaration fieldGrp);
-
     StructFieldDeclaration  getField(String code);
 
     NRepeatGroupDeclaration getFieldGroup(String code);
@@ -29,13 +25,16 @@ public interface StructDeclaration {
 
     Iterable<ThingAnnotation>           thingAnnotations();
 
+    MessageIdMappingAnnotation          messageIdMappingAnnotation();
+
     Iterable<StructPartDeclaration>     parts();
 
-    Iterable<StructFieldDeclaration>     fields();
+    Iterable<StructFieldDeclaration>    fields();
 
     CRCCalculator                       getCRCCalculator();
 
     boolean     isEnableEncode();
 
     boolean     isEnableDecode();
+
 }

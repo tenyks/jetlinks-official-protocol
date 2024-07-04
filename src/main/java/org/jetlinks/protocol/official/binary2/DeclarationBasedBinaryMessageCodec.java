@@ -46,6 +46,7 @@ public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
             MapperContext mapperContext = getOrCreateContext(context);
 
             DeviceMessage deviceMsg = mapper.toDeviceMessage(mapperContext, structInst);
+
             return deviceMsg;
         } catch (Exception e) {
             log.error("[Decoder]解码消息失败：", e);

@@ -1,6 +1,5 @@
 package org.jetlinks.protocol.official.binary2;
 
-import com.alibaba.fastjson.JSON;
 import org.jetlinks.core.message.CommonDeviceMessage;
 import org.jetlinks.core.message.CommonDeviceMessageReply;
 import org.jetlinks.core.message.DeviceMessage;
@@ -20,11 +19,11 @@ public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
 
     private static final Logger log = LoggerFactory.getLogger(SimpleStructAndMessageMapper.class);
 
-    private StructAndThingMapping           structAndThingMapping;
+    private final StructAndThingMapping           structAndThingMapping;
 
-    private FieldAndPropertyMapping         fieldAndPropertyMapping;
+    private final FieldAndPropertyMapping         fieldAndPropertyMapping;
 
-    private FieldValueAndPropertyMapping    fieldValueAndPropertyMapping;
+    private final FieldValueAndPropertyMapping    fieldValueAndPropertyMapping;
 
 
     public SimpleStructAndMessageMapper(StructAndThingMapping structAndThingMapping,
@@ -49,13 +48,23 @@ public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
                 Object itemVal = tAnn.invokeGetter(null, message, itemKey);
 
                 if (itemVal == null && tAnn.isRequired()) {
-                    log.warn("[CodecMapper]必要参数({})取值为空或不合法，devMsg={}", fieldDcl.getCode(), message.toString());
+                    log.warn("[StructCodecMapper]必要参数({})取值为空或不合法，devMsg={}", fieldDcl.getCode(), message.toString());
                     return null;
                 }
 
                 Object fieldVal = fieldValueAndPropertyMapping.toFieldValue(context, fieldDcl, itemVal);
                 FieldInstance fieldInst = new SimpleFieldInstance(fieldDcl, fieldVal);
                 structInst.addFieldInstance(fieldInst);
+            }
+        }
+
+        MessageIdMappingAnnotation msgIdMappingAnn = structDcl.messageIdMappingAnnotation();
+        if (msgIdMappingAnn != null) {
+            String thingMsgId = message.getMessageId();
+            if (thingMsgId != null) {
+                msgIdMappingAnn.mark(thingMsgId, (context != null ? context.getSessionId() : ""), structInst);
+            } else {
+                log.warn("[StructCodecMapper]DeviceMessage.messageId()返回空值，不触发MessageIdMappingAnnotation");
             }
         }
 
@@ -66,7 +75,7 @@ public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
     public DeviceMessage toDeviceMessage(@Nullable MapperContext context, StructInstance structInst) {
         DeviceMessage msg = structAndThingMapping.map(structInst.getDeclaration());
         if (msg == null) {
-            log.warn("[CodecMapper]{}没有映射到DeviceMessage", structInst.getDeclaration().getName());
+            log.warn("[StructCodecMapper]{}没有映射到DeviceMessage", structInst.getDeclaration().getName());
             return null;
         }
 
@@ -79,6 +88,12 @@ public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
         }
 
         ThingContext thingContext = new DefaultThingContext(structInst.getDeclaration(), structInst);
+
+        MessageIdMappingAnnotation msgIdMappingAnn = structInst.getDeclaration().messageIdMappingAnnotation();
+        if (msgIdMappingAnn != null) {
+            String thingMsgId = msgIdMappingAnn.take((context != null ? context.getSessionId() : ""), structInst);
+            if (thingMsgId != null) msg.messageId(thingMsgId);
+        }
 
         Iterable<ThingAnnotation> structThAnns = structInst.getDeclaration().thingAnnotations();
         if (structThAnns != null) {

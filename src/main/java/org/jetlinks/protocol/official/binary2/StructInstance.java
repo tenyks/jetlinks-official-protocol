@@ -16,11 +16,13 @@ public interface StructInstance {
 
     Iterable<FieldInstance> filedInstances();
 
+    FieldInstance           getFieldInstance(String fieldCode);
+
     default FieldInstance   getFieldInstance(StructFieldDeclaration fieldDcl) {
         return getFieldInstance(fieldDcl, 0);
     }
 
-    default FieldInstance           getFieldInstance(StructFieldDeclaration fieldDcl, int idx) {
+    default FieldInstance   getFieldInstance(StructFieldDeclaration fieldDcl, int idx) {
         List<FieldInstance> items = getFieldInstances(fieldDcl);
 
         return (items != null && items.size() > idx ? items.get(idx) : null);
@@ -39,4 +41,19 @@ public interface StructInstance {
     }
 
     void addFieldInstance(String fieldCode, Object value);
+
+    default String getFieldStringValueWithDef(String fieldCode, String defVal) {
+        FieldInstance fInst = getFieldInstance(fieldCode);
+
+        String fVal = fInst != null ? fInst.getStringValue(null) : null;
+        if (fVal != null) return fVal;
+
+        StructFieldDeclaration fDcl = getDeclaration().getField(fieldCode);
+        if (fDcl != null) {
+            Object fValObj = fDcl.getDefaultValue();
+            return (fValObj instanceof String ? (String) fValObj : (fValObj != null ? fValObj.toString() : defVal));
+        }
+
+        return defVal;
+    }
 }

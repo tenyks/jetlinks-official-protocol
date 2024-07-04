@@ -9,7 +9,9 @@ public class SimpleStructInstance implements StructInstance {
 
     private final StructDeclaration            structDcl;
 
-    private final Map<StructFieldDeclaration, List<FieldInstance>>   fieldInstMap;
+    private final transient Map<StructFieldDeclaration, List<FieldInstance>>   fieldInstMap;
+
+    private transient Map<String, FieldInstance>   idxByFieldCode;
 
     private final List<FieldInstance>           fieldInstList;
 
@@ -17,6 +19,19 @@ public class SimpleStructInstance implements StructInstance {
         this.structDcl = dcl;
         this.fieldInstMap = new HashMap<>();
         this.fieldInstList = new ArrayList<>();
+    }
+
+    @Override
+    public FieldInstance getFieldInstance(String fieldCode) {
+        if (idxByFieldCode == null) {
+            idxByFieldCode = new HashMap<>();
+
+            fieldInstList.forEach((fInst) -> {
+                idxByFieldCode.put(fInst.getCode(), fInst);
+            });
+        }
+
+        return idxByFieldCode.get(fieldCode);
     }
 
     @Override

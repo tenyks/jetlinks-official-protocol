@@ -20,6 +20,8 @@ public class DefaultStructDeclaration implements StructDeclaration {
 
     private final Map<String, StructPartDeclaration>   idxByCodeMap;
 
+    private MessageIdMappingAnnotation  msgIdMappingAnnotation;
+
     private CRCCalculator       crcCalculator;
 
     /**
@@ -43,14 +45,12 @@ public class DefaultStructDeclaration implements StructDeclaration {
         this.thingAnnotations = new ArrayList<>();
     }
 
-    @Override
     public StructDeclaration addField(StructFieldDeclaration field) {
         parts.add(field);
         idxByCodeMap.put(field.getCode(), field);
         return this;
     }
 
-    @Override
     public StructDeclaration addGroup(NRepeatGroupDeclaration fieldGrp) {
         parts.add(fieldGrp);
         return this;
@@ -151,5 +151,15 @@ public class DefaultStructDeclaration implements StructDeclaration {
     @Override
     public Iterable<ThingAnnotation> thingAnnotations() {
         return this.thingAnnotations;
+    }
+
+    @Override
+    public MessageIdMappingAnnotation messageIdMappingAnnotation() {
+        return msgIdMappingAnnotation;
+    }
+
+    public DefaultStructDeclaration addMetaAnnotation(MessageIdMappingAnnotation msgIdMappingAnnotation) {
+        this.msgIdMappingAnnotation = msgIdMappingAnnotation;
+        return this;
     }
 }

@@ -237,7 +237,7 @@ public class MiChongProtocolTest {
 
     @Test
     public void decodeSwitchOffPortPowerReply() throws DecoderException {
-        String payload = "AA 06 0D 01 A1 01 E0 53";
+        String payload = "AA 06 0D 01 02 01 E0 53";
         ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
 
         StructInstance structInst;
