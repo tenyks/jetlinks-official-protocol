@@ -61,7 +61,7 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
                 .route(MqttRoute.builder("tt_v1/+/+/+/uplink")
                         .upstream(true)
                         .group("OverMQTT上行的消息")
-                        .description("通过MQTT协议封装上行传输的消息")
+                        .description("通过MQTT协议封装上行传输的消息，消息负载HEX编码")
                         .build())
                 .upstreamRoutePredict((route, message, payload) -> {
                     String topic = message.getTopic();
@@ -73,7 +73,7 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
                 .route(MqttRoute.builder("tt_v1/+/+/+/downlink")
                         .downstream(true)
                         .group("OverMQTT下行的消息")
-                        .description("通过MQTT协议封装下行行传输的消息")
+                        .description("通过MQTT协议封装下行行传输的消息，消息负载HEX编码")
                         .build())
                 .thingMessageType(FunctionInvokeMessage.class)
                 .payloadContentType(MessageContentType.STRUCT)
@@ -92,7 +92,6 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
         return routes;
     }
 
-    @SneakyThrows
     @Nonnull
     @Override
     public Mono<? extends Message> decode(@Nonnull MessageDecodeContext context) {
@@ -109,10 +108,8 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
                     log.warn("[QiYunOverMQTT]解码MQTT消息不成功：{}", message.print());
                     return Mono.empty();
                 }
-
             } catch (DecoderException e) {
-                log.error("[QiYunOverMQTT]解码MQTT消息负载异常失败：{}",
-                        message.getPayloadAsHex(64), e);
+                log.error("[QiYunOverMQTT]解码MQTT消息负载异常失败：{}", message.print(), e);
                 return Mono.empty();
             }
         });
@@ -124,9 +121,8 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
         return Mono.defer(() -> {
             Message message = context.getMessage();
 
-            log.debug("[QiYunOverMQTT]编码消息：msgId={}", message.getMessageId());
-
             if (message instanceof DisconnectDeviceMessage) {
+                log.info("[QiYunOverMQTT]关闭MQTT会话：{}", (context.getDevice() != null ? context.getDevice() : "NO_DEVICE"));
                 return ((ToDeviceMessageContext) context).disconnect().then(Mono.empty());
             }
 
@@ -135,6 +131,7 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
 
                 return codec.encode(context, deviceMessage);
             } else {
+                log.warn("[QiYunOverMQTT]不支持的类型，忽略该消息：{}", message.toJson());
                 return Mono.empty();
             }
         });
