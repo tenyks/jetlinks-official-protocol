@@ -111,6 +111,7 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
 
                 return decodeRst.getT2()
                         .map(reply -> doReply(context, reply))
+                        .switchIfEmpty(Mono.just(Mono.just(false)))
                         .flatMap((flag) -> flag.map(f -> decodeRst.getT1()));
             } else {
                 log.warn("[QiYunOverMQTT]解码MQTT消息不成功：{}", message.print());

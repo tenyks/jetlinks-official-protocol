@@ -351,7 +351,7 @@ public class MiChongProtocolTest {
 
     @Test
     public void decodeLockOrUnlockPortReply() throws DecoderException {
-        String payload = "AA 04 0C 01 04 09";
+        String payload = "AA 04 0C 01 05 09";
         ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
 
         StructInstance structInst;

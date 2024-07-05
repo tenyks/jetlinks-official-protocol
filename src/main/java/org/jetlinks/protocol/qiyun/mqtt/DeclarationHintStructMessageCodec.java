@@ -72,7 +72,7 @@ public class DeclarationHintStructMessageCodec {
     decode(MessageCodecContext context, MqttMessage message) throws DecoderException {
         MessageCodecDeclaration<MqttRoute, MqttMessage> dcl = findUpstreamRoute(message);
         if (dcl == null) {
-            log.warn("[QiYUnOverMQTT]没有匹配的路由，忽略消息：{}", message);
+            log.warn("[QiYunOverMQTT]没有匹配的路由，忽略消息：{}", message);
             return null;
         }
 
@@ -83,7 +83,7 @@ public class DeclarationHintStructMessageCodec {
             DeviceMessage devMsg = backendCodec.decode(context, payloadBuf);
 
             if (log.isInfoEnabled()) {
-                log.info("[QiYUnOverMQTT]协议报文解码成功解码为物模型消息：protocol={}, thingMsg={}",
+                log.info("[QiYunOverMQTT]协议报文解码成功解码为物模型消息：protocol={}, thingMsg={}",
                         hexPayload, devMsg.toJson());
             }
 
@@ -94,7 +94,7 @@ public class DeclarationHintStructMessageCodec {
                         devMsg.getDeviceId(), responsePayload
                 ));
             } else {
-                log.warn("[QiYUnOverMQTT]缺少FunctionHandleResponse消息的路由，不发送该消息");
+                log.warn("[QiYunOverMQTT]缺少FunctionHandleResponse消息的路由，不发送该消息");
                 return Tuples.of(devMsg, Mono.empty());
             }
         }
@@ -105,7 +105,7 @@ public class DeclarationHintStructMessageCodec {
     public Mono<MqttMessage> encode(MessageCodecContext context, DeviceMessage thingMsg) {
         MessageCodecDeclaration<MqttRoute, MqttMessage> dcl = findDownstreamRoute(thingMsg);
         if (dcl == null) {
-            log.warn("[QiYUnOverMQTT]没有匹配的路由，忽略消息：{}", thingMsg);
+            log.warn("[QiYunOverMQTT]没有匹配的路由，忽略消息：{}", thingMsg);
             return Mono.empty();
         }
 
