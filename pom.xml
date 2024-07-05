@@ -6,7 +6,7 @@
 
     <groupId>org.jetlinks</groupId>
     <artifactId>jetlinks-official-protocol</artifactId>
-    <version>3.1.0</version>
+    <version>3.3.0-release</version>
 
     <name>JetLinks</name>
     <url>https://jetlinks.org</url>
@@ -22,13 +22,13 @@
 
     <developers>
         <developer>
-            <name>zhouhao</name>
-            <email>i@hsweb.me</email>
+            <name>tenyks</name>
+            <email>tenyks@163.com</email>
             <roles>
                 <role>Owner</role>
             </roles>
             <timezone>+8</timezone>
-            <url>https://github.com/zhou-hao</url>
+            <url>https://github.com/tenyks</url>
         </developer>
     </developers>
 
