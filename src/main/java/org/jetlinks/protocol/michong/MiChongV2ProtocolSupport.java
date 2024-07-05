@@ -3,11 +3,16 @@ package org.jetlinks.protocol.michong;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.apache.commons.codec.binary.Hex;
+import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.codec.DefaultTransport;
+import org.jetlinks.core.message.codec.EncodedMessage;
+import org.jetlinks.core.message.codec.mqtt.MqttMessage;
 import org.jetlinks.core.message.event.EventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
+import org.jetlinks.protocol.common.FunctionHandler;
+import org.jetlinks.protocol.common.SimpleFunctionHandler;
 import org.jetlinks.protocol.common.mapping.*;
 import org.jetlinks.protocol.official.PluginConfig;
 import org.jetlinks.protocol.official.binary2.*;
@@ -15,6 +20,9 @@ import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
 import org.jetlinks.protocol.official.common.DictBook;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
 import org.jetlinks.protocol.qiyun.mqtt.QiYunOverMqttDeviceMessageCodec;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * 米充V2协议
@@ -123,7 +131,8 @@ public class MiChongV2ProtocolSupport {
 //        IntercommunicateStrategy strategy = buildIntercommunicateStrategy(config);
         BinaryMessageCodec bmCodec = buildBinaryMessageCodec(config);
 
-        return new QiYunOverMqttDeviceMessageCodec(DefaultTransport.MQTT, config.getMQTTManufacturer(), bmCodec);
+        return new QiYunOverMqttDeviceMessageCodec(DefaultTransport.MQTT, config.getMQTTManufacturer(),
+                bmCodec, buildFunctionHandler());
     }
 
     public static BinaryMessageCodec buildBinaryMessageCodec(PluginConfig config) {
@@ -164,6 +173,11 @@ public class MiChongV2ProtocolSupport {
         suit.setSigner(new MiChongEncodeSigner());
 
         return suit;
+    }
+
+    public static FunctionHandler buildFunctionHandler() {
+        return new SimpleFunctionHandler()
+                .addCallable("PingEvent", MiChongV2ProtocolSupport::buildPongReply);
     }
 
     public static StructAndMessageMapper    buildMapper(StructSuit structSuit) {
@@ -333,7 +347,7 @@ public class MiChongV2ProtocolSupport {
         return structDcl;
     }
 
-    public static ByteBuf   buildPongReply() {
+    public static ByteBuf   buildPongReply(@Nullable EncodedMessage srcMsg, @Nullable DeviceMessage thingMsg) {
         byte[] buf = new byte[] {
                 (byte)0xAA, (byte)0x04, (byte)0x0B, (byte)0x01,
                 (byte)0x01, (byte)0x02, (byte)0x03, (byte)0x04,

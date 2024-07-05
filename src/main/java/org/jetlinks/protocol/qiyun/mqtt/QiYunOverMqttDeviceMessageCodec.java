@@ -1,5 +1,6 @@
 package org.jetlinks.protocol.qiyun.mqtt;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.SneakyThrows;
 import org.apache.commons.codec.DecoderException;
 import org.jetlinks.core.message.DeviceMessage;
@@ -10,6 +11,7 @@ import org.jetlinks.core.message.codec.mqtt.MqttMessage;
 import org.jetlinks.core.message.codec.mqtt.SimpleMqttMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.route.MqttRoute;
+import org.jetlinks.protocol.common.FunctionHandler;
 import org.jetlinks.protocol.official.TopicPayload;
 import org.jetlinks.protocol.official.binary2.BinaryMessageCodec;
 import org.jetlinks.supports.protocol.SimpleMessageCodecDeclaration;
@@ -21,6 +23,8 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 import javax.annotation.Nonnull;
+import javax.validation.constraints.Null;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -45,14 +49,16 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
 
     private static final Logger log = LoggerFactory.getLogger(QiYunOverMqttDeviceMessageCodec.class);
 
-    private final Transport transport;
+    private final Transport         transport;
 
     private final DeclarationHintStructMessageCodec  codec;
 
     private final List<MqttRoute>   routes;
 
-    public QiYunOverMqttDeviceMessageCodec(Transport transport, String manufacturerCode,
-                                           BinaryMessageCodec backendCodec) {
+    public QiYunOverMqttDeviceMessageCodec(@Nonnull Transport transport,
+                                           @Nonnull String manufacturerCode,
+                                           @Nonnull BinaryMessageCodec backendCodec,
+                                           @Nonnull FunctionHandler funHandler) {
         this.transport = transport;
 
         List<MessageCodecDeclaration<MqttRoute, MqttMessage>> dclList = new ArrayList<>();
@@ -71,20 +77,21 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
         );
         dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
                 .route(MqttRoute.builder("tt_v1/+/+/+/downlink")
-                        .downstream(true)
+                        .downstreamForFunctionHandleResponse(true)
                         .group("OverMQTT下行的消息")
                         .description("通过MQTT协议封装下行行传输的消息，消息负载HEX编码")
+
                         .build())
                 .thingMessageType(FunctionInvokeMessage.class)
                 .payloadContentType(MessageContentType.STRUCT)
         );
 
         this.routes = dclList.stream().map(MessageCodecDeclaration::getRoute).collect(Collectors.toList());
-        this.codec = new DeclarationHintStructMessageCodec(manufacturerCode, dclList, backendCodec);
+        this.codec = new DeclarationHintStructMessageCodec(manufacturerCode, dclList, backendCodec, funHandler);
     }
 
     @Override
-    public Transport getSupportTransport() {
+    public Transport        getSupportTransport() {
         return transport;
     }
 
@@ -97,22 +104,22 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
     public Mono<? extends Message> decode(@Nonnull MessageDecodeContext context) {
         MqttMessage message = (MqttMessage) context.getMessage();
 
-        return Mono.defer(() -> {
-            Tuple2<Optional<DeviceMessage>, Optional<MqttMessage>> decodeRst;
-            try {
-                decodeRst = codec.decode(context, message);
+        Tuple2<DeviceMessage, Mono<MqttMessage>> decodeRst;
+        try {
+            decodeRst = codec.decode(context, message);
+            if (decodeRst != null) {
 
-                if (decodeRst != null && decodeRst.getT1().isPresent()) {
-                    return Mono.just(decodeRst.getT1().get());
-                } else {
-                    log.warn("[QiYunOverMQTT]解码MQTT消息不成功：{}", message.print());
-                    return Mono.empty();
-                }
-            } catch (DecoderException e) {
-                log.error("[QiYunOverMQTT]解码MQTT消息负载异常失败：{}", message.print(), e);
+                return decodeRst.getT2()
+                        .map(reply -> doReply(context, reply))
+                        .flatMap((flag) -> flag.map(f -> decodeRst.getT1()));
+            } else {
+                log.warn("[QiYunOverMQTT]解码MQTT消息不成功：{}", message.print());
                 return Mono.empty();
             }
-        });
+        } catch (DecoderException e) {
+            log.error("[QiYunOverMQTT]解码MQTT消息负载异常失败：{}", message.print(), e);
+            return Mono.empty();
+        }
     }
 
     @Nonnull
@@ -137,25 +144,24 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
         });
     }
 
-    private Mono<Void> doReply(MessageCodecContext context, TopicPayload reply) {
+    private Mono<Boolean> doReply(MessageCodecContext context, MqttMessage reply) {
         if (context instanceof FromDeviceMessageContext) {
+            if (log.isInfoEnabled()) {
+                log.debug("[QiYunOverMQTT]下发FunctionHandleResponse消息：{}", reply.print());
+            }
+
             return ((FromDeviceMessageContext) context)
                     .getSession()
-                    .send(SimpleMqttMessage
-                            .builder()
-                            .topic(reply.getTopic())
-                            .payload(reply.getPayload())
-                            .build())
-                    .then();
+                    .send(reply);
         } else if (context instanceof ToDeviceMessageContext) {
+            if (log.isInfoEnabled()) {
+                log.debug("[QiYunOverMQTT]下发FunctionHandleResponse消息：{}", reply.print());
+            }
+
             return ((ToDeviceMessageContext) context)
-                    .sendToDevice(SimpleMqttMessage
-                            .builder()
-                            .topic(reply.getTopic())
-                            .payload(reply.getPayload())
-                            .build())
-                    .then();
+                    .sendToDevice(reply);
         }
+
         return Mono.empty();
     }
 }

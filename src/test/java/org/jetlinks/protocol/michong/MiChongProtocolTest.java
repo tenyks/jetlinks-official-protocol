@@ -379,7 +379,7 @@ public class MiChongProtocolTest {
     public void buildPongReply() {
         ByteBuf rst;
 
-        rst = MiChongV2ProtocolSupport.buildPongReply();
+        rst = MiChongV2ProtocolSupport.buildPongReply(null, null);
         System.out.println(ByteUtils.toHexStrPretty(rst));
     }
 
