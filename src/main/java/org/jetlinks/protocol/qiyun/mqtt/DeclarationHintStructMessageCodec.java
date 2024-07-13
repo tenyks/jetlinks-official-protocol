@@ -76,8 +76,10 @@ public class DeclarationHintStructMessageCodec {
             return null;
         }
 
-        String  hexPayload = message.payloadAsString();
-        ByteBuf payloadBuf = BytesUtils.fromHexStrWithTrim(hexPayload);
+//        String  hexPayload = message.payloadAsString();
+//        ByteBuf payloadBuf = BytesUtils.fromHexStrWithTrim(hexPayload);
+        ByteBuf payloadBuf = message.getPayload();
+        String hexPayload = ByteUtils.toHexStrPretty(payloadBuf);
 
         if (MessageContentType.STRUCT.equals(dcl.getPayloadContentType())) {
             DeviceMessage devMsg = backendCodec.decode(context, payloadBuf);
@@ -133,7 +135,8 @@ public class DeclarationHintStructMessageCodec {
                         .clientId(deviceId)
                         .topic(route.getTopicTemplate().concreteTopic(manufacturerCode, productId, deviceId))
                         .payloadType(MessagePayloadType.HEX)
-                        .payload(Unpooled.wrappedBuffer(ByteUtils.toHexStr(buf).getBytes(StandardCharsets.UTF_8)))
+//                        .payload(Unpooled.wrappedBuffer(ByteUtils.toHexStr(buf).getBytes(StandardCharsets.UTF_8)))
+                        .payload(buf)
                         .build()
                 );
     }
