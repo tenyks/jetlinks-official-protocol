@@ -101,6 +101,8 @@ public class MiChongV2ProtocolSupport {
         REASON_OF_ROUND_END_CMD.add((short) 0x00, "RC_OUT_OF_TIME", "达到最大用电时长");
         REASON_OF_ROUND_END_CMD.add((short) 0x01, "RC_MANUAL_STOP", "手动停止：拔插头或紧急停止等");
         REASON_OF_ROUND_END_CMD.add((short) 0x02, "RC_AUTO_STOP_CHARGE_FULL", "自动停止：充电已满");
+        REASON_OF_ROUND_END_CMD.add((short) 0x03, "RC_AUTO_STOP_OVER_POWER", "自动停止：超出限定功率");
+        REASON_OF_ROUND_END_CMD.add((short) 0x04, "RC_REMOTE_STOP", "远程停止");
         REASON_OF_ROUND_END_CMD.add((short) 0x0B, "RC_STOP_BY_FAULT", "故障原因停止：设备故障或端口故障等");
         REASON_OF_ROUND_END_CMD.addOtherItemTemplate((srcCode) -> "RC_STOP_BY_OTHER" + srcCode.toString(), "其他原因停止");
 
