@@ -104,7 +104,7 @@ public class MiChongV2ProtocolSupport {
         REASON_OF_ROUND_END_CMD.add((short) 0x03, "RC_AUTO_STOP_OVER_POWER", "自动停止：超出限定功率");
         REASON_OF_ROUND_END_CMD.add((short) 0x04, "RC_REMOTE_STOP", "远程停止");
         REASON_OF_ROUND_END_CMD.add((short) 0x0B, "RC_STOP_BY_FAULT", "故障原因停止：设备故障或端口故障等");
-        REASON_OF_ROUND_END_CMD.addOtherItemTemplate((srcCode) -> "RC_STOP_BY_OTHER" + srcCode.toString(), "其他原因停止");
+        REASON_OF_ROUND_END_CMD.addOtherItemTemplate((srcCode) -> "RC_STOP_BY_OTHER_" + srcCode.toString(), "其他原因停止");
 
         FAULT_CODE_DICT.add((short) 0xA0, "FC_STOP_FAULT", "停止充电异常：继电器粘连、短路等");
         FAULT_CODE_DICT.add((short) 0x20, "OK_STOP_FAULT", "停止充电恢复正常");
