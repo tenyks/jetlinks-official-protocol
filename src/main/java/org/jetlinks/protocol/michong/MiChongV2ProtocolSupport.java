@@ -386,7 +386,7 @@ public class MiChongV2ProtocolSupport {
         field = buildDataFieldDcl("本轮用电剩余时长", "remainTime", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 1));
         structDcl.addField(field.addMeta(ThingAnnotation.EventData(NormToInt)));
 
-        field = buildDataFieldDcl("本轮用电电量", "ec", BaseDataType.UINT16,  (short)(DATA_BEGIN_IDX + 3));
+        field = buildDataFieldDcl("本轮用电剩余电量", "remainEC", BaseDataType.UINT16,  (short)(DATA_BEGIN_IDX + 3));
         structDcl.addField(field.addMeta(ThingAnnotation.EventData(NormToInt)));
 
         field = buildDataFieldDcl("停止的原因编码", "reasonCode", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 5));
