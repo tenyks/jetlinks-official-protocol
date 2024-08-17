@@ -88,9 +88,9 @@ public class MiChongV2ProtocolSupport {
         CMD_REPLY_RESULT_DICT.addOtherItemTemplate((srcCode) -> "FAIL_OTHER_" + srcCode.toString(), "其他原因命令下发或施工失败");
 
         STATUS_OF_PORT_DICT.add((short) 0x01, "SOP_FREE", "端口空闲");
-        STATUS_OF_PORT_DICT.add((short) 0x02, "SOP_FAIL_OCCUPIED", "端口使用中");
-        STATUS_OF_PORT_DICT.add((short) 0x03, "SOP_FAIL_LOCKED", "端口已禁用");
-        STATUS_OF_PORT_DICT.add((short) 0x04, "SOP_FAIL_FAULT", "端口故障");
+        STATUS_OF_PORT_DICT.add((short) 0x02, "SOP_OCCUPIED", "端口使用中");
+        STATUS_OF_PORT_DICT.add((short) 0x03, "SOP_LOCKED", "端口已禁用");
+        STATUS_OF_PORT_DICT.add((short) 0x04, "SOP_FAULT", "端口故障");
         STATUS_OF_PORT_DICT.addOtherItemTemplate((srcCode) -> "SOP_UNKNOWN" + srcCode.toString(), "端口状态未知");
 
         RESULT_OF_SWITCH_ON_PORT_CMD.add((short) 0x01, "SUCCESS", "命令施工成功且端口成功通电");
