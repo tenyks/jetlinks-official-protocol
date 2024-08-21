@@ -88,9 +88,9 @@ public class MiChongV2ProtocolSupport {
         CMD_REPLY_RESULT_DICT.addOtherItemTemplate((srcCode) -> "FAIL_OTHER_" + srcCode.toString(), "其他原因命令下发或施工失败");
 
         STATUS_OF_PORT_DICT.add((short) 0x01, "SOP_FREE", "端口空闲");
-        STATUS_OF_PORT_DICT.add((short) 0x02, "SOP_FAIL_OCCUPIED", "端口使用中");
-        STATUS_OF_PORT_DICT.add((short) 0x03, "SOP_FAIL_LOCKED", "端口已禁用");
-        STATUS_OF_PORT_DICT.add((short) 0x04, "SOP_FAIL_FAULT", "端口故障");
+        STATUS_OF_PORT_DICT.add((short) 0x02, "SOP_OCCUPIED", "端口使用中");
+        STATUS_OF_PORT_DICT.add((short) 0x03, "SOP_LOCKED", "端口已禁用");
+        STATUS_OF_PORT_DICT.add((short) 0x04, "SOP_FAULT", "端口故障");
         STATUS_OF_PORT_DICT.addOtherItemTemplate((srcCode) -> "SOP_UNKNOWN" + srcCode.toString(), "端口状态未知");
 
         RESULT_OF_SWITCH_ON_PORT_CMD.add((short) 0x01, "SUCCESS", "命令施工成功且端口成功通电");
@@ -101,8 +101,10 @@ public class MiChongV2ProtocolSupport {
         REASON_OF_ROUND_END_CMD.add((short) 0x00, "RC_OUT_OF_TIME", "达到最大用电时长");
         REASON_OF_ROUND_END_CMD.add((short) 0x01, "RC_MANUAL_STOP", "手动停止：拔插头或紧急停止等");
         REASON_OF_ROUND_END_CMD.add((short) 0x02, "RC_AUTO_STOP_CHARGE_FULL", "自动停止：充电已满");
+        REASON_OF_ROUND_END_CMD.add((short) 0x03, "RC_AUTO_STOP_OVER_POWER", "自动停止：超出限定功率");
+        REASON_OF_ROUND_END_CMD.add((short) 0x04, "RC_REMOTE_STOP", "远程停止");
         REASON_OF_ROUND_END_CMD.add((short) 0x0B, "RC_STOP_BY_FAULT", "故障原因停止：设备故障或端口故障等");
-        REASON_OF_ROUND_END_CMD.addOtherItemTemplate((srcCode) -> "RC_STOP_BY_OTHER" + srcCode.toString(), "其他原因停止");
+        REASON_OF_ROUND_END_CMD.addOtherItemTemplate((srcCode) -> "RC_STOP_BY_OTHER_" + srcCode.toString(), "其他原因停止");
 
         FAULT_CODE_DICT.add((short) 0xA0, "FC_STOP_FAULT", "停止充电异常：继电器粘连、短路等");
         FAULT_CODE_DICT.add((short) 0x20, "OK_STOP_FAULT", "停止充电恢复正常");
@@ -384,7 +386,7 @@ public class MiChongV2ProtocolSupport {
         field = buildDataFieldDcl("本轮用电剩余时长", "remainTime", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 1));
         structDcl.addField(field.addMeta(ThingAnnotation.EventData(NormToInt)));
 
-        field = buildDataFieldDcl("本轮用电电量", "ec", BaseDataType.UINT16,  (short)(DATA_BEGIN_IDX + 3));
+        field = buildDataFieldDcl("本轮用电剩余电量", "remainEC", BaseDataType.UINT16,  (short)(DATA_BEGIN_IDX + 3));
         structDcl.addField(field.addMeta(ThingAnnotation.EventData(NormToInt)));
 
         field = buildDataFieldDcl("停止的原因编码", "reasonCode", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 5));
