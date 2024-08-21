@@ -55,11 +55,11 @@ public class DefaultFieldDeclaration extends AbstractStructPartDeclaration
         return new PreviousFieldValueAsSize(this);
     }
 
-    public DynamicNRepeat asDynamicNRepeat() {
+    public DynamicNRepeat   asDynamicNRepeat() {
         return new PreviousFieldValueAsNRepeat(this);
     }
 
-    public BaseDataType  getDataType() {
+    public BaseDataType     getDataType() {
         return dataType;
     }
 
@@ -94,6 +94,13 @@ public class DefaultFieldDeclaration extends AbstractStructPartDeclaration
     @Override
     public DefaultFieldDeclaration addMeta(ThingAnnotation tAnn) {
         super.addMeta(tAnn);
+
+        return this;
+    }
+
+    @Override
+    public DefaultFieldDeclaration setDataMask(DataMask mask) {
+        super.setDataMask(mask);
 
         return this;
     }

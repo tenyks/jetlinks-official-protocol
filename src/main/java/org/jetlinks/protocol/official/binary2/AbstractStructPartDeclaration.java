@@ -35,6 +35,11 @@ public abstract class AbstractStructPartDeclaration implements StructPartDeclara
 
     private final List<ThingAnnotation> thingAnnotations;
 
+    /**
+     * 数组掩码
+     */
+    private DataMask                    dataMask;
+
     protected AbstractStructPartDeclaration(String name, String code, Short absOffset, Short size) {
         this.name = name;
         this.code = code;
@@ -58,6 +63,12 @@ public abstract class AbstractStructPartDeclaration implements StructPartDeclara
     protected AbstractStructPartDeclaration setSizeReference(DynamicSize refSize, short mask) {
         this.refSize = refSize;
         this.sizeMask = mask;
+
+        return this;
+    }
+
+    protected AbstractStructPartDeclaration setDataMask(DataMask mask) {
+        this.dataMask = mask;
 
         return this;
     }
@@ -105,6 +116,10 @@ public abstract class AbstractStructPartDeclaration implements StructPartDeclara
         }
 
         return refSize.getSize(sizeMask);
+    }
+
+    public DataMask getDataMask() {
+        return dataMask;
     }
 
     @Override
