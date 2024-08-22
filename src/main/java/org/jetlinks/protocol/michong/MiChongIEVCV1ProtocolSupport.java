@@ -34,7 +34,7 @@ public class MiChongIEVCV1ProtocolSupport {
 
     public static final String      NAME_AND_VER = "MI_CHONG_IEVC_V1.0.4";
 
-    private static final short      DATA_BEGIN_IDX = 4;
+    private static final short      DATA_BEGIN_IDX = 3;
 
     private static final int        MAX_TIME = 30000;
 
@@ -164,8 +164,8 @@ public class MiChongIEVCV1ProtocolSupport {
         suit.addStructDeclaration(buildLockOrUnlockPortStructDcl());
         suit.addStructDeclaration(buildLockOrUnlockPortReplyStructDcl());
 
-        suit.addStructDeclaration(buildReadPortStateStructDcl());
-        suit.addStructDeclaration(buildReadPortStateReplyStructDcl());
+        suit.addStructDeclaration(buildReadStateStructDcl());
+        suit.addStructDeclaration(buildReadStateReplyStructDcl());
 
         suit.setSigner(new MiChongEncodeSigner());
 
@@ -231,7 +231,7 @@ public class MiChongIEVCV1ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("ReportData"));
 
         structDcl.addField(buildCMDFieldDcl((byte) 0x3F));
-        structDcl.addField(buildLENFieldDcl((byte) 0));
+        structDcl.addField(buildMsgNoFieldDcl((byte) 0));
         structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
 
         DefaultFieldDeclaration portNumFieldDcl;
@@ -297,7 +297,7 @@ public class MiChongIEVCV1ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("FaultOrRestoreEvent"));//TODO 根据条件
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 5));
+        structDcl.addField(buildMsgNoFieldDcl((byte) 5));
         structDcl.addField(buildCMDFieldDcl((byte) 0x0A));
         structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
 
@@ -328,7 +328,7 @@ public class MiChongIEVCV1ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("PingEvent"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 1));
+        structDcl.addField(buildMsgNoFieldDcl((byte) 1));
         structDcl.addField(buildCMDFieldDcl((byte) 0x0A));
         structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
 
@@ -369,7 +369,7 @@ public class MiChongIEVCV1ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("PortRoundEndEvent"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 6));
+        structDcl.addField(buildMsgNoFieldDcl((byte) 6));
         structDcl.addField(buildCMDFieldDcl((byte) 0x16));
         structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
 
@@ -405,7 +405,7 @@ public class MiChongIEVCV1ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOnPortPower"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildMsgNoFieldDcl((byte) 7));
         structDcl.addField(buildCMDFieldDcl((byte) 0x14));
         structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
 
@@ -437,7 +437,7 @@ public class MiChongIEVCV1ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOnPortPowerReply"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 2));
+        structDcl.addField(buildMsgNoFieldDcl((byte) 2));
         structDcl.addField(buildCMDFieldDcl((byte) 0x14));
         DefaultFieldDeclaration cmdRstField = buildRESULTFieldDcl((byte) 0x00);
         structDcl.addField(cmdRstField);
@@ -467,7 +467,7 @@ public class MiChongIEVCV1ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOffPortPower"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 2));
+        structDcl.addField(buildMsgNoFieldDcl((byte) 2));
         structDcl.addField(buildCMDFieldDcl((byte) 0x0D));
         structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
 
@@ -493,7 +493,7 @@ public class MiChongIEVCV1ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOffPortPowerReply"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 3));
+        structDcl.addField(buildMsgNoFieldDcl((byte) 3));
         structDcl.addField(buildCMDFieldDcl((byte) 0x0D));
         structDcl.addField(buildRESULTOfReplyFieldDcl());
 
@@ -511,22 +511,20 @@ public class MiChongIEVCV1ProtocolSupport {
     }
 
     /**
-     * 读端口状况指令
+     * 状态查询(BLE_REG_iEVC_QUERY)指令
      */
-    private static DefaultStructDeclaration buildReadPortStateStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("读端口状况指令", "CMD:0x15");
+    private static DefaultStructDeclaration buildReadStateStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("状态查询", "CMD:0x3F");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReadPortState"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("ReadState"));
 
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 1));
-        structDcl.addField(buildCMDFieldDcl((byte) 0x15));
-        structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
+        structDcl.addField(buildCMDFieldDcl((byte)0x3F));
+        structDcl.addField(buildMsgNoFieldDcl());
 
         DefaultFieldDeclaration field;
-        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
+        field = buildDataFieldDcl("UTC", "UTC", BaseDataType.UINT32, DATA_BEGIN_IDX).setDefValOfDynamicUTC();
+        structDcl.addField(field);
 
         structDcl.addField(buildSUMFieldDcl());
 
@@ -534,17 +532,16 @@ public class MiChongIEVCV1ProtocolSupport {
     }
 
     /**
-     * 读端口状况的指令响应
+     * 状态查询指令响应
      */
-    private static DefaultStructDeclaration buildReadPortStateReplyStructDcl() {
+    private static DefaultStructDeclaration buildReadStateReplyStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("读端口状况指令响应", "CMD:0x15");
 
         structDcl.enableDecode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("ReadPortStateReply"));
 
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 9));
-        structDcl.addField(buildCMDFieldDcl((byte) 0x15));
+        structDcl.addField(buildCMDFieldDcl((byte)0x3F));
+        structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildRESULTOfReplyFieldDcl());
 
         DefaultFieldDeclaration field;
@@ -569,71 +566,10 @@ public class MiChongIEVCV1ProtocolSupport {
     }
 
     /**
-     * 锁定或解锁指定端口指令
+     * 公共字段：报文流水号
      */
-    private static DefaultStructDeclaration buildLockOrUnlockPortStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("锁定或解锁指定端口指令", "CMD:0x0C");
-
-        structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("LockOrUnlockPort"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 2));
-        structDcl.addField(buildCMDFieldDcl((byte) 0x0C));
-        structDcl.addField(buildRESULTFieldDcl((byte) 0x01));
-
-        DefaultFieldDeclaration field;
-        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncInput()));
-
-        field = buildDataFieldDcl("控制标志", "flag", BaseDataType.UINT8, (short) (DATA_BEGIN_IDX + 1));
-        field.addMeta(ThingAnnotation.FuncInput(itemValue -> {
-            if ("LOCK".equals(itemValue)) {
-                return (byte) 0x00;
-            } else if ("UNLOCK".equals(itemValue)) {
-                return (byte) 0x01;
-            } else {
-                return null;
-            }
-        }).setRequired(true));
-        structDcl.addField(field);
-
-        structDcl.addField(buildSUMFieldDcl());
-
-        return structDcl;
-    }
-
-    /**
-     * 锁定或解锁指定端口指令响应
-     */
-    private static DefaultStructDeclaration buildLockOrUnlockPortReplyStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("锁定或解锁指定端口指令响应", "CMD:0x0C");
-
-        structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("LockOrUnlockPortReply"));
-
-        structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 1));
-        structDcl.addField(buildCMDFieldDcl((byte) 0x0C));
-        structDcl.addField(buildRESULTOfReplyFieldDcl());
-
-        DefaultFieldDeclaration field;
-        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
-        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput(NormToInt)));
-
-        structDcl.addField(buildSUMFieldDcl());
-        structDcl.setCRCCalculator(buildCRCCalculator());
-
-        return structDcl;
-    }
-
-    /**
-     * 公共字段：报文长度
-     * @param sizeOfData DATA字段的长度，单位：字节
-     */
-    private static DefaultFieldDeclaration buildLENFieldDcl(byte sizeOfData) {
-        return new DefaultFieldDeclaration("报文长度", "LEN", BaseDataType.UINT8, (short) 1)
-                .setDefaultValue(sizeOfData + 3);
+    private static DefaultFieldDeclaration buildMsgNoFieldDcl() {
+        return new DefaultFieldDeclaration("报文流水号", "BLKN", BaseDataType.UINT16, (short) 1);
     }
 
     /**
@@ -646,26 +582,31 @@ public class MiChongIEVCV1ProtocolSupport {
     }
 
     /**
-     * 公共字段：结果
+     * 公共字段：命令
      */
-    private static DefaultFieldDeclaration buildRESULTFieldDcl(byte result) {
-        return new DefaultFieldDeclaration("结果", "RESULT", BaseDataType.UINT8, (short) 3)
-                .setDefaultValue(result);
+    private static DefaultFieldDeclaration buildCMDFieldDcl(byte cmdCode) {
+        return new DefaultFieldDeclaration("命令", CODE_OF_CMD_FIELD, BaseDataType.UINT8, (short) 1)
+                .setDataMask(DataMask.create((byte)0x7F)) //最低的7个BIT有效
+                .setDefaultValue(cmdCode);
     }
 
+    /**
+     * 公共字段：结果
+     */
     private static DefaultFieldDeclaration buildRESULTOfReplyFieldDcl() {
-        DefaultFieldDeclaration field = new DefaultFieldDeclaration("结果", "RESULT", BaseDataType.UINT8, (short) 3);
+        DefaultFieldDeclaration field = new DefaultFieldDeclaration("结果", "RESULT", BaseDataType.UINT8, (short) 0)
+                .setDataMask(DataMask.create((byte) 0x80));
         field.addMeta(ThingAnnotation.FuncOutput(ThingItemMappings.ofDictExtend2(CMD_REPLY_RESULT_DICT, "rstCode", "rstDesc")));
 
         return field;
     }
 
     /**
-     * 公共字段：校验
+     * 公共字段：数据校验
      */
     private static DefaultFieldDeclaration buildSUMFieldDcl() {
-        return new DefaultFieldDeclaration("异或校验", "SUM", BaseDataType.UINT8, (short)-1)
-                .setDefaultValue((byte) 0x00);
+        return new DefaultFieldDeclaration("数据校验", "CHECKSUM", BaseDataType.UINT8, (short)19)
+                    .setDefaultValue((byte) 0x00); //和校验
     }
 
     private static DefaultFieldDeclaration buildDataFieldDcl(String name, String code, BaseDataType dataType,

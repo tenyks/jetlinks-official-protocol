@@ -1,10 +1,11 @@
 package org.jetlinks.protocol.official.binary2;
 
+import org.jetlinks.protocol.common.DefaultValueSupplier;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
 
-import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.Supplier;
 
 public class DefaultFieldDeclaration extends AbstractStructPartDeclaration
         implements StructFieldDeclaration, Serializable {
@@ -15,7 +16,7 @@ public class DefaultFieldDeclaration extends AbstractStructPartDeclaration
 
     private boolean             isPayloadField;
 
-    private Object              defaultValue;
+    private Supplier<Object>    defaultValueSupplier;
 
     private Set<Object>         validValues;
 
@@ -34,7 +35,14 @@ public class DefaultFieldDeclaration extends AbstractStructPartDeclaration
     }
 
     public DefaultFieldDeclaration setDefaultValue(Object defaultValue) {
-        this.defaultValue = defaultValue;
+        this.defaultValueSupplier = DefaultValueSupplier.ofStatic(defaultValue);
+
+        return this;
+    }
+
+    public DefaultFieldDeclaration setDefValOfDynamicUTC() {
+        this.defaultValueSupplier = DefaultValueSupplier.ofUTC();
+
         return this;
     }
 
@@ -70,7 +78,7 @@ public class DefaultFieldDeclaration extends AbstractStructPartDeclaration
 
     @Override
     public Object getDefaultValue() {
-        return defaultValue;
+        return (defaultValueSupplier != null ? defaultValueSupplier.get() : null);
     }
 
     public DefaultFieldDeclaration setPayloadField(boolean payloadField) {
@@ -110,7 +118,7 @@ public class DefaultFieldDeclaration extends AbstractStructPartDeclaration
         return "DefaultFieldDeclaration{" +
                 "dataType=" + dataType +
                 ", isPayloadField=" + isPayloadField +
-                ", defaultValue=" + defaultValue +
+                ", defaultValueSupplier=" + defaultValueSupplier +
                 ", validValues=" + validValues +
                 "} " + super.toString();
     }
