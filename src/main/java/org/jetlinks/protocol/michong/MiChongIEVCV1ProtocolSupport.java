@@ -72,6 +72,7 @@ public class MiChongIEVCV1ProtocolSupport {
     private static final MiChongEncodeSigner    Signer = new MiChongEncodeSigner();
 
     private static final ThingValueNormalization<Integer> NormToInt = ThingValueNormalizations.ofToInt(-1);
+    private static final ThingValueNormalization<Integer> NormToFloat = ThingValueNormalizations.of(-1);
 
 
     static {
@@ -535,29 +536,41 @@ public class MiChongIEVCV1ProtocolSupport {
      * 状态查询指令响应
      */
     private static DefaultStructDeclaration buildReadStateReplyStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("读端口状况指令响应", "CMD:0x15");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("状态查询指令响应", "CMD:0x3F");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReadPortStateReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("ReadStateReply"));
 
-        structDcl.addField(buildCMDFieldDcl((byte)0x3F));
+        structDcl.addField(buildCMDFieldDcl((byte)0x3F)); //
+        structDcl.addField(buildRESULTOfReplyFieldDcl()); //
         structDcl.addField(buildMsgNoFieldDcl());
-        structDcl.addField(buildRESULTOfReplyFieldDcl());
 
         DefaultFieldDeclaration field;
-        field = buildDataFieldDcl("端口号", "portNo", BaseDataType.UINT8, DATA_BEGIN_IDX);
+        field = buildDataFieldDcl("工作状态", "workingStatus", BaseDataType.UINT8, DATA_BEGIN_IDX);
+        structDcl.addField(field);
+
+        field = buildDataFieldDcl("故障代码", "faultCodes", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 1));
+        structDcl.addField(field);
+
+        field = buildDataFieldDcl("设备温度", "faultDescs", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 3));
         structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput(NormToInt)));
 
-        field = buildDataFieldDcl("本轮用电剩余时长", "remainTime", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 1));
+        field = buildDataFieldDcl("枪线温度", "temperatureOfDevice", BaseDataType.UINT8,  (short)(DATA_BEGIN_IDX + 4));
         structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput(NormToInt)));
 
-        field = buildDataFieldDcl("当前用电功率", "workingPower", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 3));
+        field = buildDataFieldDcl("主线温度", "temperatureOfGunWire", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 5));
         structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput(NormToInt)));
 
-        field = buildDataFieldDcl("本轮用电剩余电量", "remainEC", BaseDataType.UINT16,  (short)(DATA_BEGIN_IDX + 5));
+        field = buildDataFieldDcl("当前充电电压", "activeVoltage", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 6));
         structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput(NormToInt)));
 
-        field = buildDataFieldDcl("本轮用电剩余金额", "remainMoney", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 7));
+        field = buildDataFieldDcl("当前充电电流", "activeCurrent", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 8));
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput(NormToInt)));
+
+        field = buildDataFieldDcl("当轮充电电量", "currentRoundEC", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 10));
+        structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput(NormToInt)));
+
+        field = buildDataFieldDcl("当轮充电时长", "currentRoundDuration", BaseDataType.UINT24, (short)(DATA_BEGIN_IDX + 12));
         structDcl.addField(field.addMeta(ThingAnnotation.FuncOutput(NormToInt)));
 
         structDcl.addField(buildSUMFieldDcl());
@@ -576,7 +589,7 @@ public class MiChongIEVCV1ProtocolSupport {
      * 公共字段：命令
      */
     private static DefaultFieldDeclaration buildCMDFieldDcl(byte cmdCode) {
-        return new DefaultFieldDeclaration("命令", CODE_OF_CMD_FIELD, BaseDataType.UINT8, (short) 1)
+        return new DefaultFieldDeclaration("命令", CODE_OF_CMD_FIELD, BaseDataType.UINT8, (short) 0)
                     .setDataMask(DataMask.create((byte)0x7F)) //最低的7个BIT有效
                     .setDefaultValue(cmdCode);
     }
@@ -584,8 +597,8 @@ public class MiChongIEVCV1ProtocolSupport {
     /**
      * 公共字段：命令
      */
-    private static DefaultFieldDeclaration buildCMDFieldDcl(byte cmdCode) {
-        return new DefaultFieldDeclaration("命令", CODE_OF_CMD_FIELD, BaseDataType.UINT8, (short) 1)
+    private static DefaultFieldDeclaration buildCMDInReplyFieldDcl(byte cmdCode) {
+        return new DefaultFieldDeclaration("命令", CODE_OF_CMD_FIELD, BaseDataType.UINT8, (short) 0)
                 .setDataMask(DataMask.create((byte)0x7F)) //最低的7个BIT有效
                 .setDefaultValue(cmdCode);
     }
@@ -593,10 +606,11 @@ public class MiChongIEVCV1ProtocolSupport {
     /**
      * 公共字段：结果
      */
-    private static DefaultFieldDeclaration buildRESULTOfReplyFieldDcl() {
-        DefaultFieldDeclaration field = new DefaultFieldDeclaration("结果", "RESULT", BaseDataType.UINT8, (short) 0)
+    private static DefaultFieldDeclaration  buildRESULTOfReplyFieldDcl() {
+        DefaultFieldDeclaration field = new DefaultFieldDeclaration("命令", "COMMAND", BaseDataType.UINT8, (short) 0)
                 .setDataMask(DataMask.create((byte) 0x80));
-        field.addMeta(ThingAnnotation.FuncOutput(ThingItemMappings.ofDictExtend2(CMD_REPLY_RESULT_DICT, "rstCode", "rstDesc")));
+        field.addMeta(ThingAnnotation.FuncOutput(
+                ThingItemMappings.ofDictExtend2(CMD_REPLY_RESULT_DICT, "rstCode", "rstDesc")));
 
         return field;
     }
@@ -604,7 +618,7 @@ public class MiChongIEVCV1ProtocolSupport {
     /**
      * 公共字段：数据校验
      */
-    private static DefaultFieldDeclaration buildSUMFieldDcl() {
+    private static DefaultFieldDeclaration  buildSUMFieldDcl() {
         return new DefaultFieldDeclaration("数据校验", "CHECKSUM", BaseDataType.UINT8, (short)19)
                     .setDefaultValue((byte) 0x00); //和校验
     }

@@ -201,6 +201,63 @@ public enum BaseDataType {
         @Override
         public short size() { return 2; }
     },
+    //0x0E
+    UINT24 {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte b1 = buf.readByte();
+            byte b2 = buf.readByte();
+            byte b3 = buf.readByte();
+
+            return (int) b1 << 16 | (int) b2 << 8 | b3;
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) {
+                buf.writeByte(0);
+                buf.writeByte(0);
+                buf.writeByte(0);
+            } else {
+                int v = ((Number) value).intValue();
+                buf.writeByte((0x00FF0000 & v) >> 16);
+                buf.writeByte((0x0000FF00 & v) >> 8);
+                buf.writeByte((0x000000FF & v));
+            }
+            return 3;
+        }
+
+        @Override
+        public short size() { return 3; }
+    },
+    UINT24LE { //小端优先
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte b1 = buf.readByte();
+            byte b2 = buf.readByte();
+            byte b3 = buf.readByte();
+
+            return (int) b3 << 16 | (int) b2 << 8 | b1;
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) {
+                buf.writeByte(0);
+                buf.writeByte(0);
+                buf.writeByte(0);
+            } else {
+                int v = ((Number) value).intValue();
+                buf.writeByte((0x000000FF & v));
+                buf.writeByte((0x0000FF00 & v) >> 8);
+                buf.writeByte((0x00FF0000 & v) >> 16);
+            }
+            return 3;
+        }
+
+        @Override
+        public short size() { return 2; }
+    },
     //0x08
     UINT32 {
         @Override

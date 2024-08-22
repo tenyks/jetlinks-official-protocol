@@ -42,4 +42,18 @@ public class ThingValueNormalizations {
         };
     }
 
+    public static ThingValueNormalization<Float> ofToInt(final Float defVal) {
+        return new ThingValueNormalization<Integer>() {
+
+            private final Function<Object, Integer> toFloatFun = BaseDataTypeConvertors.ofToInt(defVal);
+
+            @Override
+            public Integer apply(Object itemValue) {
+                if (itemValue == null) return defVal;
+
+                return toIntFun.apply(itemValue);
+            }
+        };
+    }
+
 }
