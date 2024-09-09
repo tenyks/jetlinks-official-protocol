@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * 基础数据类型
@@ -436,7 +438,72 @@ public enum BaseDataType {
 
         @Override
         public short size() { return 0; }
+    },
+
+    //CP56Time2a
+    CP56Time2a {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size];
+            buf.readBytes(bytes);
+
+            short milSec = (short)((0xff00 & ((short)bytes[1] << 8)) | (0x00ff & ((short)bytes[0])));
+            byte minute = (byte)(0b00111111 & bytes[2]);
+            byte hour = (byte)(0b00011111 & bytes[3]);
+            byte dayOfMonth = (byte)(0b00011111 & bytes[4]); // 取值范围：1~31
+            byte month = (byte)(0b00001111 & bytes[5]);
+            byte year = (byte)(0b00111111 & bytes[6]);
+
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.YEAR, year);
+            cal.set(Calendar.MONTH, month - 1);
+            cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            cal.set(Calendar.HOUR_OF_DAY, hour);
+            cal.set(Calendar.MINUTE, minute);
+            cal.set(Calendar.SECOND, milSec / 1000);
+            cal.set(Calendar.MILLISECOND, milSec % 1000);
+
+            return cal.getTime();
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            Calendar cal = Calendar.getInstance();
+            if (value instanceof Date) {
+                cal.setTime((Date) value);
+            } else if (value instanceof Long) {
+                cal.setTimeInMillis((Long) value);
+            } else {
+                return 0;
+            }
+
+            int milSec = cal.get(Calendar.SECOND) * 1000 + cal.get(Calendar.MILLISECOND);
+            int minute = cal.get(Calendar.MONTH);
+            int hour = cal.get(Calendar.HOUR);
+            int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH); // 取值范围：1~31
+            int month = cal.get(Calendar.MONTH) + 1;
+            int year = cal.get(Calendar.YEAR);
+
+            byte[] bytes = new byte[size()];
+            bytes[0] = (byte)(milSec & 0xff);
+            bytes[1] = (byte) ((milSec & 0xff00) >> 8);
+            bytes[2] = (byte)(minute & 0b00111111);
+            bytes[3] = (byte)(hour & 0b00011111);
+            bytes[4] = (byte)(dayOfMonth & 0b00011111);
+            bytes[5] = (byte)(month & 0b00001111);
+            bytes[6] = (byte)(year & 0b00111111);
+
+            buf.writeBytes(bytes);
+
+            return (short)(bytes.length);
+        }
+
+        @Override
+        public short size() { return 7; }
     }
+
     ;
 
     private final static BaseDataType[] VALUES = values();
