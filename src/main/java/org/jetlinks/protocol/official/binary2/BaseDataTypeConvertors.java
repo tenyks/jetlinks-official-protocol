@@ -46,4 +46,16 @@ public class BaseDataTypeConvertors {
         };
     }
 
+    public static Function<Object, Float> ofToFloat(final Float defVal) {
+        return o -> {
+            if (o instanceof Number) {
+                return ((Number) o).floatValue();
+            } else if (o instanceof String) {
+                //TODO 补充字符串转数值
+            }
+
+            return defVal;
+        };
+    }
+
 }

@@ -447,17 +447,20 @@ public enum BaseDataType {
             byte[] bytes = new byte[size];
             buf.readBytes(bytes);
 
-            short milSec = (short)((0xff00 & ((short)bytes[1] << 8)) | (0x00ff & ((short)bytes[0])));
-            byte minute = (byte)(0b00111111 & bytes[2]);
-            byte hour = (byte)(0b00011111 & bytes[3]);
-            byte dayOfMonth = (byte)(0b00011111 & bytes[4]); // 取值范围：1~31
-            byte month = (byte)(0b00001111 & bytes[5]);
-            byte year = (byte)(0b00111111 & bytes[6]);
+            int milSec1 = bytes[0] < 0 ? 256 + bytes[0] : bytes[0];
+            int milSec2 = bytes[1] < 0 ? 256 + bytes[1] : bytes[1];
+            int milSec = milSec2 * 256 + milSec1;
+            int minute = bytes[2] & 0x3F;
+            int hour = bytes[3] & 0x1F;
+            int day = bytes[4] & 0x1F;
+            int month = bytes[5] & 0x0F;
+            int year = bytes[6] & 0x7F;
+
 
             Calendar cal = Calendar.getInstance();
-            cal.set(Calendar.YEAR, year);
+            cal.set(Calendar.YEAR, 2000 + year);
             cal.set(Calendar.MONTH, month - 1);
-            cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            cal.set(Calendar.DAY_OF_MONTH, day);
             cal.set(Calendar.HOUR_OF_DAY, hour);
             cal.set(Calendar.MINUTE, minute);
             cal.set(Calendar.SECOND, milSec / 1000);
@@ -480,20 +483,27 @@ public enum BaseDataType {
             }
 
             int milSec = cal.get(Calendar.SECOND) * 1000 + cal.get(Calendar.MILLISECOND);
-            int minute = cal.get(Calendar.MONTH);
-            int hour = cal.get(Calendar.HOUR);
+            int minute = cal.get(Calendar.MINUTE);
+            int hour = cal.get(Calendar.HOUR_OF_DAY);
             int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH); // 取值范围：1~31
+            int dayOfWeak = cal.get(Calendar.DAY_OF_WEEK); // 取值范围：1~7
             int month = cal.get(Calendar.MONTH) + 1;
-            int year = cal.get(Calendar.YEAR);
+            int year = cal.get(Calendar.YEAR) - 2000;
+
+            if (dayOfWeak == Calendar.SUNDAY) {
+                dayOfWeak = 7;
+            } else {
+                dayOfWeak--;
+            }
 
             byte[] bytes = new byte[size()];
-            bytes[0] = (byte)(milSec & 0xff);
-            bytes[1] = (byte) ((milSec & 0xff00) >> 8);
-            bytes[2] = (byte)(minute & 0b00111111);
-            bytes[3] = (byte)(hour & 0b00011111);
-            bytes[4] = (byte)(dayOfMonth & 0b00011111);
-            bytes[5] = (byte)(month & 0b00001111);
-            bytes[6] = (byte)(year & 0b00111111);
+            bytes[0] = (byte) (milSec & 0xFF);
+            bytes[1] = (byte) ((milSec >> 8) & 0xFF);
+            bytes[2] = (byte) (minute & 0x3F);
+            bytes[3] = (byte) (hour & 0x1F);
+            bytes[4] = (byte) (dayOfWeak << 5 | dayOfMonth & 0x1F);
+            bytes[5] = (byte) (month & 0x0F);
+            bytes[6] = (byte) (year & 0x7F);
 
             buf.writeBytes(bytes);
 
@@ -502,9 +512,7 @@ public enum BaseDataType {
 
         @Override
         public short size() { return 7; }
-    }
-
-    ;
+    };
 
     private final static BaseDataType[] VALUES = values();
 
