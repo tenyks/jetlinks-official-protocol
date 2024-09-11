@@ -2,11 +2,12 @@ package org.jetlinks.protocol.michong;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import me.tenyks.core.crc.CRCCalculator;
+import me.tenyks.core.crc.XORCRCCalculator;
 import org.apache.commons.codec.binary.Hex;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.codec.DefaultTransport;
 import org.jetlinks.core.message.codec.EncodedMessage;
-import org.jetlinks.core.message.codec.mqtt.MqttMessage;
 import org.jetlinks.core.message.event.EventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
@@ -21,7 +22,6 @@ import org.jetlinks.protocol.official.common.DictBook;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
 import org.jetlinks.protocol.qiyun.mqtt.QiYunOverMqttDeviceMessageCodec;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -696,7 +696,7 @@ public class MiChongV2ProtocolSupport {
         return new DefaultFieldDeclaration(name, code, dataType).setAnchorReference(anchor, offsetToAnchor);
     }
 
-    private static CRCCalculator    buildCRCCalculator() {
+    private static CRCCalculator buildCRCCalculator() {
         return new XORCRCCalculator(1, -1);
     }
 

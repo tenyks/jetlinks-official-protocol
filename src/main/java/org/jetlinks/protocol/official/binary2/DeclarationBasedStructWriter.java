@@ -2,6 +2,7 @@ package org.jetlinks.protocol.official.binary2;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import me.tenyks.core.crc.CRCCalculator;
 
 /**
  * @author v-lizy81

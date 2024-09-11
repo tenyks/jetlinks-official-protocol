@@ -1,5 +1,6 @@
 package org.jetlinks.protocol.official.binary2;
 
+import me.tenyks.core.crc.CRCCalculator;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
 
 import javax.validation.constraints.NotNull;
@@ -31,7 +32,7 @@ public interface StructDeclaration {
 
     Iterable<StructFieldDeclaration>    fields();
 
-    CRCCalculator                       getCRCCalculator();
+    CRCCalculator getCRCCalculator();
 
     boolean     isEnableEncode();
 

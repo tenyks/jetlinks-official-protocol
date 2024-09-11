@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.official.binary2;
+package me.tenyks.core.crc;
 
 import io.netty.buffer.ByteBuf;
 

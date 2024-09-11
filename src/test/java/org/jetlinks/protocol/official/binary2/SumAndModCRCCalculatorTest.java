@@ -2,11 +2,10 @@ package org.jetlinks.protocol.official.binary2;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import me.tenyks.core.crc.SumAndModCRCCalculator;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class SumAndModCRCCalculatorTest {
 

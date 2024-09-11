@@ -1,6 +1,8 @@
 package org.jetlinks.protocol.xuebao;
 
 import io.netty.buffer.ByteBuf;
+import me.tenyks.core.crc.CRCCalculator;
+import me.tenyks.core.crc.SumAndModCRCCalculator;
 import org.apache.commons.codec.binary.Hex;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.codec.DeviceMessageCodec;
@@ -530,7 +532,7 @@ public class XueBaoWaWaProtocolSupport {
                 .setDefaultValue(new byte[]{0x00, 0x00, 0x00});
     }
 
-    private static CRCCalculator    buildCRCCalculatorInst() {
+    private static CRCCalculator buildCRCCalculatorInst() {
         return new SumAndModCRCCalculator(6, 0, 100);
     }
 

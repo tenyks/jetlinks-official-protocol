@@ -1,6 +1,8 @@
 package me.tenyks.qiyun.protocol;
 
 import io.netty.buffer.ByteBuf;
+import me.tenyks.core.crc.CRCCalculator;
+import me.tenyks.core.crc.XORCRCCalculator;
 import org.apache.commons.codec.binary.Hex;
 import org.jetlinks.protocol.official.binary2.*;
 
@@ -50,12 +52,8 @@ public class YKCV1ProtocolSupport {
         return new XORCRCCalculator(1, -1);
     }
 
-    private static class MiChongFeatureCodeExtractor implements FeatureCodeExtractor {
-        private static final byte MAGIC_ID_OF_V2_1 = (byte) 0xAA;
-        private static final byte[] MAGIC_ID_OF_V2_1_DOUBLE_HEX = new byte[]{(byte) 0x41, (byte) 0x41};
-
-        private static final byte MAGIC_ID_OF_V2_2 = (byte) 0x55;
-        private static final byte[] MAGIC_ID_OF_V2_2_DOUBLE_HEX = new byte[]{(byte) 0x35, (byte) 0x35};
+    private static class YKCV1FeatureCodeExtractor implements FeatureCodeExtractor {
+        private static final byte MAGIC_ID_OF_V1 = (byte) 0x68;
 
         @Override
         public String extract(ByteBuf buf) {
@@ -63,15 +61,16 @@ public class YKCV1ProtocolSupport {
 
             buf.readerIndex(0);
             if (buf.readableBytes() < headerBuf.length) {
-                return "[MiChong]WRONG_SIZE:" + Hex.encodeHexString(buf.array());
+                return "[YKCV1]WRONG_SIZE:" + Hex.encodeHexString(buf.array());
             }
             buf.readBytes(headerBuf);
 
-            if (headerBuf[0] != MAGIC_ID_OF_V2_1 && headerBuf[0] != MAGIC_ID_OF_V2_2) {
-                return "[MiChong]WRONG_MAGIC_ID:" + Hex.encodeHexString(headerBuf);
+            byte frameType = headerBuf[5];
+            if (headerBuf[0] != MAGIC_ID_OF_V1) {
+                return "[YKCV1]WRONG_MAGIC_ID:" + Hex.encodeHexString(headerBuf);
             }
 
-            return "CMD:0x" + String.format("%02X", 0x000000ff & headerBuf[2]);
+            return "CMD:0x" + String.format("%02X", 0x00ff & frameType);
         }
 
         @Override
@@ -79,17 +78,6 @@ public class YKCV1ProtocolSupport {
             return (featureCode != null && featureCode.startsWith("CMD:"));
         }
 
-        @Override
-        public boolean isDoubleHex(ByteBuf buf) {
-            byte[] headerBuf = new byte[4];
-            if (buf.readableBytes() < headerBuf.length) return false;
-
-            buf.readBytes(headerBuf);
-
-            return (headerBuf[0] == MAGIC_ID_OF_V2_1_DOUBLE_HEX[0] && headerBuf[1] == MAGIC_ID_OF_V2_1_DOUBLE_HEX[1])
-                    ||
-                    (headerBuf[0] == MAGIC_ID_OF_V2_2_DOUBLE_HEX[0] && headerBuf[1] == MAGIC_ID_OF_V2_2_DOUBLE_HEX[1]);
-        }
     }
 
     private static class YKCV1EncodeSigner implements EncodeSigner {

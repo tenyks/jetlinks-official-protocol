@@ -1,5 +1,6 @@
 package org.jetlinks.protocol.official.binary2;
 
+import me.tenyks.core.crc.CRCCalculator;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
 
 import javax.validation.constraints.NotNull;
@@ -22,7 +23,7 @@ public class DefaultStructDeclaration implements StructDeclaration {
 
     private MessageIdMappingAnnotation  msgIdMappingAnnotation;
 
-    private CRCCalculator       crcCalculator;
+    private CRCCalculator crcCalculator;
 
     /**
      * 支持编码
