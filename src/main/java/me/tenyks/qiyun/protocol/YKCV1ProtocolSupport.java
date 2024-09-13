@@ -394,7 +394,7 @@ public class YKCV1ProtocolSupport {
         // 数据块
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = buildDataFieldDcl("交易流水号", "transNo", BaseDataType.CHARS16, (short)(DATA_BEGIN_IDX + 7));
+        fieldDcl = buildDataFieldDcl("交易流水号", "transNo", BaseDataType.CHARS16, (short)(DATA_BEGIN_IDX));
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildDFDclOfPileNo((short)(DATA_BEGIN_IDX + 16)));
@@ -419,16 +419,263 @@ public class YKCV1ProtocolSupport {
         fieldDcl = buildDataFieldDcl("输出电流", "gunRel", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 13));
         structDcl.addField(fieldDcl);
 
+        //整形，偏移量-50；待机置零
+        fieldDcl = buildDataFieldDcl("枪线温度", "gunRel", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 15));
+        structDcl.addField(fieldDcl);
+        //没有置零
+        fieldDcl = buildDataFieldDcl("枪线编码", "gunRel", BaseDataType.INT64, (short)(DATA_BEGIN_IDX + 16));
+        structDcl.addField(fieldDcl);
 
-        //0x00 否 0x01 是 0x02 未知 （无法检测到枪是否插回枪座即 未知）
-        fieldDcl = buildDataFieldDcl("枪是否归位", "gunRel", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 9));
+        //待机置零；交流桩置零
+        fieldDcl = buildDataFieldDcl("SOC", "SOC", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 20));
         structDcl.addField(fieldDcl);
-        //0x00 否 0x01 是 0x02 未知 （无法检测到枪是否插回枪座即 未知）
-        fieldDcl = buildDataFieldDcl("枪是否归位", "gunRel", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 9));
+
+        //整形，偏移量-50 ºC；待机置零； 交流桩置零
+        fieldDcl = buildDataFieldDcl("电池组最高温度", "", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 21));
         structDcl.addField(fieldDcl);
-        //0x00 否 0x01 是 0x02 未知 （无法检测到枪是否插回枪座即 未知）
-        fieldDcl = buildDataFieldDcl("枪是否归位", "gunRel", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 9));
+        //单位：min；待机置零
+        fieldDcl = buildDataFieldDcl("累计充电时间", "", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 22));
         structDcl.addField(fieldDcl);
+        //单位：min；待机置零、交流桩置零
+        fieldDcl = buildDataFieldDcl("剩余时间", "", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 24));
+        structDcl.addField(fieldDcl);
+        //精确到小数点后四位；待机置零
+        fieldDcl = buildDataFieldDcl("充电度数", "", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 26));
+        structDcl.addField(fieldDcl);
+        //精确到小数点后四位；待机置零  未设置计损比例时等于充电度数
+        fieldDcl = buildDataFieldDcl("计损充电度数", "", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 30));
+        structDcl.addField(fieldDcl);
+        //精确到小数点后四位；待机置零 （电费+服务费）* 计损充电度数
+        fieldDcl = buildDataFieldDcl("已充金额", "", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 34));
+        structDcl.addField(fieldDcl);
+        //Bit 位表示（0 否 1 是），低位到高位顺序
+        //Bit1：急停按钮动作故障；Bit2：无可用整流模块； Bit3：出风口温度过高；Bit4：交流防雷故障；
+        //Bit5：交直流模块 DC20 通信中断； Bit6：绝缘检测模块 FC08 通信中断；
+        //Bit7：电度表通信中断；Bit8：读卡器通信中断； Bit9：RC10 通信中断；Bit10：风扇调速板故障；
+        //Bit11：直流熔断器故障；Bit12：高压接触器故障；Bit13：门打开；
+        fieldDcl = buildDataFieldDcl("硬件故障", "", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 38));
+        structDcl.addField(fieldDcl);
+
+        structDcl.addField(buildCRCFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * 充电握手[上行], 0x15
+     * <li>主动请求</li>
+     * <li>GBT-27930 充电桩与BMS充电握手阶段报文</li>
+     */
+    private static DefaultStructDeclaration buildHandshakeStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电握手[上行]", "CMD:0x15");
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("Handshake"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildMsgNoFieldDcl());
+        structDcl.addField(buildEncyFlagFieldDcl());
+        structDcl.addField(buildMsgTypeFieldDcl((byte) 0x15));
+
+        // 数据块
+        DefaultFieldDeclaration fieldDcl;
+
+        structDcl.addField(buildDFDclOfTransNo());
+        structDcl.addField(buildDFDclOfPileNo((short) 16));
+        structDcl.addField(buildDFDclOfGunNo((short) 23));
+
+        //当前版本为 V1.1，表示为：byte3，byte2—0001H；byte1—01H
+        fieldDcl = buildDataFieldDcl("BMS 通信协议版本号", "", BaseDataType.UINT8, (short) 24);
+        structDcl.addField(fieldDcl);
+        //电池类型,01H:铅酸电池;02H:氢电池;03H:磷酸铁锂电池;04H:锰酸锂电池;05H:钴酸锂电池;06H:三元材料电池;07H:聚合物锂离子电池;08H:钛酸锂电池;FFH:其他;
+        fieldDcl = buildDataFieldDcl("BMS 电池类型", "", BaseDataType.UINT8, (short) 27);
+        structDcl.addField(fieldDcl);
+        //0.1 Ah/位，0 Ah 偏移量
+        fieldDcl = buildDataFieldDcl("BMS 整车动力蓄电池系统额定容量", "", BaseDataType.UINT16, (short) 28);
+        structDcl.addField(fieldDcl);
+        //0.1V/位，0V 偏移量
+        fieldDcl = buildDataFieldDcl("BMS 整车动力蓄电池系统额定总电压", "", BaseDataType.UINT16, (short) 30);
+        structDcl.addField(fieldDcl);
+        //标准 ASCII 码
+        fieldDcl = buildDataFieldDcl("BMS 电池生产厂商名称", "", BaseDataType.CHARS4, (short) 34);
+        structDcl.addField(fieldDcl);
+        //预留，由厂商自行定义
+        fieldDcl = buildDataFieldDcl("BMS 电池组序号", "", BaseDataType.HEX_STR_4, (short) 38);
+        structDcl.addField(fieldDcl);
+        //1985 年偏移量，数据范围：1985～ 2235 年
+        fieldDcl = buildDataFieldDcl("BMS 电池组生产日期年", "", BaseDataType.UINT8, (short) 42);
+        structDcl.addField(fieldDcl);
+        //0 月偏移量，数据范围：1～12 月
+        fieldDcl = buildDataFieldDcl("BMS 电池组生产日期月", "", BaseDataType.UINT8, (short) 43);
+        structDcl.addField(fieldDcl);
+        //0 日偏移量，数据范围：1～31 日
+        fieldDcl = buildDataFieldDcl("BMS 电池组生产日期日", "", BaseDataType.UINT8, (short) 44);
+        structDcl.addField(fieldDcl);
+        //1次/位，0次偏移量，以BMS统计为准
+        fieldDcl = buildDataFieldDcl("BMS 电池组充电次数", "", BaseDataType.UINT24, (short) 45);
+        structDcl.addField(fieldDcl);
+        //0=租赁；1=车自有
+        fieldDcl = buildDataFieldDcl("BMS 电池组产权标识", "", BaseDataType.UINT8, (short) 46);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("预留位", "", BaseDataType.UINT8, (short) 47);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("BMS 车辆识别码", "VIN", BaseDataType.CHARS16, (short) 24);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("BMS 软件版本号", "", BaseDataType.HEX_STR_8, (short) 47);
+        structDcl.addField(fieldDcl);
+
+        structDcl.addField(buildCRCFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * 参数配置[上行], 0x17
+     * <li>主动请求</li>
+     * <li>GBT-27930 充电桩与 BMS 参数配置阶段报文</li>
+     */
+    private static DefaultStructDeclaration buildReportSettingStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("参数配置[上行]", "CMD:0x17");
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("Handshake"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildMsgNoFieldDcl());
+        structDcl.addField(buildEncyFlagFieldDcl());
+        structDcl.addField(buildMsgTypeFieldDcl((byte) 0x15));
+
+        // 数据块
+        DefaultFieldDeclaration fieldDcl;
+
+        structDcl.addField(buildDFDclOfTransNo());
+        structDcl.addField(buildDFDclOfPileNo((short) 16));
+        structDcl.addField(buildDFDclOfGunNo((short) 23));
+
+        // 0.01 V/位，0 V 偏移量； 数据范围：0~24 V
+        fieldDcl = buildDataFieldDcl("BMS 单体动力蓄电池最高允许充电电压", "", BaseDataType.UINT16, (short) 24);
+        structDcl.addField(fieldDcl);
+
+        // 0.1 A/位，-400A 偏移量
+        fieldDcl = buildDataFieldDcl("BMS 最高允许充电电流", "", BaseDataType.UINT16, (short) 26);
+        structDcl.addField(fieldDcl);
+
+        // 0.1 kWh/位，0 kWh 偏移量； 数据范围：0~1000 kWh
+        fieldDcl = buildDataFieldDcl("BMS 动力蓄电池标称总能量", "", BaseDataType.UINT16, (short) 28);
+        structDcl.addField(fieldDcl);
+
+        // 0.1 V/位，0 V 偏移量
+        fieldDcl = buildDataFieldDcl("BMS 最高允许充电总电压", "", BaseDataType.UINT16, (short) 30);
+        structDcl.addField(fieldDcl);
+
+        //1ºC/位，-50 ºC 偏移量；数据范 围：-50 ºC ~+200 ºC
+        fieldDcl = buildDataFieldDcl("BMS 最高允许温度", "", BaseDataType.UINT8, (short) 32);
+        structDcl.addField(fieldDcl);
+
+        //0.1%/位，0%偏移量；数据范围：0 ~ 100%
+        fieldDcl = buildDataFieldDcl("BMS 整车动力蓄电池荷电状态(soc)", "SOC", BaseDataType.UINT16, (short) 33);
+        structDcl.addField(fieldDcl);
+
+        //整车动力蓄电池总电压
+        fieldDcl = buildDataFieldDcl("BMS 整车动力蓄电池当前电池电压", "", BaseDataType.UINT16, (short) 35);
+        structDcl.addField(fieldDcl);
+
+        //0.1 V /位，0 V 偏移量
+        fieldDcl = buildDataFieldDcl("电桩最高输出电压", "", BaseDataType.UINT16, (short) 37);
+        structDcl.addField(fieldDcl);
+
+        //0.1 V /位，0 V 偏移量
+        fieldDcl = buildDataFieldDcl("电桩最低输出电压", "", BaseDataType.UINT16, (short) 39);
+        structDcl.addField(fieldDcl);
+
+        //0.1 A/位，-400 A 偏移量
+        fieldDcl = buildDataFieldDcl("电桩最大输出电流", "", BaseDataType.UINT16, (short) 41);
+        structDcl.addField(fieldDcl);
+
+        //0.1 A/位，-400 A 偏移量
+        fieldDcl = buildDataFieldDcl("电桩最小输出电流", "", BaseDataType.UINT16, (short) 43);
+        structDcl.addField(fieldDcl);
+
+        structDcl.addField(buildCRCFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * 充电结束[上行], 0x19
+     * <li>主动请求</li>
+     * <li>GBT-27930 充电桩与 BMS 充电结束阶段报文</li>
+     */
+    private static DefaultStructDeclaration buildChargingEndEventStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电结束[上行]", "CMD:0x19");
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("ChargingEndEvent"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildMsgNoFieldDcl());
+        structDcl.addField(buildEncyFlagFieldDcl());
+        structDcl.addField(buildMsgTypeFieldDcl((byte) 0x19));
+
+        // 数据块
+        DefaultFieldDeclaration fieldDcl;
+
+        structDcl.addField(buildDFDclOfTransNo());
+        structDcl.addField(buildDFDclOfPileNo((short) 16));
+        structDcl.addField(buildDFDclOfGunNo((short) 23));
+
+        //
+        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        structDcl.addField(fieldDcl);
+        //
+        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        structDcl.addField(fieldDcl);
+
 
         structDcl.addField(buildCRCFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
@@ -442,16 +689,26 @@ public class YKCV1ProtocolSupport {
 
 
 
+
+    /**
+     * 数据字段：交易流水号
+     */
+    private static DefaultFieldDeclaration buildDFDclOfTransNo() {
+        return buildDataFieldDcl("交易流水号", "transNo", BaseDataType.CHARS16, DATA_BEGIN_IDX);
+    }
+
     /**
      * 数据字段：桩编码
      */
     private static DefaultFieldDeclaration buildDFDclOfPileNo() {
         return new DefaultFieldDeclaration("桩编码", "pileNo", BaseDataType.CHARS7, DATA_BEGIN_IDX);
-    }/**
+    }
+
+    /**
      * 数据字段：桩编码
      */
     private static DefaultFieldDeclaration buildDFDclOfPileNo(short absOffset) {
-        return new DefaultFieldDeclaration("桩编码", "pileNo", BaseDataType.CHARS7, absOffset);
+        return new DefaultFieldDeclaration("桩编码", "pileNo", BaseDataType.CHARS7, (short)(DATA_BEGIN_IDX + absOffset));
     }
 
     /**
@@ -466,6 +723,13 @@ public class YKCV1ProtocolSupport {
      */
     private static DefaultFieldDeclaration buildDFDclOfGunNo() {
         return new DefaultFieldDeclaration("枪号", "gunNo", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 7));
+    }
+
+    /**
+     * 数据字段：枪号
+     */
+    private static DefaultFieldDeclaration buildDFDclOfGunNo(short absOffset) {
+        return new DefaultFieldDeclaration("枪号", "gunNo", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + absOffset));
     }
 
     /**
@@ -522,8 +786,8 @@ public class YKCV1ProtocolSupport {
         return new DefaultFieldDeclaration(name, code, dataType).setAnchorReference(nextToThisAnchor, (short)0);
     }
 
-    private static DefaultFieldDeclaration buildDataFieldDcl(String name, String code, BaseDataType dataType, short absOffset) {
-        return new DefaultFieldDeclaration(name, code, dataType, absOffset);
+    private static DefaultFieldDeclaration buildDataFieldDcl(String name, String code, BaseDataType dataType, short absOffsetInData) {
+        return new DefaultFieldDeclaration(name, code, dataType, (short)(DATA_BEGIN_IDX + absOffsetInData));
     }
 
     private static DefaultFieldDeclaration buildDataFieldDcl(String name, String code, BaseDataType dataType,
