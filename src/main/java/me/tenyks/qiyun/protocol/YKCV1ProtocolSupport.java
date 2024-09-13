@@ -633,47 +633,154 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(buildDFDclOfPileNo((short) 16));
         structDcl.addField(buildDFDclOfGunNo((short) 23));
 
-        //
-        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        //1%/位，0%偏移量；数据范围：0~100%
+        fieldDcl = buildDataFieldDcl("BMS 中止荷电状态 SOC", "", BaseDataType.UINT8, (short) 24);
         structDcl.addField(fieldDcl);
-        //
-        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+
+        //0.01 V/位，0 V 偏移量；数据范 围：0 ~24 V
+        fieldDcl = buildDataFieldDcl("BMS 动力蓄电池单体最低电压", "", BaseDataType.UINT16, (short) 25);
         structDcl.addField(fieldDcl);
-        //
-        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+
+        //0.01 V/位，0 V 偏移量；数据范 围：0 ~24 V
+        fieldDcl = buildDataFieldDcl("BMS 动力蓄电池单体最高电压", "", BaseDataType.UINT16, (short) 27);
         structDcl.addField(fieldDcl);
-        //
-        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+
+        //1ºC/位，-50 ºC 偏移量；数据范围：-50 ºC ~+200 ºC
+        fieldDcl = buildDataFieldDcl("BMS 动力蓄电池最低温度", "", BaseDataType.UINT8, (short) 29);
         structDcl.addField(fieldDcl);
-        //
-        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+
+        //1ºC/位，-50 ºC 偏移量；数据范围：-50 ºC ~+200 ºC
+        fieldDcl = buildDataFieldDcl("BMS 动力蓄电池最高温度", "", BaseDataType.UINT8, (short) 30);
         structDcl.addField(fieldDcl);
-        //
-        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+
+        //1 min/位，0 min 偏移量；数据范围：0~600 min
+        fieldDcl = buildDataFieldDcl("电桩累计充电时间", "", BaseDataType.UINT16, (short) 31);
         structDcl.addField(fieldDcl);
-        //
-        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+
+        //0.1 kWh/位，0 kWh 偏移量；数据范围：0~1000 kWh
+        fieldDcl = buildDataFieldDcl("电桩输出能量", "", BaseDataType.UINT16, (short) 33);
         structDcl.addField(fieldDcl);
-        //
-        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+
+        //充电机编号， 1/位， 1偏移量 ，数 据范 围 ： 0 ～ 0xFFFFFFFF
+        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT32, (short) 34);
         structDcl.addField(fieldDcl);
-        //
-        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+
+        structDcl.addField(buildCRCFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * 错误报文[上行], 0x1B
+     * <li>主动请求</li>
+     * <li>GBT-27930 充电桩与 BMS 充电错误报文</li>
+     */
+    private static DefaultStructDeclaration buildReportErrorEventStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("错误报文[上行]", "CMD:0x1B");
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportErrorEvent"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildMsgNoFieldDcl());
+        structDcl.addField(buildEncyFlagFieldDcl());
+        structDcl.addField(buildMsgTypeFieldDcl((byte) 0x19));
+
+        // 数据块
+        DefaultFieldDeclaration fieldDcl;
+
+        structDcl.addField(buildDFDclOfTransNo());
+        structDcl.addField(buildDFDclOfPileNo((short) 16));
+        structDcl.addField(buildDFDclOfGunNo((short) 23));
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("接收SPN2560=0x00的充电机辨识报文超时", "", BaseDataType.UINT8, (short) 24);
         structDcl.addField(fieldDcl);
-        //
-        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("接收SPN2560=0xAA的充电机辨识报文超时", "", BaseDataType.UINT8, (short) 24);
         structDcl.addField(fieldDcl);
-        //
-        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("预留位", "RF01", BaseDataType.UINT8, (short) 24);
         structDcl.addField(fieldDcl);
-        //
-        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("接收充电机的时间同步和充电机最大输出能力报文超时", "", BaseDataType.UINT8, (short) 25);
         structDcl.addField(fieldDcl);
-        //
-        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("接收充电机完成充电准备报文超时", "", BaseDataType.UINT8, (short) 25);
         structDcl.addField(fieldDcl);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("预留位", "RF02", BaseDataType.UINT8, (short) 25);
+        structDcl.addField(fieldDcl);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("接收充电机充电状态报文超时", "", BaseDataType.UINT8, (short) 26);
+        structDcl.addField(fieldDcl);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("接收充电机中止充电报文超时", "", BaseDataType.UINT8, (short) 26);
+        structDcl.addField(fieldDcl);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("预留位", "RF03", BaseDataType.UINT8, (short) 26);
+        structDcl.addField(fieldDcl);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("接收充电机充电统计报文超时", "", BaseDataType.UINT8, (short) 26);
+        structDcl.addField(fieldDcl);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("BMS其他", "", BaseDataType.UINT8, (short) 26);
+        structDcl.addField(fieldDcl);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("接收BMS和车辆的辨识报文超时", "", BaseDataType.UINT8, (short) 27);
+        structDcl.addField(fieldDcl);
+
         //
-        fieldDcl = buildDataFieldDcl("", "", BaseDataType.UINT16, (short) 24);
+        fieldDcl = buildDataFieldDcl("预留位", "", BaseDataType.UINT8, (short) 27);
+        structDcl.addField(fieldDcl);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("接收电池充电参数报文超时", "", BaseDataType.UINT8, (short) 28);
+        structDcl.addField(fieldDcl);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("接收BMS完成充电准备报文超时", "", BaseDataType.UINT8, (short) 28);
+        structDcl.addField(fieldDcl);
+
+        //
+        fieldDcl = buildDataFieldDcl("预留位", "", BaseDataType.UINT8, (short) 28);
+        structDcl.addField(fieldDcl);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("接收电池充电总状态报文超时", "", BaseDataType.UINT8, (short) 29);
+        structDcl.addField(fieldDcl);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("接收电池充电要求报文超时", "", BaseDataType.UINT8, (short) 29);
+        structDcl.addField(fieldDcl);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("接收BMS中止充电报文超时", "", BaseDataType.UINT8, (short) 29);
+        structDcl.addField(fieldDcl);
+
+        //
+        fieldDcl = buildDataFieldDcl("预留位", "", BaseDataType.UINT8, (short) 29);
+        structDcl.addField(fieldDcl);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("接收BMS充电统计报文超时", "", BaseDataType.UINT8, (short) 30);
+        structDcl.addField(fieldDcl);
+
+        //<00>：=正常；<01>：=超时；<10>： =不可信状态
+        fieldDcl = buildDataFieldDcl("充电机其他", "", BaseDataType.UINT8, (short) 30);
         structDcl.addField(fieldDcl);
 
 
@@ -682,6 +789,160 @@ public class YKCV1ProtocolSupport {
 
         return structDcl;
     }
+
+    /**
+     * 充电阶段BMS中止[上行], 0x1D
+     * <li>主动上送</li>
+     * <li>GBT-27930 充电桩与 BMS 充电阶段 BMS 中止报文</li>
+     */
+    private static DefaultStructDeclaration buildReportBMSStopEventStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电阶段BMS中止[上行]", "CMD:0x1D");
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportErrorEvent"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildMsgNoFieldDcl());
+        structDcl.addField(buildEncyFlagFieldDcl());
+        structDcl.addField(buildMsgTypeFieldDcl((byte) 0x1D));
+
+        // 数据块
+        DefaultFieldDeclaration fieldDcl;
+
+        structDcl.addField(buildDFDclOfTransNo());
+        structDcl.addField(buildDFDclOfPileNo((short) 16));
+        structDcl.addField(buildDFDclOfGunNo((short) 23));
+
+        //1-2 位——所需求的 SOC 目标值3-4 位——达到总电压的设定值5-6 位——达到单体电压设定值7-8 位——充电机主动中止
+        fieldDcl = buildDataFieldDcl("BMS中止充电原因", "", BaseDataType.UINT8, (short) 24);
+        structDcl.addField(fieldDcl);
+
+        //1-2位——绝缘故障
+        //3-4位——输出连接器过温故障5-6 位——BMS 元件、输出连接器过温
+        //7-8位——充电连接器故障
+        //9-10位——电池组温度过高故障
+        //11-12位——高压继电器故障
+        //13-14位——检测点2电压检测故障
+        //15-16位——其他故障
+        fieldDcl = buildDataFieldDcl("BMS中止充电故障原因", "", BaseDataType.UINT16, (short) 25);
+        structDcl.addField(fieldDcl);
+
+        //1-2位——电流过大  3-4位——电压异常  5-8位——预留位
+        fieldDcl = buildDataFieldDcl("BMS中止充电错误原因", "", BaseDataType.UINT8, (short) 27);
+        structDcl.addField(fieldDcl);
+
+        structDcl.addField(buildCRCFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * 充电阶段充电机中止[上行], 0x21
+     * <li>主动上送</li>
+     * <li>GBT-27930 充电桩与 BMS 充电阶段充电机中止报文</li>
+     */
+    private static DefaultStructDeclaration buildReportChargerStopEventStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电阶段BMS中止[上行]", "CMD:0x21");
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportChargerStopEvent"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildMsgNoFieldDcl());
+        structDcl.addField(buildEncyFlagFieldDcl());
+        structDcl.addField(buildMsgTypeFieldDcl((byte) 0x21));
+
+        // 数据块
+        DefaultFieldDeclaration fieldDcl;
+
+        structDcl.addField(buildDFDclOfTransNo());
+        structDcl.addField(buildDFDclOfPileNo((short) 16));
+        structDcl.addField(buildDFDclOfGunNo((short) 23));
+
+        //1-2 位——达到充电机设定的条件中止
+        //3-4 位——人工中止
+        //5-6 位——异常中止
+        //7-8 位——BMS 主动中止
+        fieldDcl = buildDataFieldDcl("充电机中止充电原因", "", BaseDataType.UINT8, (short) 24);
+        structDcl.addField(fieldDcl);
+
+        //1-2 位——充电机过温故障
+        //3-4 位——充电连接器故障
+        //5-6 位——充电机内部过温故障
+        //7-8 位——所需电量不能传送
+        //9-10 位——充电机急停故障
+        //11-12 位——其他故障
+        //13-16 位——预留位
+        fieldDcl = buildDataFieldDcl("充电机中止充电故障原因", "", BaseDataType.UINT16, (short) 25);
+        structDcl.addField(fieldDcl);
+
+        //1-2位——电流不匹配 3-4位——电压异常 5-8位——预留位
+        fieldDcl = buildDataFieldDcl("充电机中止充电错误原因", "", BaseDataType.UINT8, (short) 27);
+        structDcl.addField(fieldDcl);
+
+        structDcl.addField(buildCRCFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+    /**
+     * 充电过程BMS需求与充电机输出[上行], 0x23
+     * <li>周期上送（15 秒）</li>
+     * <li>GBT-27930 充电桩与BMS充电过程BMS需求、充电机输出</li>
+     */
+    private static DefaultStructDeclaration buildReportBMSRequirementAndChargerOutputDataStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电过程BMS需求与充电机输出[上行]", "CMD:0x23");
+
+        structDcl.enableDecode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportBMSRequirementAndChargerOutputData"));
+
+        structDcl.addField(buildSOP());
+        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildMsgNoFieldDcl());
+        structDcl.addField(buildEncyFlagFieldDcl());
+        structDcl.addField(buildMsgTypeFieldDcl((byte) 0x23));
+
+        // 数据块
+        DefaultFieldDeclaration fieldDcl;
+
+        structDcl.addField(buildDFDclOfTransNo());
+        structDcl.addField(buildDFDclOfPileNo((short) 16));
+        structDcl.addField(buildDFDclOfGunNo((short) 23));
+
+        //1-2 位——达到充电机设定的条件中止
+        //3-4 位——人工中止
+        //5-6 位——异常中止
+        //7-8 位——BMS 主动中止
+        fieldDcl = buildDataFieldDcl("充电机中止充电原因", "", BaseDataType.UINT8, (short) 24);
+        structDcl.addField(fieldDcl);
+
+        //1-2 位——充电机过温故障
+        //3-4 位——充电连接器故障
+        //5-6 位——充电机内部过温故障
+        //7-8 位——所需电量不能传送
+        //9-10 位——充电机急停故障
+        //11-12 位——其他故障
+        //13-16 位——预留位
+        fieldDcl = buildDataFieldDcl("充电机中止充电故障原因", "", BaseDataType.UINT16, (short) 25);
+        structDcl.addField(fieldDcl);
+
+        //1-2位——电流不匹配 3-4位——电压异常 5-8位——预留位
+        fieldDcl = buildDataFieldDcl("充电机中止充电错误原因", "", BaseDataType.UINT8, (short) 27);
+        structDcl.addField(fieldDcl);
+
+        structDcl.addField(buildCRCFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculator());
+
+        return structDcl;
+    }
+
+
+
+
 
 
 
