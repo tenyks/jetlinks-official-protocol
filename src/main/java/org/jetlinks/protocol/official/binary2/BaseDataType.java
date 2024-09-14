@@ -280,6 +280,28 @@ public enum BaseDataType {
         @Override
         public short size() { return 4; }
     },
+    //0x08
+    UINT40 {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            //TODO 补实现
+            return buf.readUnsignedInt();
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            //TODO 补实现
+            if (value == null) {
+                buf.writeInt(0);
+            } else {
+                buf.writeInt(((Number) value).intValue());
+            }
+            return 4;
+        }
+
+        @Override
+        public short size() { return 5; }
+    },
 
     //0x09
     FLOAT {
@@ -411,6 +433,27 @@ public enum BaseDataType {
 
         @Override
         public short size() { return 7; }
+    },
+    CHARS8 {
+
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size()];
+            buf.readBytes(bytes);
+            return new String(bytes, StandardCharsets.UTF_8);
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes = ((String) value).getBytes();
+            buf.writeBytes(bytes, 0, size());
+            return (short)bytes.length;
+        }
+
+        @Override
+        public short size() { return 8; }
     },//0x0B
     CHARS16 {
 
