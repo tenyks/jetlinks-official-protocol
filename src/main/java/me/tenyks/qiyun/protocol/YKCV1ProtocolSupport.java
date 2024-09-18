@@ -131,11 +131,18 @@ public class YKCV1ProtocolSupport {
 
         RC_OF_CHARGING_END.add((byte) 0x90, "FAIL_UNK", "未知原因停止");
 
-
         RC_OF_CHARGING_END.addOtherItemTemplate((srcCode) -> "FAIL_OTHER_" + srcCode.toString(), "其他原因停止");
+
+
+
+
     }
 
 
+    /**
+     * 网络链接类型
+     */
+    private static final DictBook<Byte, String> NET_TYPE = new DictBook<>();
 
     /**
      * 充电桩登录认证消息[上行], 0x01
