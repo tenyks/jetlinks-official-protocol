@@ -75,7 +75,6 @@ public class MiChongV2ProtocolSupport {
 
     private static final ThingValueNormalization<Integer> NormToInt = ThingValueNormalizations.ofToInt(-1);
 
-
     static {
         CMD_RESULT_DICT.add((short) 0x01, "SUCCESS", "命令下发成功", true);
         CMD_RESULT_DICT.add((short) 0x00, "FAIL_CMD", "命令下发失败");

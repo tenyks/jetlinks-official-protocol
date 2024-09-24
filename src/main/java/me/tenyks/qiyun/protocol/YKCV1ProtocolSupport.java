@@ -20,7 +20,7 @@ import org.jetlinks.protocol.official.common.DictBook;
  */
 public class YKCV1ProtocolSupport {
 
-    public static final String      NAME_AND_VER = "MI_CHONG_IEVC_V1.0.4";
+    public static final String      NAME_AND_VER = "YKC_V1.6";
 
     private static final short      DATA_BEGIN_IDX = 6;
 
@@ -35,114 +35,6 @@ public class YKCV1ProtocolSupport {
     private static final String     CODE_OF_MSG_NO_FIELD = "MSG_NO";
 
     private static final String     CODE_OF_ENCY_FLAG_FIELD = "ENCY_NO";
-
-    /**
-     * 充电停止原因代码表
-     */
-    private static final DictBook<Byte, String> RC_OF_CHARGING_END = new DictBook<>();
-
-
-    static {
-        // 充电完成
-        RC_OF_CHARGING_END.add((byte) 0x40, "SUCCESS_RMT", "结束充电，APP 远程停止", true);
-        RC_OF_CHARGING_END.add((byte) 0x41, "SUCCESS_SOC_100%", "结束充电，SOC 达到 100%", true);
-        RC_OF_CHARGING_END.add((byte) 0x42, "SUCCESS_POWER", "结束充电，充电电量满足设定条件", true);
-        RC_OF_CHARGING_END.add((byte) 0x43, "SUCCESS_MONEY", "结束充电，充电金额满足设定条件", true);
-        RC_OF_CHARGING_END.add((byte) 0x44, "SUCCESS_TIME", "结束充电，充电时间满足设定条件", true);
-        RC_OF_CHARGING_END.add((byte) 0x45, "SUCCESS_MNL", "结束充电，手动停止充电", true);
-        RC_OF_CHARGING_END.add((byte) 0x46, "SUCCESS_OTH_46", "结束充电，其他(46)", true);
-        RC_OF_CHARGING_END.add((byte) 0x47, "SUCCESS_OTH_47", "结束充电，其他(47)", true);
-        RC_OF_CHARGING_END.add((byte) 0x48, "SUCCESS_OTH_48", "结束充电，其他(48)", true);
-        RC_OF_CHARGING_END.add((byte) 0x49, "SUCCESS_OTH_49", "结束充电，其他(49)", true);
-
-        // 充电启动失败
-        RC_OF_CHARGING_END.add((byte) 0x4A, "FAIL_LNH_SYS_FAULT", "充电启动失败，充电桩控制系统故障(需要重启或自动恢复)");
-        RC_OF_CHARGING_END.add((byte) 0x4B, "FAIL_LNH_IND_OFF", "充电启动失败，控制导引断开");
-        RC_OF_CHARGING_END.add((byte) 0x4C, "FAIL_LNH_SW_OFF", "充电启动失败，断路器跳位");
-        RC_OF_CHARGING_END.add((byte) 0x4D, "FAIL_LNH_MT_NET", "充电启动失败，电表通信中断");
-        RC_OF_CHARGING_END.add((byte) 0x4E, "FAIL_LNH_MONEY", "充电启动失败，余额不足");
-        RC_OF_CHARGING_END.add((byte) 0x4F, "FAIL_LNH_CHG_FAULT", "充电启动失败，充电模块故障");
-        RC_OF_CHARGING_END.add((byte) 0x50, "FAIL_LNH_EMG_OFF", "充电启动失败，急停开入");
-        RC_OF_CHARGING_END.add((byte) 0x51, "FAIL_LNH_LGP_ABN", "充电启动失败，防雷器异常");
-        RC_OF_CHARGING_END.add((byte) 0x52, "FAIL_LNH_BMS_NOT_RDY", "充电启动失败，BMS未就绪");
-        RC_OF_CHARGING_END.add((byte) 0x53, "FAIL_LNH_TMP_ABN", "充电启动失败，温度异常");
-        RC_OF_CHARGING_END.add((byte) 0x54, "FAIL_LNH_BTR_FAULT", "充电启动失败，电池反接故障");
-        RC_OF_CHARGING_END.add((byte) 0x55, "FAIL_LNH_ELCK_ABN", "充电启动失败，电子锁异常");
-        RC_OF_CHARGING_END.add((byte) 0x56, "FAIL_LNH_SW_ON_ABN", "充电启动失败，合闸失败");
-        RC_OF_CHARGING_END.add((byte) 0x57, "FAIL_LNH_ILT_ABN", "充电启动失败，绝缘异常");
-        RC_OF_CHARGING_END.add((byte) 0x58, "FAIL_LNH_OTH_58", "充电启动失败，预留");
-        RC_OF_CHARGING_END.add((byte) 0x59, "FAIL_LNH_BHM_TMOT", "充电启动失败，接收BMS握手报文BHM超时");
-        RC_OF_CHARGING_END.add((byte) 0x5A, "FAIL_LNH_BRM_TMOT", "充电启动失败，接收BMS和车辆的辨识报文超时BRM");
-        RC_OF_CHARGING_END.add((byte) 0x5B, "FAIL_LNH_BCP_TMOT", "充电启动失败，接收电池充电参数报文超时 BCP");
-        RC_OF_CHARGING_END.add((byte) 0x5C, "FAIL_LNH_BRO_TMOT", "充电启动失败，接收BMS完成充电准备报文超时 BRO AA");
-        RC_OF_CHARGING_END.add((byte) 0x5D, "FAIL_LNH_BCS_TMOT", "充电启动失败，接收电池充电总状态报文超时 BCS");
-        RC_OF_CHARGING_END.add((byte) 0x5E, "FAIL_LNH_BCL_TMOT", "充电启动失败，接收电池充电要求报文超时 BCL");
-        RC_OF_CHARGING_END.add((byte) 0x5F, "FAIL_LNH_BSM_TMOT", "充电启动失败，接收电池状态信息报文超时 BSM");
-        RC_OF_CHARGING_END.add((byte) 0x60, "FAIL_LNH_BHM_VOL", "充电启动失败，GB2015 电池在 BHM 阶段有电压不允许充电");
-        RC_OF_CHARGING_END.add((byte) 0x61, "FAIL_LNH_BCP_5%", "充电启动失败，GB2015 辨识阶段在 BRO_AA 时候电池实际电压与 BCP 报文电池电压差距大于 5%");
-        RC_OF_CHARGING_END.add((byte) 0x62, "FAIL_LNH_BRO_AA_OO", "充电启动失败，B2015 充电机在预充电阶段从 BRO_AA 变成 BRO_00 状态");
-        RC_OF_CHARGING_END.add((byte) 0x63, "FAIL_LNH_STT_TMOT", "充电启动失败，接收主机配置报文超时");
-        RC_OF_CHARGING_END.add((byte) 0x64, "FAIL_LNH_MISS_CRO_AA", "充电启动失败，充电机未准备就绪,我们没有回 CRO AA，对应老国标");
-        RC_OF_CHARGING_END.add((byte) 0x4, "FAIL_LNH_OTH_65", "充电启动失败，预留(0x65)");
-        RC_OF_CHARGING_END.add((byte) 0x4, "FAIL_LNH_OTH_66", "充电启动失败，预留(0x66)");
-        RC_OF_CHARGING_END.add((byte) 0x4, "FAIL_LNH_OTH_67", "充电启动失败，预留(0x67)");
-        RC_OF_CHARGING_END.add((byte) 0x4, "FAIL_LNH_OTH_68", "充电启动失败，预留(0x68)");
-        RC_OF_CHARGING_END.add((byte) 0x4, "FAIL_LNH_OTH_69", "充电启动失败，预留(0x69)");
-
-        // 充电异常中止
-        RC_OF_CHARGING_END.add((byte) 0x6A, "FAIL_CHABTM_OS_LK", "充电异常中止，系统闭锁");
-        RC_OF_CHARGING_END.add((byte) 0x6B, "FAIL_CHABTM_IND_OFF", "充电异常中止，导引断开");
-        RC_OF_CHARGING_END.add((byte) 0x6C, "FAIL_CHABTM_SW_OFF", "充电异常中止，断路器跳位");
-        RC_OF_CHARGING_END.add((byte) 0x6D, "FAIL_CHABTM_MT_NET", "充电异常中止，电表通信中断");
-        RC_OF_CHARGING_END.add((byte) 0x6E, "FAIL_CHABTM_MONEY", "充电异常中止，余额不足");
-        RC_OF_CHARGING_END.add((byte) 0x6F, "FAIL_CHABTM_AC_PRT", "充电异常中止，交流保护动作");
-        RC_OF_CHARGING_END.add((byte) 0x70, "FAIL_CHABTM_DC_PRT", "充电异常中止，直流保护动作");
-        RC_OF_CHARGING_END.add((byte) 0x71, "FAIL_CHABTM_CHG_FAULT", "充电异常中止，充电模块故障");
-        RC_OF_CHARGING_END.add((byte) 0x72, "FAIL_CHABTM_EMG_OFF", "充电异常中止，急停开入");
-        RC_OF_CHARGING_END.add((byte) 0x73, "FAIL_CHABTM_LGP_ABN", "充电异常中止，防雷器异常");
-        RC_OF_CHARGING_END.add((byte) 0x74, "FAIL_CHABTM_TMP_ABN", "充电异常中止，温度异常");
-        RC_OF_CHARGING_END.add((byte) 0x75, "FAIL_CHABTM_OUT_ABN", "充电异常中止，输出异常");
-        RC_OF_CHARGING_END.add((byte) 0x76, "FAIL_CHABTM_VOID_CUR", "充电异常中止，充电无流");
-        RC_OF_CHARGING_END.add((byte) 0x77, "FAIL_CHABTM_ELCK_ABN", "充电异常中止，电子锁异常");
-        RC_OF_CHARGING_END.add((byte) 0x78, "FAIL_CHABTM_OTH_", "充电异常中止，预留");
-        RC_OF_CHARGING_END.add((byte) 0x79, "FAIL_CHABTM_TVL_ABN", "充电异常中止，总充电电压异常");
-        RC_OF_CHARGING_END.add((byte) 0x7A, "FAIL_CHABTM_TCU_ABN", "充电异常中止，总充电电流异常");
-        RC_OF_CHARGING_END.add((byte) 0x7B, "FAIL_CHABTM_SVL_ABN", "充电异常中止，单体充电电压异常");
-        RC_OF_CHARGING_END.add((byte) 0x7C, "FAIL_CHABTM_BTR_OTP", "充电异常中止，电池组过温");
-        RC_OF_CHARGING_END.add((byte) 0x7D, "FAIL_CHABTM_SMVL_ABN", "充电异常中止，最高单体充电电压异常");
-        RC_OF_CHARGING_END.add((byte) 0x7E, "FAIL_CHABTM_BTR_MOTP", "充电异常中止，最高电池组过温");
-        RC_OF_CHARGING_END.add((byte) 0x7F, "FAIL_CHABTM_BMV_SVL_ABN", "充电异常中止，BMV单体充电电压异常");
-        RC_OF_CHARGING_END.add((byte) 0x80, "FAIL_CHABTM_BMT_OTP", "充电异常中止，BMT 电池组过温");
-        RC_OF_CHARGING_END.add((byte) 0x81, "FAIL_CHABTM_BTR_ABN", "充电异常中止，电池状态异常停止充电");
-        RC_OF_CHARGING_END.add((byte) 0x82, "FAIL_CHABTM_CAR_FBD", "充电异常中止，车辆发报文禁止充电");
-        RC_OF_CHARGING_END.add((byte) 0x83, "FAIL_CHABTM_PILE_OFF", "充电异常中止，充电桩断电");
-        RC_OF_CHARGING_END.add((byte) 0x84, "FAIL_CHABTM_CHG_ST_TMO", "充电异常中止，接收电池充电总状态报文超时");
-        RC_OF_CHARGING_END.add((byte) 0x85, "FAIL_CHABTM_CHG_REQ_TMO", "充电异常中止，接收电池充电要求报文超时");
-        RC_OF_CHARGING_END.add((byte) 0x86, "FAIL_CHABTM_BTR_STS_TMO", "充电异常中止，接收电池状态信息报文超时");
-        RC_OF_CHARGING_END.add((byte) 0x87, "FAIL_CHABTM_BMS_TMN_TMO", "充电异常中止，接收BMS中止充电报文超时");
-        RC_OF_CHARGING_END.add((byte) 0x88, "FAIL_CHABTM_BMS_ST_TMO", "充电异常中止，接收BMS充电统计报文超时");
-        RC_OF_CHARGING_END.add((byte) 0x89, "FAIL_CHABTM_CCS_TMO", "充电异常中止，接收对侧 CCS 报文超时");
-        RC_OF_CHARGING_END.add((byte) 0x8A, "FAIL_CHABTM_OTH_8A", "充电异常中止，保留(0x8A)");
-        RC_OF_CHARGING_END.add((byte) 0x8B, "FAIL_CHABTM_OTH_8B", "充电异常中止，保留(0x8B)");
-        RC_OF_CHARGING_END.add((byte) 0x8C, "FAIL_CHABTM_OTH_8C", "充电异常中止，保留(0x8C)");
-        RC_OF_CHARGING_END.add((byte) 0x8D, "FAIL_CHABTM_OTH_8D", "充电异常中止，保留(0x8D)");
-        RC_OF_CHARGING_END.add((byte) 0x8E, "FAIL_CHABTM_OTH_8E", "充电异常中止，保留(0x8E)");
-        RC_OF_CHARGING_END.add((byte) 0x8F, "FAIL_CHABTM_OTH_8F", "充电异常中止，保留(0x8F)");
-
-        RC_OF_CHARGING_END.add((byte) 0x90, "FAIL_UNK", "未知原因停止");
-
-        RC_OF_CHARGING_END.addOtherItemTemplate((srcCode) -> "FAIL_OTHER_" + srcCode.toString(), "其他原因停止");
-
-
-
-
-    }
-
-
-    /**
-     * 网络链接类型
-     */
-    private static final DictBook<Byte, String> NET_TYPE = new DictBook<>();
 
     /**
      * 充电桩登录认证消息[上行], 0x01
@@ -165,22 +57,22 @@ public class YKCV1ProtocolSupport {
 
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = new DefaultFieldDeclaration("充电枪数量", "gunCount", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 8));
+        fieldDcl = buildDataFieldDcl("充电枪数量", "gunCount", BaseDataType.UINT8, (short) (8));
         structDcl.addField(fieldDcl);
 
-        fieldDcl = new DefaultFieldDeclaration("通信协议版本", "protocolVersion", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 8));
+        fieldDcl = buildDataFieldDcl("通信协议版本", "protocolVersion", BaseDataType.UINT8, (short) (9));
         structDcl.addField(fieldDcl);
 
-        fieldDcl = new DefaultFieldDeclaration("程序版本", "firmwareVersion", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 8));
+        fieldDcl = buildDataFieldDcl("程序版本", "firmwareVersion", BaseDataType.CHARS8, (short) (10));
         structDcl.addField(fieldDcl);
 
-        fieldDcl = new DefaultFieldDeclaration("网络链接类型", "networkType", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 8));
+        fieldDcl = buildDataFieldDcl("网络链接类型", "networkType", BaseDataType.UINT8, (short) (18));
         structDcl.addField(fieldDcl);
 
-        fieldDcl = new DefaultFieldDeclaration("SIM卡", "simNo", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 8));
+        fieldDcl = buildDataFieldDcl("SIM卡", "simNo", BaseDataType.BCD10, (short) (19));
         structDcl.addField(fieldDcl);
 
-        fieldDcl = new DefaultFieldDeclaration("运营商", "simNo", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 8));
+        fieldDcl = buildDataFieldDcl("运营商", "simNo", BaseDataType.UINT8, (short) (29));
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -199,33 +91,17 @@ public class YKCV1ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("AuthResponse"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 30));
+        structDcl.addField(buildLENFieldDcl((byte) 8));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
-        structDcl.addField(buildMsgTypeFieldDcl((byte) 0x01));
+        structDcl.addField(buildMsgTypeFieldDcl((byte) 0x02));
 
         // 数据块
         structDcl.addField(buildDFDclOfPileNo());
-        structDcl.addField(buildDFDclOfPileType());
 
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = new DefaultFieldDeclaration("充电枪数量", "gunCount", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 8));
-        structDcl.addField(fieldDcl);
-
-        fieldDcl = new DefaultFieldDeclaration("通信协议版本", "protocolVersion", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 8));
-        structDcl.addField(fieldDcl);
-
-        fieldDcl = new DefaultFieldDeclaration("程序版本", "firmwareVersion", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 8));
-        structDcl.addField(fieldDcl);
-
-        fieldDcl = new DefaultFieldDeclaration("网络链接类型", "networkType", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 8));
-        structDcl.addField(fieldDcl);
-
-        fieldDcl = new DefaultFieldDeclaration("SIM卡", "simNo", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 8));
-        structDcl.addField(fieldDcl);
-
-        fieldDcl = new DefaultFieldDeclaration("运营商", "simNo", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 8));
+        fieldDcl = buildDataFieldDcl("登陆结果", "rstCode", BaseDataType.UINT8, (short)(7));
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -257,7 +133,7 @@ public class YKCV1ProtocolSupport {
         DefaultFieldDeclaration fieldDcl;
 
         //0x00：正常 0x01：故障
-        fieldDcl = buildDataFieldDcl("枪状态", "gunStatus", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 8));
+        fieldDcl = buildDataFieldDcl("枪状态", "gunStatus", BaseDataType.UINT8, (short) (8));
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -287,7 +163,7 @@ public class YKCV1ProtocolSupport {
 
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = buildDataFieldDcl("心跳应答", "pongFlag", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 8));
+        fieldDcl = buildDataFieldDcl("心跳应答", "pongFlag", BaseDataType.UINT8, (short) (8));
         structDcl.addField(fieldDcl.setDefaultValue((byte) 0));
 
         structDcl.addField(buildCRCFieldDcl());
@@ -315,12 +191,11 @@ public class YKCV1ProtocolSupport {
 
         // 数据块
         structDcl.addField(buildDFDclOfPileNo());
-        structDcl.addField(buildDFDclOfGunNo());
 
         DefaultFieldDeclaration fieldDcl;
 
         //首次连接到平台时置零
-        fieldDcl = buildDataFieldDcl("计费模型编号", "termNo", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 7));
+        fieldDcl = buildDataFieldDcl("计费模型编号", "termsNo", BaseDataType.UINT16, (short) (7));
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -346,15 +221,14 @@ public class YKCV1ProtocolSupport {
 
         // 数据块
         structDcl.addField(buildDFDclOfPileNo());
-        structDcl.addField(buildDFDclOfGunNo());
 
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = buildDataFieldDcl("计费模型编号", "termNo", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 7));
+        fieldDcl = buildDataFieldDcl("计费模型编号", "termsNo", BaseDataType.UINT16, (short) (7));
         structDcl.addField(fieldDcl);
 
         //0x00 桩计费模型与平台一致 0x01 桩计费模型与平台不一致
-        fieldDcl = buildDataFieldDcl("验证结果", "checkRstFlag", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 9));
+        fieldDcl = buildDataFieldDcl("验证结果", "rstCode", BaseDataType.UINT8, (short) (9));
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -378,7 +252,7 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(buildLENFieldDcl((byte) 7));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
-        structDcl.addField(buildMsgTypeFieldDcl((byte) 0x03));
+        structDcl.addField(buildMsgTypeFieldDcl((byte) 0x09));
 
         // 数据块
         structDcl.addField(buildDFDclOfPileNo());
@@ -410,43 +284,43 @@ public class YKCV1ProtocolSupport {
 
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = buildDataFieldDcl("计费模型编号", "termNo", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 7));
+        fieldDcl = buildDataFieldDcl("计费模型编号", "termsNo", BaseDataType.UINT16, (short) (7));
         structDcl.addField(fieldDcl);
 
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("尖费电费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 9));
+        fieldDcl = buildDataFieldDcl("尖费电费费率", "checkRstFlag", BaseDataType.UINT32, (short) (9));
         structDcl.addField(fieldDcl);
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("尖服务费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 13));
+        fieldDcl = buildDataFieldDcl("尖服务费费率", "checkRstFlag", BaseDataType.UINT32, (short) (13));
         structDcl.addField(fieldDcl);
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("峰电费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 17));
+        fieldDcl = buildDataFieldDcl("峰电费费率", "checkRstFlag", BaseDataType.UINT32, (short) (17));
         structDcl.addField(fieldDcl);
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("峰服务费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 21));
+        fieldDcl = buildDataFieldDcl("峰服务费费率", "checkRstFlag", BaseDataType.UINT32, (short) (21));
         structDcl.addField(fieldDcl);
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("平电费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 25));
+        fieldDcl = buildDataFieldDcl("平电费费率", "checkRstFlag", BaseDataType.UINT32, (short) (25));
         structDcl.addField(fieldDcl);
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("平服务费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 29));
+        fieldDcl = buildDataFieldDcl("平服务费费率", "checkRstFlag", BaseDataType.UINT32, (short) (29));
         structDcl.addField(fieldDcl);
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("谷电费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 33));
+        fieldDcl = buildDataFieldDcl("谷电费费率", "checkRstFlag", BaseDataType.UINT32, (short) (33));
         structDcl.addField(fieldDcl);
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("谷服务费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 37));
+        fieldDcl = buildDataFieldDcl("谷服务费费率", "checkRstFlag", BaseDataType.UINT32, (short) (37));
         structDcl.addField(fieldDcl);
 
         //
-        fieldDcl = buildDataFieldDcl("计损比例", "checkRstFlag", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 41));
+        fieldDcl = buildDataFieldDcl("计损比例", "checkRstFlag", BaseDataType.UINT8, (short) (41));
         structDcl.addField(fieldDcl);
 
         for (int i = 0; i < 24; i++) {
             //0x00：尖费率 0x01：峰费率 0x02：平费率 0x03：谷费率
-            fieldDcl = buildDataFieldDcl(String.format("%02d:00～%02d:30时段费率号", i, i), "checkRstFlag", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 42 + i));
+            fieldDcl = buildDataFieldDcl(String.format("%02d:00～%02d:30时段费率号", i, i), "checkRstFlag", BaseDataType.UINT8, (short) (42 + i));
             structDcl.addField(fieldDcl);
-            fieldDcl = buildDataFieldDcl(String.format("%02d:30～%02d:00时段费率号", i, i + 1), "checkRstFlag", BaseDataType.UINT8, (short) (DATA_BEGIN_IDX + 43 + i));
+            fieldDcl = buildDataFieldDcl(String.format("%02d:30～%02d:00时段费率号", i, i + 1), "checkRstFlag", BaseDataType.UINT8, (short) (43 + i));
             structDcl.addField(fieldDcl);
         }
 
@@ -2037,7 +1911,7 @@ public class YKCV1ProtocolSupport {
 
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = buildDataFieldDcl("计费模型编号", "termNo", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 7));
+        fieldDcl = buildDataFieldDcl("计费模型编号", "termsNo", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 7));
         structDcl.addField(fieldDcl);
 
         // 精确到五位小数
