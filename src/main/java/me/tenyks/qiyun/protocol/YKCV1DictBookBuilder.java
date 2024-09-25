@@ -82,7 +82,7 @@ public class YKCV1DictBookBuilder {
     }
 
     /**
-     * @return  充电桩状态
+     * 充电桩状态：0x00：离线 0x01：故障 0x02：空闲 0x03：充电
      */
     public static DictBook<Byte, String>    buildPileStatusDict() {
         DictBook<Byte, String> rst = new DictBook<>();
@@ -92,7 +92,7 @@ public class YKCV1DictBookBuilder {
         rst.add((byte) 0x02, "IDLE", "空闲");
         rst.add((byte) 0x02, "CHARGING", "充电");
 
-        rst.addOtherItemTemplate((srcCode) -> "FAULT_OTHER_" + srcCode.toString(), "登陆失败：其他");
+        rst.addOtherItemTemplate((srcCode) -> "OTH_" + srcCode.toString(), "其他状态");
 
         return rst;
     }

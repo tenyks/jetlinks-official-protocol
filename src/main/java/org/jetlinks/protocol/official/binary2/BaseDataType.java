@@ -518,6 +518,27 @@ public enum BaseDataType {
         @Override
         public short size() { return 32; }
     },
+    BCD16 {
+        //TODO
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size()];
+            buf.readBytes(bytes);
+            return new String(bytes, StandardCharsets.UTF_8);
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes = ((String) value).getBytes();
+            buf.writeBytes(bytes, 0, size());
+            return (short) bytes.length;
+        }
+
+        @Override
+        public short size() { return 32; }
+    },
     BCD10 {
         //TODO
         @Override
@@ -539,7 +560,27 @@ public enum BaseDataType {
         @Override
         public short size() { return 32; }
     },
+    BCD2 {
+        //TODO
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size()];
+            buf.readBytes(bytes);
+            return new String(bytes, StandardCharsets.UTF_8);
+        }
 
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes = ((String) value).getBytes();
+            buf.writeBytes(bytes, 0, size());
+            return (short) bytes.length;
+        }
+
+        @Override
+        public short size() { return 32; }
+    },
 
     //0x0C
     BINARY {
