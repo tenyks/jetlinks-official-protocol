@@ -431,22 +431,20 @@ public class YKCV1DictBookBuilder {
     /**
      * 运营平台确认启动充电失败原因
      */
-    public static DictBook<Byte, String>    buildConfirmChargingFailReasonCodeDict() {
-        DictBook<Byte, String> rst = new DictBook<>();
+    public static DictBook<String, Byte>    buildConfirmChargingFailReasonCodeDict() {
+        DictBook<String, Byte> rst = new DictBook<>();
 
-        rst.add((byte) 0x00, "FC_ACC_NOT_EXIST", "账户不存在");
-        rst.add((byte) 0x01, "FC_ACC_FROZE", "账户冻结");
-        rst.add((byte) 0x01, "FC_ACC_BALANCE", "账户余额不足");
-        rst.add((byte) 0x01, "FC_ACC_NOT_PAY", "该卡存在未结账记录");
-        rst.add((byte) 0x01, "FC_PILE_FRB", "桩停用");
-        rst.add((byte) 0x01, "FC_ACC_FRB_ON_PILE", "该账户不能在此桩上充电");
-        rst.add((byte) 0x01, "FC_PSW_ERR", "密码错误");
-        rst.add((byte) 0x01, "FC_CAP_NOT_ENOUGH", "电站电容不足");
-        rst.add((byte) 0x01, "FC_VIN_NOT_EXIST", "系统中VIN码不存在");
-        rst.add((byte) 0x01, "FC_PILE_NOT_PAY", "该桩存在未结账记录");
-        rst.add((byte) 0x01, "FC_PILE_NOT_SUP", "该桩不支持刷卡");
-
-        rst.addOtherItemTemplate((srcCode) -> "OTH_" + srcCode.toString(), "其他");
+        rst.add("FC_ACC_NOT_EXIST", (byte) 0x01, "账户不存在");
+        rst.add("FC_ACC_FROZE", (byte) 0x02,  "账户冻结");
+        rst.add("FC_ACC_BALANCE", (byte) 0x03, "账户余额不足");
+        rst.add("FC_ACC_NOT_PAY", (byte) 0x04, "该卡存在未结账记录");
+        rst.add("FC_PILE_FRB", (byte) 0x05, "桩停用");
+        rst.add("FC_ACC_FRB_ON_PILE", (byte) 0x06, "该账户不能在此桩上充电");
+        rst.add("FC_PSW_ERR", (byte) 0x07, "密码错误");
+        rst.add("FC_CAP_NOT_ENOUGH", (byte) 0x08, "电站电容不足");
+        rst.add("FC_VIN_NOT_EXIST", (byte) 0x09, "系统中VIN码不存在");
+        rst.add("FC_PILE_NOT_PAY", (byte) 0x0A, "该桩存在未结账记录");
+        rst.add("FC_PILE_NOT_SUP", (byte) 0x0B, "该桩不支持刷卡");
 
         return rst;
     }

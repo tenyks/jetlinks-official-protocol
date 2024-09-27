@@ -5,10 +5,7 @@ import me.tenyks.core.crc.CRCCalculator;
 import me.tenyks.core.crc.XORCRCCalculator;
 import org.apache.commons.codec.binary.Hex;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
-import org.jetlinks.protocol.common.mapping.ThingItemMapping;
-import org.jetlinks.protocol.common.mapping.ThingItemMappings;
 import org.jetlinks.protocol.official.binary2.*;
-import org.jetlinks.protocol.official.common.DictBook;
 
 /**
  * 云快充新能源汽车充电桩协议
@@ -284,7 +281,7 @@ public class YKCV1ProtocolSupport {
 
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = buildDataFieldDcl("计费模型编号", "termsNo", BaseDataType.BCD2, (short) (7));
+        fieldDcl = buildDataFieldDcl("计费模型编号", "termsNo", BaseDataType.BCD02, (short) (7));
         structDcl.addField(fieldDcl.setDefaultValue("0100"));
 
         // 精确到五位小数
@@ -316,15 +313,15 @@ public class YKCV1ProtocolSupport {
         fieldDcl = buildDataFieldDcl("计损比例", "withLostRate", BaseDataType.UINT8, (short) (41));
         structDcl.addField(fieldDcl);
 
-        for (int i = 0; i < 24; i++) {
+        for (int i = 0, j = 0; i < 24; i++, j += 2) {
             //0x00：尖费率 0x01：峰费率 0x02：平费率 0x03：谷费率
             fieldDcl = buildDataFieldDcl(String.format("%02d:00～%02d:30时段费率号", i, i),
-                                        String.format("rateNoOf%02d00%02d30", i, i),
-                                        BaseDataType.UINT8, (short) (42 + i));
+                                    String.format("rateNoOf%02d00%02d30", i, i),
+                                    BaseDataType.UINT8, (short) (42 + j));
             structDcl.addField(fieldDcl);
             fieldDcl = buildDataFieldDcl(String.format("%02d:30～%02d:00时段费率号", i, i + 1),
                                         String.format("rateNoOf%02d30%02d00", i, i + 1),
-                                        BaseDataType.UINT8, (short) (43 + i));
+                                        BaseDataType.UINT8, (short) (43 + j));
             structDcl.addField(fieldDcl);
         }
 
@@ -800,7 +797,7 @@ public class YKCV1ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("ReportBMSRequirementAndChargerOutputData"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildLENFieldDcl((byte) 44));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x23));
@@ -817,44 +814,44 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(fieldDcl);
 
         // 0.1 A/位，-400 A 偏移量
-        fieldDcl = buildDataFieldDcl("BMS 电流需求", "BMSReqCurrent", BaseDataType.UINT16, (short) 24);
+        fieldDcl = buildDataFieldDcl("BMS 电流需求", "BMSReqCurrent", BaseDataType.UINT16, (short) 26);
         structDcl.addField(fieldDcl);
 
         // 0x01：恒压充电；0x02：恒流充电
-        fieldDcl = buildDataFieldDcl("BMS 充电模式", "BMSChargingMode", BaseDataType.UINT8, (short) 24);
+        fieldDcl = buildDataFieldDcl("BMS 充电模式", "BMSChargingMode", BaseDataType.UINT8, (short) 28);
         structDcl.addField(fieldDcl);
 
         // 0.1 V/位，0 V 偏移量
-        fieldDcl = buildDataFieldDcl("BMS 充电电压测量值", "BMSChargingVoltage", BaseDataType.UINT16, (short) 24);
+        fieldDcl = buildDataFieldDcl("BMS 充电电压测量值", "BMSChargingVoltage", BaseDataType.UINT16, (short) 29);
         structDcl.addField(fieldDcl);
 
         // 0.1 A/位，-400 A 偏移量
-        fieldDcl = buildDataFieldDcl("BMS 充电电流测量值", "BMSChargingCurrent", BaseDataType.UINT16, (short) 24);
+        fieldDcl = buildDataFieldDcl("BMS 充电电流测量值", "BMSChargingCurrent", BaseDataType.UINT16, (short) 31);
         structDcl.addField(fieldDcl);
 
         //1-12 位：最高单体动力蓄电池电压，数据分辨率：0.01 V/位，0 V 偏移量；数据范围：0~24 V；
         //13-16 位：最高单体动力蓄电池电压所在组号，数据分辨率：1/位，0 偏移量；数据范围：0~15
-        fieldDcl = buildDataFieldDcl("BMS 最高单体动力蓄电池电压及组号", "BMSBatterySingleMaxVoltage", BaseDataType.UINT16, (short) 24);
+        fieldDcl = buildDataFieldDcl("BMS 最高单体动力蓄电池电压及组号", "BMSBatterySingleMaxVoltage", BaseDataType.UINT16, (short) 33);
         structDcl.addField(fieldDcl);
 
         //1%/位，0%偏移量；数据范围：0~100%
-        fieldDcl = buildDataFieldDcl("BMS 当前荷电状态 SOC", "SOC", BaseDataType.UINT8, (short) 24);
+        fieldDcl = buildDataFieldDcl("BMS 当前荷电状态 SOC", "SOC", BaseDataType.UINT8, (short) 35);
         structDcl.addField(fieldDcl);
 
         //1 min/位，0 min 偏移量；数据范围：0~600 min
-        fieldDcl = buildDataFieldDcl("BMS 估算剩余充电时间", "BMSChargingRemainDuration", BaseDataType.UINT16, (short) 24);
+        fieldDcl = buildDataFieldDcl("BMS 估算剩余充电时间", "BMSChargingRemainDuration", BaseDataType.UINT16, (short) 36);
         structDcl.addField(fieldDcl);
 
         //0.1 V/位，0 V 偏移量
-        fieldDcl = buildDataFieldDcl("电桩电压输出值", "pileOutputVoltage", BaseDataType.UINT16, (short) 24);
+        fieldDcl = buildDataFieldDcl("电桩电压输出值", "pileOutputVoltage", BaseDataType.UINT16, (short) 38);
         structDcl.addField(fieldDcl);
 
         //0.1 A/位，-400 A 偏移量
-        fieldDcl = buildDataFieldDcl("电桩电流输出值", "pileOutputCurrent", BaseDataType.UINT16, (short) 24);
+        fieldDcl = buildDataFieldDcl("电桩电流输出值", "pileOutputCurrent", BaseDataType.UINT16, (short) 40);
         structDcl.addField(fieldDcl);
 
         //1 min/位，0 min 偏移量；数据范围：0 ~ 600 min
-        fieldDcl = buildDataFieldDcl("累计充电时间", "accChargingDuration", BaseDataType.UINT16, (short) 24);
+        fieldDcl = buildDataFieldDcl("累计充电时间", "accChargingDuration", BaseDataType.UINT16, (short) 42);
         structDcl.addField(fieldDcl);
 
 
@@ -869,14 +866,14 @@ public class YKCV1ProtocolSupport {
      * <li>周期上送（15 秒）</li>
      * <li>GBT-27930 充电桩与BMS充电过程BMS信息</li>
      */
-    private static DefaultStructDeclaration buildReportBMSDataStructDcl() {
+    private static DefaultStructDeclaration buildReportBMSChargingDataStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电过程BMS信息[上行]", "CMD:0x25");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportBMSData"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportBMSChargingData"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildLENFieldDcl((byte) 31));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x25));
@@ -889,57 +886,32 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(buildDFDclOfGunNo((short) 23));
 
         // 1/位，1 偏移量；数据范围：1~256
-        fieldDcl = buildDataFieldDcl("BMS 最高单体动力蓄电池电压所在编号", "", BaseDataType.UINT8, (short) 24);
+        fieldDcl = buildDataFieldDcl("BMS 最高单体动力蓄电池电压所在编号", "BMSBatteryNoOfMaxSingleVoltage", BaseDataType.UINT8, (short) 24);
         structDcl.addField(fieldDcl);
 
         // 1ºC/位，-50 ºC 偏移量；数据范围：-50 ºC ~ +200 ºC
-        fieldDcl = buildDataFieldDcl("BMS 最高动力蓄电池温度", "", BaseDataType.UINT8, (short) 25);
+        fieldDcl = buildDataFieldDcl("BMS 最高动力蓄电池温度", "BMSBatteryMaxTemperature", BaseDataType.UINT8, (short) 25);
         structDcl.addField(fieldDcl);
 
         // 1/位，1 偏移量；数据范围：1~128
-        fieldDcl = buildDataFieldDcl("最高温度检测点编号", "", BaseDataType.UINT8, (short) 26);
+        fieldDcl = buildDataFieldDcl("最高温度检测点编号", "BMSCheckPointNoOfMaxTemperature", BaseDataType.UINT8, (short) 26);
         structDcl.addField(fieldDcl);
 
         // 1ºC/位，-50 ºC 偏移量；数据范围：-50 ºC ~+200 ºC
-        fieldDcl = buildDataFieldDcl("最低动力蓄电池温度", "", BaseDataType.UINT8, (short) 27);
+        fieldDcl = buildDataFieldDcl("最低动力蓄电池温度", "BMSBatteryMinTemperature", BaseDataType.UINT8, (short) 27);
         structDcl.addField(fieldDcl);
 
         // 1/位，1 偏移量；数据范围：1~128
-        fieldDcl = buildDataFieldDcl("最低动力蓄电池温度检测点编号", "", BaseDataType.UINT8, (short) 28);
+        fieldDcl = buildDataFieldDcl("最低动力蓄电池温度检测点编号", "BMSCheckPointNoOfMinTemperature", BaseDataType.UINT8, (short) 28);
         structDcl.addField(fieldDcl);
 
-        // <00>：=正常; <01>：=过高; <10>： =过低
-        fieldDcl = buildDataFieldDcl("BMS 单体动力蓄电池电压过高/过低", "", BaseDataType.UINT8, (short) 29);
+        //
+        fieldDcl = buildDataFieldDcl("BMS动力蓄电池状态码", "BMSBatteryStatusCodes", BaseDataType.UINT16, (short) 29);
         structDcl.addField(fieldDcl);
 
-        // <00>：=正常; <01>：=过高; <10>： =过低
-        fieldDcl = buildDataFieldDcl("BMS 整车动力蓄电池荷电状态SOC过高/过低", "", BaseDataType.UINT8, (short) 29);
+        //
+        fieldDcl = buildDataFieldDcl("充电禁止", "chargingDisabled", BaseDataType.UINT16, (short) 29);
         structDcl.addField(fieldDcl);
-
-        // <00>：=正常; <01>：=过高; <10>： =过低
-        fieldDcl = buildDataFieldDcl("BMS 动力蓄电池充电过电流", "", BaseDataType.UINT8, (short) 29);
-        structDcl.addField(fieldDcl);
-
-        // <00>：=正常; <01>：=过高; <10>： =过低
-        fieldDcl = buildDataFieldDcl("BMS 动力蓄电池温度过高", "", BaseDataType.UINT8, (short) 29);
-        structDcl.addField(fieldDcl);
-
-        // <00>：=正常; <01>：=过高; <10>： =过低
-        fieldDcl = buildDataFieldDcl("BMS 动力蓄电池绝缘状态", "", BaseDataType.UINT8, (short) 30);
-        structDcl.addField(fieldDcl);
-
-        // <00>：=正常; <01>：=过高; <10>： =过低
-        fieldDcl = buildDataFieldDcl("BMS 动力蓄电池组输出连接器连接状态", "", BaseDataType.UINT8, (short) 30);
-        structDcl.addField(fieldDcl);
-
-        // <00>：=正常; <01>：=过高; <10>： =过低
-        fieldDcl = buildDataFieldDcl("充电禁止", "", BaseDataType.UINT8, (short) 30);
-        structDcl.addField(fieldDcl);
-
-        // 默认填00
-        fieldDcl = buildDataFieldDcl("预留位", "", BaseDataType.UINT8, (short) 24);
-        structDcl.addField(fieldDcl);
-
 
         structDcl.addField(buildCRCFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
@@ -952,14 +924,14 @@ public class YKCV1ProtocolSupport {
      * <li>按需发送</li>
      * <li>用户通过帐号密码及刷卡在充电桩上操作请求充电</li>
      */
-    private static DefaultStructDeclaration buildPileSwitchOnRequestStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电过程BMS信息[上行]", "CMD:0x31");
+    private static DefaultStructDeclaration buildRequestForPileSwitchOnChargingStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电桩主动申请启动充电[上行]", "CMD:0x31");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportBMSData"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("RequestForPileSwitchOnCharging"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildLENFieldDcl((byte) 51));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x31));
@@ -967,31 +939,30 @@ public class YKCV1ProtocolSupport {
         // 数据块
         DefaultFieldDeclaration fieldDcl;
 
-        structDcl.addField(buildDFDclOfPileNo((short) 0));
+        structDcl.addField(buildDFDclOfPileNo());
         structDcl.addField(buildDFDclOfGunNo((short) 7));
 
         //0x01 表示通过刷卡启动充电
         //0x02 表求通过帐号启动充电（暂不支持）
         //0x03 表示vin码启动充电
-        fieldDcl = buildDataFieldDcl("启动方式", "", BaseDataType.UINT8, (short) 8);
+        fieldDcl = buildDataFieldDcl("启动方式", "launchMethod", BaseDataType.UINT8, (short) 8);
         structDcl.addField(fieldDcl);
 
         // 0x00 不需要 0x01 需要
-        fieldDcl = buildDataFieldDcl("是否需要密码", "", BaseDataType.UINT8, (short) 9);
+        fieldDcl = buildDataFieldDcl("是否需要密码", "needPassword", BaseDataType.UINT8, (short) 9);
         structDcl.addField(fieldDcl);
 
         // 不足 8 位补 0，具体见示例
-        fieldDcl = buildDataFieldDcl("账号或者物理卡号", "", BaseDataType.CHARS8, (short) 10);
+        fieldDcl = buildDataFieldDcl("账号或者物理卡号", "usernameOrCardNo", BaseDataType.CHARS8, (short) 10);
         structDcl.addField(fieldDcl);
 
         // 对用户输入的密码进行16位MD5加密，采用小写上传
-        fieldDcl = buildDataFieldDcl("输入密码", "", BaseDataType.HEX_STR_8, (short) 18);
+        fieldDcl = buildDataFieldDcl("输入密码", "password", BaseDataType.HEX_STR_16, (short) 18);
         structDcl.addField(fieldDcl);
 
         //启动方式为vin码启动充电时上送, 其他方式置零( ASCII码)，VIN码需要反序上送
-        fieldDcl = buildDataFieldDcl("VIN码", "", BaseDataType.CHARS17, (short) 26);
+        fieldDcl = buildDataFieldDcl("VIN码", "VIN", BaseDataType.CHARS17, (short) 34);
         structDcl.addField(fieldDcl);
-
 
         structDcl.addField(buildCRCFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
@@ -1004,14 +975,14 @@ public class YKCV1ProtocolSupport {
      * <li>应答</li>
      * <li>启动充电鉴权结果</li>
      */
-    private static DefaultStructDeclaration buildPileSwitchOnResponseStructDcl() {
+    private static DefaultStructDeclaration buildResponseForSwitchOnChargingStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("运营平台确认启动充电[下行]", "CMD:0x32");
 
-        structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("PileSwitchOnResponse"));
+        structDcl.enableEncode();
+        structDcl.addThingAnnotation(ThingAnnotation.Event("ResponseForSwitchOnCharging"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildLENFieldDcl((byte) 38));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x32));
@@ -1024,15 +995,15 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(buildDFDclOfGunNo((short) 23));
 
         // 显示在屏幕上，不足 8 位补零
-        fieldDcl = buildDataFieldDcl("逻辑卡号", "", BaseDataType.CHARS8, (short) 24);
+        fieldDcl = buildDataFieldDcl("逻辑卡号", "cardDisplayNo", BaseDataType.BCD08, (short) 24);
         structDcl.addField(fieldDcl);
 
         // 保留两位小数
-        fieldDcl = buildDataFieldDcl("账户余额", "", BaseDataType.INT32, (short) 32);
+        fieldDcl = buildDataFieldDcl("账户余额", "accountBalance", BaseDataType.INT32, (short) 32);
         structDcl.addField(fieldDcl);
 
         // 0x00 失败 0x01 成功
-        fieldDcl = buildDataFieldDcl("鉴权成功标志", "", BaseDataType.UINT8, (short) 36);
+        fieldDcl = buildDataFieldDcl("鉴权成功标志", "rstCode", BaseDataType.UINT8, (short) 36);
         structDcl.addField(fieldDcl);
 
         //0x01 账户不存在
@@ -1044,7 +1015,7 @@ public class YKCV1ProtocolSupport {
         //0x07 密码错误
         //0x08 电站电容不足
         //0x09 系统中 vin 码不存在0x0A 该桩存在未结账记录0x0B 该桩不支持刷卡
-        fieldDcl = buildDataFieldDcl("失败原因", "", BaseDataType.UINT8, (short) 37);
+        fieldDcl = buildDataFieldDcl("失败原因", "reasonCode", BaseDataType.BCD01, (short) 37);
         structDcl.addField(fieldDcl);
 
 
@@ -1059,14 +1030,14 @@ public class YKCV1ProtocolSupport {
      * <li>按需发送</li>
      * <li>当用户通过远程启动充电时，发送本命令</li>
      */
-    private static DefaultStructDeclaration buildPileSwitchOnFunInvStructDcl() {
+    private static DefaultStructDeclaration buildSwitchOnChargingFunInvStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("运营平台远程控制启机命令[下行]", "CMD:0x34");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("PileSwitchOnFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOnChargingFunInv"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildLENFieldDcl((byte) 44));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x34));
@@ -1079,17 +1050,16 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(buildDFDclOfGunNo((short) 23));
 
         // 显示在屏幕上，不足 8 位补零
-        fieldDcl = buildDataFieldDcl("逻辑卡号", "", BaseDataType.CHARS8, (short) 24);
+        fieldDcl = buildDataFieldDcl("逻辑卡号", "cardDisplayNo", BaseDataType.BCD08, (short) 24);
         structDcl.addField(fieldDcl);
 
         // 不足补零，桩与平台交互需使用的物理卡号
-        fieldDcl = buildDataFieldDcl("物理卡号", "", BaseDataType.HEX_STR_8, (short) 32);
+        fieldDcl = buildDataFieldDcl("物理卡号", "cardNo", BaseDataType.HEX_STR_8, (short) 32);
         structDcl.addField(fieldDcl);
 
         // 保留两位小数
-        fieldDcl = buildDataFieldDcl("账户余额", "", BaseDataType.INT32, (short) 40);
+        fieldDcl = buildDataFieldDcl("账户余额", "accountBalance", BaseDataType.INT32, (short) 40);
         structDcl.addField(fieldDcl);
-
 
         structDcl.addField(buildCRCFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
@@ -1122,7 +1092,7 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(buildDFDclOfGunNo((short) 23));
 
         // 0x00失败 0x01成功
-        fieldDcl = buildDataFieldDcl("启动结果", "", BaseDataType.UINT8, (short) 24);
+        fieldDcl = buildDataFieldDcl("启动结果", "rstFlag", BaseDataType.UINT8, (short) 24);
         structDcl.addField(fieldDcl);
 
         //0x00 无
@@ -1132,7 +1102,7 @@ public class YKCV1ProtocolSupport {
         //0x04 设备离线
         //0x05 未插枪 桩在收到启充命令后,检测到未插枪则发送
         //0x33 报文回复充电失败。若在 60 秒（以收到 0x34 时间开始计算）内检测到枪重新连接，则补送 0x33 成功报文;超时或者离线等其他异常，桩不启充、不补发 0x33 报文
-        fieldDcl = buildDataFieldDcl("失败原因", "", BaseDataType.UINT8, (short) 25);
+        fieldDcl = buildDataFieldDcl("失败原因", "reasonCode", BaseDataType.UINT8, (short) 25);
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -1146,14 +1116,14 @@ public class YKCV1ProtocolSupport {
      * <li>按需发送</li>
      * <li>当用户通过远程停止充电时，发送本命令，如APP停止充电</li>
      */
-    private static DefaultStructDeclaration buildPileSwitchOffFunInvStructDcl() {
+    private static DefaultStructDeclaration buildSwitchOffChargingStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("运营平台远程停机[下行]", "CMD:0x36");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("PileSwitchOffFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOffChargingFunInv"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildLENFieldDcl((byte) 8));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x34));
@@ -1161,9 +1131,8 @@ public class YKCV1ProtocolSupport {
         // 数据块
         DefaultFieldDeclaration fieldDcl;
 
-        structDcl.addField(buildDFDclOfPileNo((short) 0));
+        structDcl.addField(buildDFDclOfPileNo());
         structDcl.addField(buildDFDclOfGunNo((short) 7));
-
 
         structDcl.addField(buildCRCFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
@@ -1172,7 +1141,7 @@ public class YKCV1ProtocolSupport {
     }
 
     /**
-     * 远程停机命令回复[上行], 0x33
+     * 远程停机命令回复[上行], 0x35
      * <li>应答发送</li>
      * <li>远程停止充电命令回复，平台发送 0x36 后即关闭订单，接收到停机指令后设备务必保证停机。</li>
      */
@@ -1183,7 +1152,7 @@ public class YKCV1ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("PileSwitchOffFunInvReply"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildLENFieldDcl((byte) 10));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x35));
@@ -1195,13 +1164,13 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(buildDFDclOfGunNo((short) 7));
 
         // 0x00失败 0x01成功
-        fieldDcl = buildDataFieldDcl("停止结果", "", BaseDataType.UINT8, (short) 8);
+        fieldDcl = buildDataFieldDcl("停止结果", "stopFlag", BaseDataType.UINT8, (short) 8);
         structDcl.addField(fieldDcl);
 
         //0x00 无
         //0x01 设备编号不匹配0x02 枪未处于充电状态
         //0x03 其他
-        fieldDcl = buildDataFieldDcl("失败原因", "", BaseDataType.UINT8, (short) 25);
+        fieldDcl = buildDataFieldDcl("失败原因", "reasonCode", BaseDataType.UINT8, (short) 9);
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -1224,7 +1193,7 @@ public class YKCV1ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("ReportTransOrder"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildLENFieldDcl((byte) 158));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x35));
@@ -1236,116 +1205,116 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(buildDFDclOfPileNo((short) 16));
         structDcl.addField(buildDFDclOfGunNo((short) 23));
 
-        fieldDcl = buildDataFieldDcl("开始时间", "", BaseDataType.CP56Time2a, (short) 24);
+        fieldDcl = buildDataFieldDcl("开始时间", "beginTime", BaseDataType.CP56Time2a, (short) 24);
         structDcl.addField(fieldDcl);
 
-        fieldDcl = buildDataFieldDcl("结束时间", "", BaseDataType.CP56Time2a, (short) 31);
-        structDcl.addField(fieldDcl);
-
-        //精确到小数点后五位（尖电费+尖服务费，见费率帧）
-        fieldDcl = buildDataFieldDcl("尖单价", "", BaseDataType.UINT32, (short) 38);
-        structDcl.addField(fieldDcl);
-
-        //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("尖电量", "", BaseDataType.UINT32, (short) 42);
-        structDcl.addField(fieldDcl);
-
-        //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("计损尖电量", "", BaseDataType.UINT32, (short) 46);
-        structDcl.addField(fieldDcl);
-
-        //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("尖金额", "", BaseDataType.UINT32, (short) 50);
+        fieldDcl = buildDataFieldDcl("结束时间", "endTime", BaseDataType.CP56Time2a, (short) 31);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后五位（尖电费+尖服务费，见费率帧）
-        fieldDcl = buildDataFieldDcl("峰单价", "", BaseDataType.UINT32, (short) 54);
+        fieldDcl = buildDataFieldDcl("尖单价", "sharpUP", BaseDataType.UINT32, (short) 38);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("峰电量", "", BaseDataType.UINT32, (short) 58);
+        fieldDcl = buildDataFieldDcl("尖电量", "sharpTotalEC", BaseDataType.UINT32, (short) 42);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("计损峰电量", "", BaseDataType.UINT32, (short) 62);
+        fieldDcl = buildDataFieldDcl("计损尖电量", "sharpTotalECWithLose", BaseDataType.UINT32, (short) 46);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("峰金额", "", BaseDataType.UINT32, (short) 66);
+        fieldDcl = buildDataFieldDcl("尖金额", "sharpTotalAmount", BaseDataType.UINT32, (short) 50);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后五位（尖电费+尖服务费，见费率帧）
-        fieldDcl = buildDataFieldDcl("平单价", "", BaseDataType.UINT32, (short) 70);
+        fieldDcl = buildDataFieldDcl("峰单价", "peakUP", BaseDataType.UINT32, (short) 54);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("平电量", "", BaseDataType.UINT32, (short) 74);
+        fieldDcl = buildDataFieldDcl("峰电量", "peakTotalEC", BaseDataType.UINT32, (short) 58);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("计损平电量", "", BaseDataType.UINT32, (short) 78);
+        fieldDcl = buildDataFieldDcl("计损峰电量", "peakTotalECWithLose", BaseDataType.UINT32, (short) 62);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("平金额", "", BaseDataType.UINT32, (short) 82);
+        fieldDcl = buildDataFieldDcl("峰金额", "peakTotalAmount", BaseDataType.UINT32, (short) 66);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后五位（尖电费+尖服务费，见费率帧）
-        fieldDcl = buildDataFieldDcl("谷单价", "", BaseDataType.UINT32, (short) 86);
+        fieldDcl = buildDataFieldDcl("平单价", "shoulderUP", BaseDataType.UINT32, (short) 70);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("谷电量", "", BaseDataType.UINT32, (short) 90);
+        fieldDcl = buildDataFieldDcl("平电量", "shoulderTotalEC", BaseDataType.UINT32, (short) 74);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("计损谷电量", "", BaseDataType.UINT32, (short) 94);
+        fieldDcl = buildDataFieldDcl("计损平电量", "shoulderTotalECWithLose", BaseDataType.UINT32, (short) 78);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("谷金额", "", BaseDataType.UINT32, (short) 98);
+        fieldDcl = buildDataFieldDcl("平金额", "shoulderTotalAmount", BaseDataType.UINT32, (short) 82);
+        structDcl.addField(fieldDcl);
+
+        //精确到小数点后五位（尖电费+尖服务费，见费率帧）
+        fieldDcl = buildDataFieldDcl("谷单价", "offPeakUP", BaseDataType.UINT32, (short) 86);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("电表总起值", "", BaseDataType.UINT40, (short) 102);
+        fieldDcl = buildDataFieldDcl("谷电量", "offPeakTotalEC", BaseDataType.UINT32, (short) 90);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("电表总止值", "", BaseDataType.UINT40, (short) 107);
+        fieldDcl = buildDataFieldDcl("计损谷电量", "offPeakTotalECWithLose", BaseDataType.UINT32, (short) 94);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("总电量", "", BaseDataType.UINT32, (short) 112);
+        fieldDcl = buildDataFieldDcl("谷金额", "offPeakTotalAmount", BaseDataType.UINT32, (short) 98);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("计损总电量", "", BaseDataType.UINT32, (short) 116);
+        fieldDcl = buildDataFieldDcl("电表总起值", "beginMeterEC", BaseDataType.UINT40, (short) 102);
         structDcl.addField(fieldDcl);
 
         //精确到小数点后四位
-        fieldDcl = buildDataFieldDcl("消费金额", "", BaseDataType.UINT32, (short) 120);
+        fieldDcl = buildDataFieldDcl("电表总止值", "endMeterEC", BaseDataType.UINT40, (short) 107);
+        structDcl.addField(fieldDcl);
+
+        //精确到小数点后四位
+        fieldDcl = buildDataFieldDcl("总电量", "totalEC", BaseDataType.UINT32, (short) 112);
+        structDcl.addField(fieldDcl);
+
+        //精确到小数点后四位
+        fieldDcl = buildDataFieldDcl("计损总电量", "totalMeterECWithLose", BaseDataType.UINT32, (short) 116);
+        structDcl.addField(fieldDcl);
+
+        //精确到小数点后四位
+        fieldDcl = buildDataFieldDcl("消费金额", "totalFeeAmount", BaseDataType.UINT32, (short) 120);
         structDcl.addField(fieldDcl);
 
         //VIN 码，此处 VIN 码和充电时 VIN码不同，正序直接上传，无需补 0和反序
-        fieldDcl = buildDataFieldDcl("电动汽车唯一标识", "", BaseDataType.CHARS17, (short) 124);
+        fieldDcl = buildDataFieldDcl("电动汽车唯一标识", "VIN", BaseDataType.CHARS17, (short) 124);
         structDcl.addField(fieldDcl);
 
         //0x01：app 启动0x02：卡启动
         //0x04：离线卡启动
         //0x05: vin 码启动充电
-        fieldDcl = buildDataFieldDcl("交易标识", "", BaseDataType.UINT8, (short) 141);
+        fieldDcl = buildDataFieldDcl("交易标识", "transFlag", BaseDataType.UINT8, (short) 141);
         structDcl.addField(fieldDcl);
 
         //
-        fieldDcl = buildDataFieldDcl("交易时间", "", BaseDataType.CP56Time2a, (short) 142);
+        fieldDcl = buildDataFieldDcl("交易时间", "transDateTime", BaseDataType.CP56Time2a, (short) 142);
         structDcl.addField(fieldDcl);
 
         //
-        fieldDcl = buildDataFieldDcl("停止原因", "", BaseDataType.UINT8, (short) 149);
+        fieldDcl = buildDataFieldDcl("停止原因", "terminateCode", BaseDataType.UINT8, (short) 149);
         structDcl.addField(fieldDcl);
 
         //
-        fieldDcl = buildDataFieldDcl("物理卡号", "", BaseDataType.HEX_STR_8, (short) 150);
+        fieldDcl = buildDataFieldDcl("物理卡号", "cardNo", BaseDataType.BCD08, (short) 150);
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -1368,7 +1337,7 @@ public class YKCV1ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("ReportTransOrderAck"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildLENFieldDcl((byte) 17));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x40));
@@ -1393,14 +1362,14 @@ public class YKCV1ProtocolSupport {
      * <li>按需发送</li>
      * <li>平台在用户完成充值后会将用户更新的余额下发到充电桩，桩接收到此数据帧需要对当前充电用户的信息进行校验并更新余额信息</li>
      */
-    private static DefaultStructDeclaration buildUpdateAccountBalanceFunInvStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("交易记录确认[下行]", "CMD:0x42");
+    private static DefaultStructDeclaration buildWriteCardBalanceFunInvStructDcl() {
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("远程账户余额更新[下行]", "CMD:0x42");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("UpdateAccountBalanceFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("WriteCardBalanceFunInv"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildLENFieldDcl((byte) 20));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x42));
@@ -1414,11 +1383,11 @@ public class YKCV1ProtocolSupport {
         // 不足 8 位补零
         // 如果不为零，需要校验本次充电是否为此卡充电
         // 如果为零，则不校验，直接更新桩当前充电用户余额
-        fieldDcl = buildDataFieldDcl("物理卡号", "", BaseDataType.HEX_STR_8, (short) 8);
+        fieldDcl = buildDataFieldDcl("物理卡号", "cardNo", BaseDataType.HEX_STR_8, (short) 8);
         structDcl.addField(fieldDcl);
 
         // 保留两位小数
-        fieldDcl = buildDataFieldDcl("修改后账户金额", "", BaseDataType.UINT32, (short) 16);
+        fieldDcl = buildDataFieldDcl("修改后账户金额", "newAccountAmount", BaseDataType.INT32, (short) 16);
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -1452,11 +1421,11 @@ public class YKCV1ProtocolSupport {
         // 不足 8 位补零
         // 如果不为零，需要校验本次充电是否为此卡充电
         // 如果为零，则不校验，直接更新桩当前充电用户余额
-        fieldDcl = buildDataFieldDcl("物理卡号", "", BaseDataType.HEX_STR_8, (short) 7);
+        fieldDcl = buildDataFieldDcl("物理卡号", "cardNo", BaseDataType.HEX_STR_8, (short) 7);
         structDcl.addField(fieldDcl);
 
         //0x00-修改成功 0x01-设备编号错误 0x02-卡号错误
-        fieldDcl = buildDataFieldDcl("修改结果", "", BaseDataType.UINT8, (short) 15);
+        fieldDcl = buildDataFieldDcl("修改结果", "rstCode", BaseDataType.UINT8, (short) 15);
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -1472,11 +1441,11 @@ public class YKCV1ProtocolSupport {
      * 充电桩接收到后储存离线卡信息到桩本地（如果已存在离线卡则用最新的数据覆盖本地数据，不存在则插入），
      * 若用户刷卡充电时桩处理离线模式，则刷鉴权走桩本地进行判断。</li>
      */
-    private static DefaultStructDeclaration buildWriteICDataFunInvStructDcl() {
+    private static DefaultStructDeclaration buildAddOrUpdateCardFunInvStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("下发离线卡数据指令[下行]", "CMD:0x44");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("WriteICDataFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("AddOrUpdateCardFunInv"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -1488,13 +1457,15 @@ public class YKCV1ProtocolSupport {
 
         structDcl.addField(buildDFDclOfPileNo());
 
+        //TODO 补全
+
         //
         DefaultFieldDeclaration countFieldDcl;
-        countFieldDcl = buildDataFieldDcl("下发卡个数", "", BaseDataType.UINT8, (short) 7);
+        countFieldDcl = buildDataFieldDcl("下发卡个数", "itemCount", BaseDataType.UINT8, (short) 7);
         structDcl.addField(countFieldDcl);
 
         DefaultNRepeatFieldGroupDeclaration groupDcl;
-        groupDcl = new DefaultNRepeatFieldGroupDeclaration("端口X的状况", "portXState", (short)5, (short)8);
+        groupDcl = new DefaultNRepeatFieldGroupDeclaration("条目", "items", (short)5, (short)8);
         groupDcl.setDynamicNRepeat(countFieldDcl.asDynamicNRepeat());
         groupDcl.setAnchorReference(countFieldDcl.asAnchor(), (short) 0);
         groupDcl.setInstancePostProcessor((idx, fieldInstances) -> {
@@ -1546,6 +1517,8 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x43));
+
+        //TODO 补全
 
         // 数据块
         DefaultFieldDeclaration fieldDcl;
@@ -1698,11 +1671,11 @@ public class YKCV1ProtocolSupport {
      * <li>按需下发</li>
      * <li>远程设置充电桩是否停用；设置充电桩允许输出功率，以实现电网功率的调节</li>
      */
-    private static DefaultStructDeclaration buildWritePileSettingsFunInvStructDcl() {
+    private static DefaultStructDeclaration buildWritePileSettingFunInvStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("写充电桩工作参数设置[下行]", "CMD:0x52");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("WritePileSettingsFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("WritePileSettingFunInv"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -1717,11 +1690,11 @@ public class YKCV1ProtocolSupport {
         DefaultFieldDeclaration fieldDcl;
 
         // 0x00 表示允许正常工作 0x01 表示停止使用，锁定充电桩
-        fieldDcl = buildDataFieldDcl("是否允许工作", "", BaseDataType.HEX_STR_8, (short) 7);
+        fieldDcl = buildDataFieldDcl("是否允许工作", "enable", BaseDataType.UINT8, (short) 7);
         structDcl.addField(fieldDcl);
 
         // 1BIN 表示 1%，最大 100%，最小30%
-        fieldDcl = buildDataFieldDcl("充电桩最大允许输出功率", "", BaseDataType.HEX_STR_8, (short) 8);
+        fieldDcl = buildDataFieldDcl("充电桩最大允许输出功率", "maxOutputRate", BaseDataType.UINT8, (short) 8);
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -1735,14 +1708,14 @@ public class YKCV1ProtocolSupport {
      * <li>按需发送</li>
      * <li>充电桩接收到运营平台充电桩工作参数设置时，响应本数据</li>
      */
-    private static DefaultStructDeclaration buildWritePileSettingsFunInvReplyStructDcl() {
+    private static DefaultStructDeclaration buildWritePileSettingFunInvReplyStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("写充电桩工作参数设置响应[上行]", "CMD:0x51");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("WritePileSettingsFunInvReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("WritePileSettingFunInvReply"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildLENFieldDcl((byte) 8));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x51));
@@ -1754,7 +1727,7 @@ public class YKCV1ProtocolSupport {
         DefaultFieldDeclaration fieldDcl;
 
         // 0x00 失败 0x01 成功
-        fieldDcl = buildDataFieldDcl("设置结果", "", BaseDataType.HEX_STR_8, (short) 7);
+        fieldDcl = buildDataFieldDcl("设置结果", "rstFlag", BaseDataType.HEX_STR_8, (short) 7);
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -1768,14 +1741,14 @@ public class YKCV1ProtocolSupport {
      * <li>周期发送（1 天）</li>
      * <li>运营平台同步充电桩时钟，以保证充电桩与运营平台的时钟一致</li>
      */
-    private static DefaultStructDeclaration buildWriteDateTimeFunInvStructDcl() {
+    private static DefaultStructDeclaration buildWriteTimestampFunInvStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("写对时设置[下行]", "CMD:0x56");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("WriteDateTimeFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("WriteTimestampFunInv"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildLENFieldDcl((byte) 14));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x56));
@@ -1787,7 +1760,7 @@ public class YKCV1ProtocolSupport {
         DefaultFieldDeclaration fieldDcl;
 
         // 0x00 表示允许正常工作 0x01 表示停止使用，锁定充电桩
-        fieldDcl = buildDataFieldDcl("当前时间", "", BaseDataType.CP56Time2a, (short) 7);
+        fieldDcl = buildDataFieldDcl("当前时间", "timestamp", BaseDataType.CP56Time2a, (short) 7);
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -1801,14 +1774,14 @@ public class YKCV1ProtocolSupport {
      * <li>应答</li>
      * <li>充电桩接收到运营平台同步充电桩时钟时应答</li>
      */
-    private static DefaultStructDeclaration buildWriteDateTimeFunInvReplyStructDcl() {
+    private static DefaultStructDeclaration buildWriteTimestampFunInvReplyStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("写对时设置响应[上行]", "CMD:0x55");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("WriteDateTimeFunInvReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("WriteTimestampFunInvReply"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildLENFieldDcl((byte) 14));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x55));
@@ -1820,7 +1793,7 @@ public class YKCV1ProtocolSupport {
         DefaultFieldDeclaration fieldDcl;
 
         // 0x00 表示允许正常工作 0x01 表示停止使用，锁定充电桩
-        fieldDcl = buildDataFieldDcl("当前时间", "", BaseDataType.CP56Time2a, (short) 7);
+        fieldDcl = buildDataFieldDcl("当前时间", "timestamp", BaseDataType.CP56Time2a, (short) 7);
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -1835,16 +1808,16 @@ public class YKCV1ProtocolSupport {
      * <li>用户充电费用计算，每半小时为一个费率段，共48段，每段对应尖峰平谷其中一个费率充电时桩屏幕按此费率分别显示已充电费和服务费</li>
      */
     private static DefaultStructDeclaration buildWriteBillingTermsStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("写对时设置[下行]", "CMD:0x56");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("写计费模型设置[下行]", "CMD:0x58");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.Event("WriteBillingTerms"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildLENFieldDcl((byte) 90));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
-        structDcl.addField(buildMsgTypeFieldDcl((byte) 0x56));
+        structDcl.addField(buildMsgTypeFieldDcl((byte) 0x58));
 
         // 数据块
 
@@ -1852,43 +1825,47 @@ public class YKCV1ProtocolSupport {
 
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = buildDataFieldDcl("计费模型编号", "termsNo", BaseDataType.UINT16, (short)(DATA_BEGIN_IDX + 7));
+        fieldDcl = buildDataFieldDcl("计费模型编号", "termsNo", BaseDataType.BCD02, (short) (7));
         structDcl.addField(fieldDcl);
 
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("尖费电费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 9));
+        fieldDcl = buildDataFieldDcl("尖费电费费率", "sharpEUP", BaseDataType.UINT32, (short) (9));
         structDcl.addField(fieldDcl);
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("尖服务费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 13));
+        fieldDcl = buildDataFieldDcl("尖服务费费率", "sharpSUP", BaseDataType.UINT32, (short) (13));
         structDcl.addField(fieldDcl);
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("峰电费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 17));
+        fieldDcl = buildDataFieldDcl("峰电费费率", "peakEUP", BaseDataType.UINT32, (short) (17));
         structDcl.addField(fieldDcl);
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("峰服务费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 21));
+        fieldDcl = buildDataFieldDcl("峰服务费费率", "peakSUP", BaseDataType.UINT32, (short) (21));
         structDcl.addField(fieldDcl);
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("平电费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 25));
+        fieldDcl = buildDataFieldDcl("平电费费率", "shoulderEUP", BaseDataType.UINT32, (short) (25));
         structDcl.addField(fieldDcl);
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("平服务费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 29));
+        fieldDcl = buildDataFieldDcl("平服务费费率", "shoulderSUP", BaseDataType.UINT32, (short) (29));
         structDcl.addField(fieldDcl);
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("谷电费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 33));
+        fieldDcl = buildDataFieldDcl("谷电费费率", "offPeakEUP", BaseDataType.UINT32, (short) (33));
         structDcl.addField(fieldDcl);
         // 精确到五位小数
-        fieldDcl = buildDataFieldDcl("谷服务费费率", "checkRstFlag", BaseDataType.UINT32, (short)(DATA_BEGIN_IDX + 37));
+        fieldDcl = buildDataFieldDcl("谷服务费费率", "offPeakSUP", BaseDataType.UINT32, (short) (37));
         structDcl.addField(fieldDcl);
 
         //
-        fieldDcl = buildDataFieldDcl("计损比例", "checkRstFlag", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 41));
+        fieldDcl = buildDataFieldDcl("计损比例", "withLostRate", BaseDataType.UINT8, (short) (41));
         structDcl.addField(fieldDcl);
 
-        for (int i = 0; i < 24; i++) {
+        for (int i = 0, j = 0; i < 24; i++, j += 2) {
             //0x00：尖费率 0x01：峰费率 0x02：平费率 0x03：谷费率
-            fieldDcl = buildDataFieldDcl(String.format("%02d:00～%02d:30时段费率号", i, i), "checkRstFlag", BaseDataType.UINT8, (short)(DATA_BEGIN_IDX + 42 + i));
+            fieldDcl = buildDataFieldDcl(String.format("%02d:00～%02d:30时段费率号", i, i),
+                                        String.format("rateNoOf%02d00%02d30", i, i),
+                                        BaseDataType.UINT8, (short) (42 + j));
             structDcl.addField(fieldDcl);
-            fieldDcl = buildDataFieldDcl(String.format("%02d:30～%02d:00时段费率号", i, i + 1), "checkRstFlag", BaseDataType.UINT8, (short) (DATA_BEGIN_IDX + 43 + i));
+            fieldDcl = buildDataFieldDcl(String.format("%02d:30～%02d:00时段费率号", i, i + 1),
+                                        String.format("rateNoOf%02d30%02d00", i, i + 1),
+                                        BaseDataType.UINT8, (short) (43 + j));
             structDcl.addField(fieldDcl);
         }
 
@@ -1911,7 +1888,7 @@ public class YKCV1ProtocolSupport {
         structDcl.addThingAnnotation(ThingAnnotation.Event("WriteBillingTermsReply"));
 
         structDcl.addField(buildSOP());
-        structDcl.addField(buildLENFieldDcl((byte) 7));
+        structDcl.addField(buildLENFieldDcl((byte) 8));
         structDcl.addField(buildMsgNoFieldDcl());
         structDcl.addField(buildEncyFlagFieldDcl());
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x55));
@@ -1923,7 +1900,7 @@ public class YKCV1ProtocolSupport {
         DefaultFieldDeclaration fieldDcl;
 
         // 0x00 失败 0x01 成功
-        fieldDcl = buildDataFieldDcl("设置结果", "", BaseDataType.UINT8, (short) 7);
+        fieldDcl = buildDataFieldDcl("设置结果", "rstFlag", BaseDataType.UINT8, (short) 7);
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());

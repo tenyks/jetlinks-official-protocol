@@ -560,6 +560,48 @@ public enum BaseDataType {
         @Override
         public short size() { return 32; }
     },
+    BCD07 {
+        //TODO
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size()];
+            buf.readBytes(bytes);
+            return new String(bytes, StandardCharsets.UTF_8);
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes = ((String) value).getBytes();
+            buf.writeBytes(bytes, 0, size());
+            return (short) bytes.length;
+        }
+
+        @Override
+        public short size() { return 32; }
+    },
+    BCD08 {
+        //TODO
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size()];
+            buf.readBytes(bytes);
+            return new String(bytes, StandardCharsets.UTF_8);
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes = ((String) value).getBytes();
+            buf.writeBytes(bytes, 0, size());
+            return (short) bytes.length;
+        }
+
+        @Override
+        public short size() { return 32; }
+    },
     BCD10 {
         //TODO
         @Override
@@ -581,7 +623,28 @@ public enum BaseDataType {
         @Override
         public short size() { return 32; }
     },
-    BCD2 {
+    BCD02 {
+        //TODO
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size()];
+            buf.readBytes(bytes);
+            return new String(bytes, StandardCharsets.UTF_8);
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes = ((String) value).getBytes();
+            buf.writeBytes(bytes, 0, size());
+            return (short) bytes.length;
+        }
+
+        @Override
+        public short size() { return 32; }
+    },
+    BCD01 {
         //TODO
         @Override
         public Object read(ByteBuf buf, short size) {
@@ -686,6 +749,40 @@ public enum BaseDataType {
         public short size() { return 4; }
     },
     HEX_STR_8 {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size];
+            buf.readBytes(bytes);
+            return Hex.encodeHexString(bytes);
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes;
+            try {
+                bytes = Hex.decodeHex((String) value);
+            } catch (DecoderException e) {
+                throw new RuntimeException("解码HEX字符串失败：", e);
+            }
+            if (bytes.length > 4) {
+                buf.writeBytes(bytes, 0, 8);
+            } else {
+                buf.writeBytes(bytes);
+                for (int i = bytes.length; i < 4; i++) {
+                    buf.writeByte((byte) 0);
+                }
+            }
+
+            return (short)(4);
+        }
+
+        @Override
+        public short size() { return 4; }
+    },
+    HEX_STR_16 {
+        //TODO
         @Override
         public Object read(ByteBuf buf, short size) {
             byte[] bytes = new byte[size];
