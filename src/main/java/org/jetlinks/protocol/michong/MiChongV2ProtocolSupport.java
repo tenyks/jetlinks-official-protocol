@@ -176,7 +176,7 @@ public class MiChongV2ProtocolSupport {
         return suit;
     }
 
-    public static FunctionHandler buildFunctionHandler() {
+    public static FunctionHandler           buildFunctionHandler() {
         return new SimpleFunctionHandler()
                 .addCallable("PingEvent", MiChongV2ProtocolSupport::buildPongReply);
     }
@@ -224,6 +224,8 @@ public class MiChongV2ProtocolSupport {
 
         return new SimpleStructAndMessageMapper(structAndThingMapping, fieldAndPropertyMapping, fieldValueAndPropertyMapping);
     }
+
+
 
     /**
      * 数据上报消息：上报端口实时状态

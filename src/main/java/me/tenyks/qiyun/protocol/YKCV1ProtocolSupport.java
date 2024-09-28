@@ -4,8 +4,25 @@ import io.netty.buffer.ByteBuf;
 import me.tenyks.core.crc.CRCCalculator;
 import me.tenyks.core.crc.XORCRCCalculator;
 import org.apache.commons.codec.binary.Hex;
+import org.jetlinks.core.device.AuthenticationResponse;
+import org.jetlinks.core.device.TcpAuthenticationRequest;
+import org.jetlinks.core.message.AcknowledgeDeviceMessage;
+import org.jetlinks.core.message.event.EventMessage;
+import org.jetlinks.core.message.function.FunctionInvokeMessage;
+import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
+import org.jetlinks.core.message.property.ReportPropertyMessage;
+import org.jetlinks.core.message.request.DefaultDeviceRequestMessage;
+import org.jetlinks.core.message.request.DefaultDeviceRequestMessageReply;
+import org.jetlinks.core.message.request.DeviceRequestMessage;
+import org.jetlinks.protocol.common.FunctionHandler;
+import org.jetlinks.protocol.common.SimpleFunctionHandler;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
+import org.jetlinks.protocol.michong.MiChongV2ProtocolSupport;
+import org.jetlinks.protocol.official.PluginConfig;
 import org.jetlinks.protocol.official.binary2.*;
+import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
+import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
+import org.jetlinks.protocol.official.tcp.StrategyTcpDeviceMessageCodec;
 
 /**
  * 云快充新能源汽车充电桩协议
@@ -21,17 +38,194 @@ public class YKCV1ProtocolSupport {
 
     private static final short      DATA_BEGIN_IDX = 6;
 
-    private static final int        MAX_TIME = 30000;
-
-    private static final short      MAX_MONEY = 30000;
-
-    private static final String     CODE_OF_CMD_FIELD = "CMD";
-
-    private static final String     CODE_OF_MSG_TYPE_FIELD = "MSG_ID";
+    private static final String     CODE_OF_MSG_TYPE_FIELD = "MSG_TYPE";
 
     private static final String     CODE_OF_MSG_NO_FIELD = "MSG_NO";
 
     private static final String     CODE_OF_ENCY_FLAG_FIELD = "ENCY_NO";
+
+    public static StrategyTcpDeviceMessageCodec buildDeviceMessageCodec(PluginConfig config) {
+        BinaryMessageCodec bmCodec = buildBinaryMessageCodec(config);
+
+        return new StrategyTcpDeviceMessageCodec(bmCodec, buildIntercommunicateStrategy(config));
+    }
+
+    public static BinaryMessageCodec buildBinaryMessageCodec(PluginConfig config) {
+        StructSuit structSuit = buildStructSuitV2();
+        StructAndMessageMapper mapper = buildMapper(structSuit);
+        return new DeclarationBasedBinaryMessageCodec(structSuit, mapper);
+    }
+
+    public static StructSuit buildStructSuitV2() {
+        StructSuit suit = new StructSuit(
+                "云快充新能源汽车充电桩协议",
+                "V1.6",
+                "document-mqtt-MiChong.md",
+                new YKCV1FeatureCodeExtractor()
+        );
+
+        suit.addStructDeclaration(buildAuthRequestStructDcl());
+        suit.addStructDeclaration(buildAuthResponseStructDcl());
+
+        suit.addStructDeclaration(buildHeartBeatPingStructDcl());
+        suit.addStructDeclaration(buildHeartBeatPongStructDcl());
+
+        suit.addStructDeclaration(buildCheckFeeTermsRequestStructDcl());
+        suit.addStructDeclaration(buildCheckFeeTermsResponseStructDcl());
+
+        suit.addStructDeclaration(buildBillingTermsRequestStructDcl());
+        suit.addStructDeclaration(buildBillingTermsResponseStructDcl());
+
+        suit.addStructDeclaration(buildCallOfRealTimeMonitorDataStructDcl());
+        suit.addStructDeclaration(buildReportRealTimeMonitorDataStructDcl());
+
+        suit.addStructDeclaration(buildReportChargingHandshakeDataStructDcl());
+        suit.addStructDeclaration(buildReportChargingSettingWithBMSStructDcl());
+        suit.addStructDeclaration(buildReportChargingFinishEventStructDcl());
+        suit.addStructDeclaration(buildReportErrorEventStructDcl());
+        suit.addStructDeclaration(buildReportChargerStopEventStructDcl());
+        suit.addStructDeclaration(buildReportBMSRequirementAndChargerOutputDataStructDcl());
+        suit.addStructDeclaration(buildReportBMSChargingDataStructDcl());
+
+        suit.addStructDeclaration(buildRequestForPileSwitchOnChargingStructDcl());
+        suit.addStructDeclaration(buildResponseForSwitchOnChargingStructDcl());
+
+        suit.addStructDeclaration(buildSwitchOnChargingFunInvStructDcl());
+        suit.addStructDeclaration(buildSwitchOnChargingFunInvReplyStructDcl());
+
+        suit.addStructDeclaration(buildSwitchOffChargingStructDcl());
+        suit.addStructDeclaration(buildPileSwitchOffFunInvReplyStructDcl());
+
+        suit.addStructDeclaration(buildWriteCardBalanceFunInvStructDcl());
+        suit.addStructDeclaration(buildUpdateAccountBalanceFunInvReplyStructDcl());
+
+        suit.addStructDeclaration(buildAddOrUpdateCardFunInvStructDcl());
+        suit.addStructDeclaration(buildWriteICDataFunInvReplyStructDcl());
+
+        suit.addStructDeclaration(buildCleanICDataFunInvStructDcl());
+        suit.addStructDeclaration(buildClearICDataFunInvReplyStructDcl());
+
+        suit.addStructDeclaration(buildWritePileSettingFunInvStructDcl());
+        suit.addStructDeclaration(buildWritePileSettingFunInvReplyStructDcl());
+
+        suit.addStructDeclaration(buildWriteTimestampFunInvStructDcl());
+        suit.addStructDeclaration(buildWriteTimestampFunInvReplyStructDcl());
+
+        suit.addStructDeclaration(buildWriteBillingTermsStructDcl());
+        suit.addStructDeclaration(buildWriteBillingTermsReplyStructDcl());
+
+        suit.addStructDeclaration(buildReportParkLockDataStructDcl());
+
+        suit.addStructDeclaration(buildParkLockControlFunInvStructDcl());
+        suit.addStructDeclaration(buildParkLockControlFunInvReplyStructDcl());
+
+        suit.addStructDeclaration(buildRebootFunInvStructDcl());
+        suit.addStructDeclaration(buildRebootFunInvReplyStructDcl());
+
+        suit.addStructDeclaration(buildCallOfOTAFunInvStructDcl());
+        suit.addStructDeclaration(buildCallOfOTAFunInvReplyStructDcl());
+
+        suit.setSigner(new YKCV1EncodeSigner());
+
+        return suit;
+    }
+
+    public static IntercommunicateStrategy buildIntercommunicateStrategy(PluginConfig config) {
+        return new AbstractIntercommunicateStrategy() {};
+    }
+
+    public static FunctionHandler buildFunctionHandler() {
+        return new SimpleFunctionHandler()
+                .addCallable("PingEvent", MiChongV2ProtocolSupport::buildPongReply);
+    }
+
+    public static StructAndMessageMapper    buildMapper(StructSuit structSuit) {
+        DefaultStructAndThingMapping structAndThingMapping = new DefaultStructAndThingMapping();
+
+        // 充电桩登陆认证相关
+        structAndThingMapping.addMappingAuthReq(structSuit.getStructDeclaration("充电桩登录认证消息[上行]"), TcpAuthenticationRequest.class);
+        structAndThingMapping.addMappingAuthResp(structSuit.getStructDeclaration("设备故障或恢复事件"), AuthenticationResponse.class);
+
+        // 心跳包
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩心跳包[上行]"), ReportPropertyMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("心跳包应答[下行]"), AcknowledgeDeviceMessage.class);
+
+        // 计费验证
+        structAndThingMapping.addMappingDevReq(structSuit.getStructDeclaration("计费模型验证请求[上行]"), DefaultDeviceRequestMessage.class);
+        structAndThingMapping.addMappingDevReqReply(structSuit.getStructDeclaration("计费模型验证请求应答[下行]"), DefaultDeviceRequestMessageReply.class);
+        structAndThingMapping.addMappingDevReq(structSuit.getStructDeclaration("充电桩计费模型请求[上行]"), DefaultDeviceRequestMessage.class);
+        structAndThingMapping.addMappingDevReqReply(structSuit.getStructDeclaration("计费模型请求应答[下行]"), DefaultDeviceRequestMessageReply.class);
+
+        // 数据上报相关
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("读取实时监测数据[下行]"), FunctionInvokeMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("上传实时监测数据[上行]"), ReportPropertyMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电握手[上行]"), ReportPropertyMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("参数配置[上行]"), ReportPropertyMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电过程BMS需求与充电机输出[上行]"), ReportPropertyMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电过程BMS信息[上行]"), ReportPropertyMessage.class);
+
+        // 充电事件
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电结束[上行]"), EventMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("错误报文[上行]"), EventMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电阶段BMS中止[上行]"), EventMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电阶段充电机中止[上行]"), EventMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("上报交易记录[上行]"), EventMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("交易记录确认[下行]"), AcknowledgeDeviceMessage.class);
+
+        // 充电发起
+        structAndThingMapping.addMappingDevReq(structSuit.getStructDeclaration("充电桩主动申请启动充电[上行]"), DefaultDeviceRequestMessage.class);
+        structAndThingMapping.addMappingDevReqReply(structSuit.getStructDeclaration("运营平台确认启动充电[下行]"), DefaultDeviceRequestMessageReply.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("运营平台远程控制启机命令[下行]"), FunctionInvokeMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("远程启动充电命令回复[上行]"), FunctionInvokeMessageReply.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("运营平台远程停机[下行]"), FunctionInvokeMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("远程停机命令回复[上行]"), FunctionInvokeMessageReply.class);
+
+        // 运维相关
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("写充电桩工作参数设置[下行]"), FunctionInvokeMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("写充电桩工作参数设置响应[上行]"), FunctionInvokeMessageReply.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("写对时设置[下行]"), FunctionInvokeMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("写对时设置响应[上行]"), FunctionInvokeMessageReply.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("写计费模型设置[下行]"), FunctionInvokeMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("写计费模型设置响应[上行]"), FunctionInvokeMessageReply.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("远程重启命令[下行]"), FunctionInvokeMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("远程重启应答[上行]"), FunctionInvokeMessageReply.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("远程更新命令[下行]"), FunctionInvokeMessage.class);
+
+
+        MessageIdMappingAnnotation msgIdMappingAnn = new AbstractMessageIdMappingAnnotation.OfFunction(
+                structInst -> structInst.getFieldStringValueWithDef(CODE_OF_MSG_TYPE_FIELD, "NO_CMD_FIELD")
+        );
+
+        //下行指令：Encode
+        DefaultStructDeclaration targetStructDcl = (DefaultStructDeclaration)structSuit.getStructDeclaration("开启端口供电指令");
+        targetStructDcl.addMetaAnnotation(msgIdMappingAnn);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "SwitchOnPortPower", targetStructDcl);
+
+        targetStructDcl = (DefaultStructDeclaration) structSuit.getStructDeclaration("关停端口供电指令");
+        targetStructDcl.addMetaAnnotation(msgIdMappingAnn);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "SwitchOffPortPower", targetStructDcl);
+
+        targetStructDcl = (DefaultStructDeclaration) structSuit.getStructDeclaration("读端口状况指令");
+        targetStructDcl.addMetaAnnotation(msgIdMappingAnn);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "ReadPortState", targetStructDcl);
+
+        targetStructDcl = (DefaultStructDeclaration) structSuit.getStructDeclaration("锁定或解锁指定端口指令");
+        targetStructDcl.addMetaAnnotation(msgIdMappingAnn);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "LockOrUnlockPort", targetStructDcl);
+
+        //指令响应：Decode
+        for (StructDeclaration structDcl : structSuit.structDeclarations()) {
+            if (!structDcl.getName().endsWith("指令响应")) continue;
+
+            ((DefaultStructDeclaration) structDcl).addMetaAnnotation(msgIdMappingAnn);
+            structAndThingMapping.addMapping(structDcl, FunctionInvokeMessageReply.class);
+        }
+
+        DefaultFieldAndPropertyMapping fieldAndPropertyMapping = new DefaultFieldAndPropertyMapping();
+        DefaultFieldValueAndPropertyMapping fieldValueAndPropertyMapping = new DefaultFieldValueAndPropertyMapping();
+
+        return new SimpleStructAndMessageMapper(structAndThingMapping, fieldAndPropertyMapping, fieldValueAndPropertyMapping);
+    }
 
     /**
      * 充电桩登录认证消息[上行], 0x01
@@ -239,7 +433,7 @@ public class YKCV1ProtocolSupport {
      * <li>主动请求，直到成功</li>
      * <li>充电桩计费模型与平台不一致时，都需要请求计费模型，如计费模型请求不成功，则禁止充电</li>
      */
-    private static DefaultStructDeclaration buildFeeTermsRequestStructDcl() {
+    private static DefaultStructDeclaration buildBillingTermsRequestStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电桩计费模型请求[上行]", "CMD:0x09");
 
         structDcl.enableDecode();
@@ -1072,11 +1266,11 @@ public class YKCV1ProtocolSupport {
      * <li>应答</li>
      * <li>启动充电鉴权结果</li>
      */
-    private static DefaultStructDeclaration buildPileSwitchOnFunInvReplyStructDcl() {
+    private static DefaultStructDeclaration buildSwitchOnChargingFunInvReplyStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("远程启动充电命令回复[上行]", "CMD:0x33");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("PileSwitchOnFunInvReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOnChargingFunInvReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
