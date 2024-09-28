@@ -368,7 +368,6 @@ public class XueBaoWaWaProtocolSupport {
         return structDcl;
     }
 
-
     /**
      * 读取出奖结果和状态命令结构：服务器 -> 机器
      */

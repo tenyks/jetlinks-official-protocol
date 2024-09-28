@@ -7,6 +7,7 @@ import io.netty.handler.codec.base64.Base64Encoder;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.jetlinks.protocol.official.common.BCD8421BinaryCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -563,133 +564,152 @@ public enum BaseDataType {
         public short size() { return 32; }
     },
     /**
-     * 8421BCD码，长度16字节或32个数字字符（超过将截断），输入输出类型：String（合法字符'0'~'9','-','+')
+     * 8421BCD码，长度1字节或2个数字字符（超过将截断），输入输出类型：String（合法字符'0'~'9','-','+')
      */
-    BCD16 {
+    BCD01 {
         @Override
         public Object read(ByteBuf buf, short size) {
             byte[] bytes = new byte[size()];
             buf.readBytes(bytes);
-            return new String(bytes, StandardCharsets.UTF_8);
+            return BCD8421BinaryCodec.decode(bytes);
         }
 
         @Override
         public short write(ByteBuf buf, Object value) {
             if (value == null) return 0;
 
-            byte[] bytes = ((String) value).getBytes();
+            byte[] bytes = BCD8421BinaryCodec.encodeWithPadding((String) value, size());
             buf.writeBytes(bytes, 0, size());
-            return (short) bytes.length;
+
+            return size();
+        }
+
+        @Override
+        public short size() { return 1; }
+    },
+    /**
+     * 8421BCD码，长度2字节或4个数字字符（超过将截断），输入输出类型：String（合法字符'0'~'9','-','+')
+     */
+    BCD02 {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size()];
+            buf.readBytes(bytes);
+            return BCD8421BinaryCodec.decode(bytes);
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes = BCD8421BinaryCodec.encodeWithPadding((String) value, size());
+            buf.writeBytes(bytes, 0, size());
+
+            return size();
+        }
+
+        @Override
+        public short size() { return 2; }
+    },
+    /**
+     * 8421BCD码，长度7字节或14个数字字符（超过将截断），输入输出类型：String（合法字符'0'~'9','-','+')
+     */
+    BCD07_STR {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size()];
+            buf.readBytes(bytes);
+            return BCD8421BinaryCodec.decode(bytes);
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes = BCD8421BinaryCodec.encodeWithPadding((String) value, size());
+            buf.writeBytes(bytes, 0, size());
+
+            return size();
+        }
+
+        @Override
+        public short size() { return 7; }
+    },
+    /**
+     * 8421BCD码，长度8字节或16个数字字符（超过将截断），输入输出类型：String（合法字符'0'~'9','-','+')
+     */
+    BCD08_STR {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size()];
+            buf.readBytes(bytes);
+            return BCD8421BinaryCodec.decode(bytes);
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes = BCD8421BinaryCodec.encodeWithPadding((String) value, size());
+            buf.writeBytes(bytes, 0, size());
+
+            return size();
+        }
+
+        @Override
+        public short size() { return 8; }
+    },
+    /**
+     * 8421BCD码，长度10字节或20个数字字符（超过将截断），输入输出类型：String（合法字符'0'~'9','-','+')
+     */
+    BCD10_STR {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size()];
+            buf.readBytes(bytes);
+            return BCD8421BinaryCodec.decode(bytes);
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes = BCD8421BinaryCodec.encodeWithPadding((String) value, size());
+            buf.writeBytes(bytes, 0, size());
+
+            return size();
+        }
+
+        @Override
+        public short size() { return 10; }
+    },
+    /**
+     * 8421BCD码，长度16字节或32个数字字符（超过将截断），输入输出类型：String（合法字符'0'~'9','-','+')
+     */
+    BCD16_STR {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size()];
+            buf.readBytes(bytes);
+            return BCD8421BinaryCodec.decode(bytes);
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes = BCD8421BinaryCodec.encodeWithPadding((String) value, size());
+            buf.writeBytes(bytes, 0, size());
+
+            return size();
         }
 
         @Override
         public short size() { return 16; }
     },
-    BCD07 {
-        //TODO
-        @Override
-        public Object read(ByteBuf buf, short size) {
-            byte[] bytes = new byte[size()];
-            buf.readBytes(bytes);
-            return new String(bytes, StandardCharsets.UTF_8);
-        }
 
-        @Override
-        public short write(ByteBuf buf, Object value) {
-            if (value == null) return 0;
 
-            byte[] bytes = ((String) value).getBytes();
-            buf.writeBytes(bytes, 0, size());
-            return (short) bytes.length;
-        }
 
-        @Override
-        public short size() { return 32; }
-    },
-    BCD08 {
-        //TODO
-        @Override
-        public Object read(ByteBuf buf, short size) {
-            byte[] bytes = new byte[size()];
-            buf.readBytes(bytes);
-            return new String(bytes, StandardCharsets.UTF_8);
-        }
-
-        @Override
-        public short write(ByteBuf buf, Object value) {
-            if (value == null) return 0;
-
-            byte[] bytes = ((String) value).getBytes();
-            buf.writeBytes(bytes, 0, size());
-            return (short) bytes.length;
-        }
-
-        @Override
-        public short size() { return 32; }
-    },
-    BCD10 {
-        //TODO
-        @Override
-        public Object read(ByteBuf buf, short size) {
-            byte[] bytes = new byte[size()];
-            buf.readBytes(bytes);
-            return new String(bytes, StandardCharsets.UTF_8);
-        }
-
-        @Override
-        public short write(ByteBuf buf, Object value) {
-            if (value == null) return 0;
-
-            byte[] bytes = ((String) value).getBytes();
-            buf.writeBytes(bytes, 0, size());
-            return (short) bytes.length;
-        }
-
-        @Override
-        public short size() { return 32; }
-    },
-    BCD02 {
-        //TODO
-        @Override
-        public Object read(ByteBuf buf, short size) {
-            byte[] bytes = new byte[size()];
-            buf.readBytes(bytes);
-            return new String(bytes, StandardCharsets.UTF_8);
-        }
-
-        @Override
-        public short write(ByteBuf buf, Object value) {
-            if (value == null) return 0;
-
-            byte[] bytes = ((String) value).getBytes();
-            buf.writeBytes(bytes, 0, size());
-            return (short) bytes.length;
-        }
-
-        @Override
-        public short size() { return 32; }
-    },
-    BCD01 {
-        //TODO
-        @Override
-        public Object read(ByteBuf buf, short size) {
-            byte[] bytes = new byte[size()];
-            buf.readBytes(bytes);
-            return new String(bytes, StandardCharsets.UTF_8);
-        }
-
-        @Override
-        public short write(ByteBuf buf, Object value) {
-            if (value == null) return 0;
-
-            byte[] bytes = ((String) value).getBytes();
-            buf.writeBytes(bytes, 0, size());
-            return (short) bytes.length;
-        }
-
-        @Override
-        public short size() { return 32; }
-    },
 
     //0x0C
     BINARY {

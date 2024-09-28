@@ -259,7 +259,7 @@ public class YKCV1ProtocolSupport {
         fieldDcl = buildDataFieldDcl("网络链接类型", "networkType", BaseDataType.UINT8, (short) (18));
         structDcl.addField(fieldDcl);
 
-        fieldDcl = buildDataFieldDcl("SIM卡", "simNo", BaseDataType.BCD10, (short) (19));
+        fieldDcl = buildDataFieldDcl("SIM卡", "simNo", BaseDataType.BCD10_STR, (short) (19));
         structDcl.addField(fieldDcl);
 
         fieldDcl = buildDataFieldDcl("运营商", "simNo", BaseDataType.UINT8, (short) (29));
@@ -1188,7 +1188,7 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(buildDFDclOfGunNo((short) 23));
 
         // 显示在屏幕上，不足 8 位补零
-        fieldDcl = buildDataFieldDcl("逻辑卡号", "cardDisplayNo", BaseDataType.BCD08, (short) 24);
+        fieldDcl = buildDataFieldDcl("逻辑卡号", "cardDisplayNo", BaseDataType.BCD08_STR, (short) 24);
         structDcl.addField(fieldDcl);
 
         // 保留两位小数
@@ -1243,7 +1243,7 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(buildDFDclOfGunNo((short) 23));
 
         // 显示在屏幕上，不足 8 位补零
-        fieldDcl = buildDataFieldDcl("逻辑卡号", "cardDisplayNo", BaseDataType.BCD08, (short) 24);
+        fieldDcl = buildDataFieldDcl("逻辑卡号", "cardDisplayNo", BaseDataType.BCD08_STR, (short) 24);
         structDcl.addField(fieldDcl);
 
         // 不足补零，桩与平台交互需使用的物理卡号
@@ -1507,7 +1507,7 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(fieldDcl);
 
         //
-        fieldDcl = buildDataFieldDcl("物理卡号", "cardNo", BaseDataType.BCD08, (short) 150);
+        fieldDcl = buildDataFieldDcl("物理卡号", "cardNo", BaseDataType.BCD08_STR, (short) 150);
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -2399,7 +2399,7 @@ public class YKCV1ProtocolSupport {
      * 数据字段：交易流水号
      */
     private static DefaultFieldDeclaration buildDFDclOfTransNo() {
-        return buildDataFieldDcl("交易流水号", "transNo", BaseDataType.BCD16, DATA_BEGIN_IDX);
+        return buildDataFieldDcl("交易流水号", "transNo", BaseDataType.BCD16_STR, DATA_BEGIN_IDX);
     }
 
     /**
