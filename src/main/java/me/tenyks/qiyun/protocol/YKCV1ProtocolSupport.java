@@ -13,7 +13,6 @@ import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
 import org.jetlinks.core.message.request.DefaultDeviceRequestMessage;
 import org.jetlinks.core.message.request.DefaultDeviceRequestMessageReply;
-import org.jetlinks.core.message.request.DeviceRequestMessage;
 import org.jetlinks.protocol.common.FunctionHandler;
 import org.jetlinks.protocol.common.SimpleFunctionHandler;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
@@ -134,7 +133,7 @@ public class YKCV1ProtocolSupport {
         return new AbstractIntercommunicateStrategy() {};
     }
 
-    public static FunctionHandler buildFunctionHandler() {
+    public static FunctionHandler           buildFunctionHandler() {
         return new SimpleFunctionHandler()
                 .addCallable("PingEvent", MiChongV2ProtocolSupport::buildPongReply);
     }
@@ -254,7 +253,7 @@ public class YKCV1ProtocolSupport {
         fieldDcl = buildDataFieldDcl("通信协议版本", "protocolVersion", BaseDataType.UINT8, (short) (9));
         structDcl.addField(fieldDcl);
 
-        fieldDcl = buildDataFieldDcl("程序版本", "firmwareVersion", BaseDataType.CHARS8, (short) (10));
+        fieldDcl = buildDataFieldDcl("程序版本", "firmwareVersion", BaseDataType.CHARS08, (short) (10));
         structDcl.addField(fieldDcl);
 
         fieldDcl = buildDataFieldDcl("网络链接类型", "networkType", BaseDataType.UINT8, (short) (18));
@@ -676,7 +675,7 @@ public class YKCV1ProtocolSupport {
         fieldDcl = buildDataFieldDcl("BMS 整车动力蓄电池系统额定总电压", "BMSBatteryRatedVoltage", BaseDataType.UINT16, (short) 30);
         structDcl.addField(fieldDcl);
         //标准 ASCII 码
-        fieldDcl = buildDataFieldDcl("BMS 电池生产厂商名称", "BMSBatteryManufacturer", BaseDataType.CHARS4, (short) 32);
+        fieldDcl = buildDataFieldDcl("BMS 电池生产厂商名称", "BMSBatteryManufacturer", BaseDataType.CHARS04, (short) 32);
         structDcl.addField(fieldDcl);
         //预留，由厂商自行定义
         fieldDcl = buildDataFieldDcl("BMS 电池组序号", "BMSBatterySNO", BaseDataType.HEX_STR_4, (short) 36);
@@ -872,7 +871,7 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(buildDFDclOfPileNo((short) 16));
         structDcl.addField(buildDFDclOfGunNo((short) 23));
 
-        structDcl.addField(buildDataFieldDcl("错误码数值", "errorCodes", BaseDataType.BYTES8, (short) 24));
+        structDcl.addField(buildDataFieldDcl("错误码数值", "errorCodes", BaseDataType.BYTES08, (short) 24));
 
         structDcl.addField(buildCRCFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
@@ -1147,7 +1146,7 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(fieldDcl);
 
         // 不足 8 位补 0，具体见示例
-        fieldDcl = buildDataFieldDcl("账号或者物理卡号", "usernameOrCardNo", BaseDataType.CHARS8, (short) 10);
+        fieldDcl = buildDataFieldDcl("账号或者物理卡号", "usernameOrCardNo", BaseDataType.CHARS08, (short) 10);
         structDcl.addField(fieldDcl);
 
         // 对用户输入的密码进行16位MD5加密，采用小写上传
@@ -1681,7 +1680,7 @@ public class YKCV1ProtocolSupport {
         DefaultFieldDeclaration fieldDcl;
 
         //
-        fieldDcl = buildDataFieldDcl("第X个卡逻辑卡号", "", BaseDataType.CHARS8, anchor, (short) 0);
+        fieldDcl = buildDataFieldDcl("第X个卡逻辑卡号", "", BaseDataType.CHARS08, anchor, (short) 0);
         structDcl.addField(fieldDcl);
         //
         fieldDcl = buildDataFieldDcl("第X个卡物理卡号", "", BaseDataType.HEX_STR_8, anchor, (short) 8);
@@ -1783,7 +1782,7 @@ public class YKCV1ProtocolSupport {
         DefaultFieldDeclaration fieldDcl;
 
         //
-        fieldDcl = buildDataFieldDcl("第X个卡逻辑卡号", "", BaseDataType.CHARS8, anchor, (short) 0);
+        fieldDcl = buildDataFieldDcl("第X个卡逻辑卡号", "", BaseDataType.CHARS08, anchor, (short) 0);
         structDcl.addField(fieldDcl);
         //
         fieldDcl = buildDataFieldDcl("第X个卡物理卡号", "", BaseDataType.HEX_STR_8, anchor, (short) 8);
@@ -2407,14 +2406,14 @@ public class YKCV1ProtocolSupport {
      * 数据字段：桩编码
      */
     private static DefaultFieldDeclaration buildDFDclOfPileNo() {
-        return new DefaultFieldDeclaration("桩编码", "pileNo", BaseDataType.CHARS7, DATA_BEGIN_IDX);
+        return new DefaultFieldDeclaration("桩编码", "pileNo", BaseDataType.CHARS07, DATA_BEGIN_IDX);
     }
 
     /**
      * 数据字段：桩编码
      */
     private static DefaultFieldDeclaration buildDFDclOfPileNo(short absOffset) {
-        return new DefaultFieldDeclaration("桩编码", "pileNo", BaseDataType.CHARS7, (short)(DATA_BEGIN_IDX + absOffset));
+        return new DefaultFieldDeclaration("桩编码", "pileNo", BaseDataType.CHARS07, (short)(DATA_BEGIN_IDX + absOffset));
     }
 
     /**
