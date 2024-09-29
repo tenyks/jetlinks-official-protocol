@@ -1,11 +1,10 @@
-package org.jetlinks.protocol.official.tcp;
+package org.jetlinks.protocol.qiyun.tcp;
 
 import io.netty.buffer.ByteBuf;
 import lombok.NonNull;
+import org.jetlinks.core.device.AuthenticationRequest;
 import org.jetlinks.core.message.*;
 import org.jetlinks.core.message.codec.*;
-import org.jetlinks.core.metadata.DefaultConfigMetadata;
-import org.jetlinks.core.metadata.types.PasswordType;
 import org.jetlinks.protocol.official.binary.AckCode;
 import org.jetlinks.protocol.official.binary.BinaryAcknowledgeDeviceMessage;
 import org.jetlinks.protocol.official.binary.BinaryMessageType;
@@ -22,15 +21,15 @@ import reactor.core.publisher.Mono;
  * <li>TCP链接建立后，首次心跳消息触发设备认证和设备上线，该消息之前的消息将会被丢弃</li>
  * <li></li>
  */
-public class StrategyTcpDeviceMessageCodec implements DeviceMessageCodec {
+public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCodec {
 
-    private static final Logger log = LoggerFactory.getLogger(StrategyTcpDeviceMessageCodec.class);
+    private static final Logger log = LoggerFactory.getLogger(QiYunStrategyBaseTcpDeviceMessageCodec.class);
 
     private final BinaryMessageCodec  codec;
 
     private final IntercommunicateStrategy itcmncStrategy;
 
-    public StrategyTcpDeviceMessageCodec(BinaryMessageCodec codec, IntercommunicateStrategy strategy) {
+    public QiYunStrategyBaseTcpDeviceMessageCodec(BinaryMessageCodec codec, IntercommunicateStrategy strategy) {
         this.codec = codec;
         this.itcmncStrategy = strategy;
     }
@@ -50,6 +49,10 @@ public class StrategyTcpDeviceMessageCodec implements DeviceMessageCodec {
             if (devMsg == null) {
                 log.warn("[TCPCodec]忽略Decoder不支持的消息：{}", ByteUtils.toHexStr(payload));
                 return Mono.empty();
+            }
+
+            if (devMsg instanceof AuthenticationRequest) {
+
             }
 
             boolean fireLogin = itcmncStrategy.canFireLogin(devMsg);

@@ -43,14 +43,6 @@ public class DefaultStructAndThingMapping implements StructAndThingMapping {
         //TODO YKC
     }
 
-    public void addMappingAuthReq(StructDeclaration structDcl, Class<? extends AuthenticationRequest> msgClazz) {
-        //TODO YKC
-    }
-
-    public void addMappingAuthResp(StructDeclaration structDcl, Class<? extends AuthenticationResponse> msgClazz) {
-        //TODO YKC
-    }
-
     public void addMapping(Class<? extends DeviceMessage> msgClazz, String subKey, StructDeclaration structDcl) {
         if (structDcl == null) return ;
 

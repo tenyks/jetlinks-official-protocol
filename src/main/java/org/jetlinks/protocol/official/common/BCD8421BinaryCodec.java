@@ -52,27 +52,7 @@ public class BCD8421BinaryCodec {
         if (str == null) return null;
         if (str.length() == 0) return new byte[0];
 
-        byte[] buf = new byte[(int)Math.floor(str.length() / 2.0)];
-        int idx = 0;
-        for (int i = 1; i < str.length(); i++) {
-            char c1 = str.charAt(i - 1), c2 = str.charAt(i);
-
-            if(c1 < '0') c1 = '0';
-            if(c1 > '9') c1 = '9';
-            if(c2 < '0') c2 = '0';
-            if(c2 > '9') c2 = '9';
-
-            buf[idx++] = (byte)((0xF0 & (CHAR_2_BIN_IDX[c1 - '0'] << 4)) | (0x0F & (CHAR_2_BIN_IDX[c2 - '0'])));
-        }
-        if (str.length() % 2 == 1) {
-            char c1 = str.charAt(str.length() - 1), c2 = '0';
-            if(c1 < '0') c1 = '0';
-            if(c1 > '9') c1 = '9';
-
-            buf[idx++] = (byte)((0xF0 & (CHAR_2_BIN_IDX[c1 - '0'] << 4)) | (0x0F & (CHAR_2_BIN_IDX[c2 - '0'])));
-        }
-
-        return buf;
+        return encodeWithPadding(str, (int) Math.ceil(str.length() / 2.0));
     }
 
     public static byte[] encodeWithPadding(String str, int bytesSize) {
@@ -84,15 +64,15 @@ public class BCD8421BinaryCodec {
         }
 
         int idx = 0;
-        for (int i = 1; i < str.length() && idx < bytesSize; i++) {
+        for (int i = 1; i < str.length() && idx < bytesSize; i += 2) {
             char c1 = str.charAt(i - 1), c2 = str.charAt(i);
 
-            if(c1 < '0') c1 = '0';
-            if(c1 > '9') c1 = '9';
-            if(c2 < '0') c2 = '0';
-            if(c2 > '9') c2 = '9';
+            if (c1 < '0') c1 = '0';
+            if (c1 > '9') c1 = '9';
+            if (c2 < '0') c2 = '0';
+            if (c2 > '9') c2 = '9';
 
-            buf[idx++] = (byte)((0xF0 & (CHAR_2_BIN_IDX[c1 - '0'] << 4)) | (0x0F & (CHAR_2_BIN_IDX[c2 - '0'])));
+            buf[idx++] = (byte) ((0xF0 & (CHAR_2_BIN_IDX[c1 - '0'] << 4)) | (0x0F & (CHAR_2_BIN_IDX[c2 - '0'])));
         }
         if (str.length() % 2 == 1) {
             char c1 = str.charAt(str.length() - 1), c2 = '0';
@@ -103,7 +83,7 @@ public class BCD8421BinaryCodec {
         }
         if (idx < bytesSize) {
             for (int i = idx; i < bytesSize; i++) {
-                buf[i] = '0';
+                buf[i] = 0b00000000;
             }
         }
 

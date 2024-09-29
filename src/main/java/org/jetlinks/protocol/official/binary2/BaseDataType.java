@@ -248,7 +248,9 @@ public enum BaseDataType {
             byte b2 = buf.readByte();
             byte b3 = buf.readByte();
 
-            return (int) b3 << 16 | (int) b2 << 8 | b1;
+            return  (((int) b3 << 16) & 0x000000FF) |
+                    (((int) b2 << 8) & 0x000000FF) |
+                    b1;
         }
 
         @Override
@@ -289,23 +291,43 @@ public enum BaseDataType {
         @Override
         public short size() { return 4; }
     },
-    //0x08
+    /**
+     * 大端在前，编码输入或解码输出类型：String
+     */
     UINT40 {
         @Override
         public Object read(ByteBuf buf, short size) {
-            //TODO 补实现
-            return buf.readUnsignedInt();
+            byte b1 = buf.readByte();
+            byte b2 = buf.readByte();
+            byte b3 = buf.readByte();
+            byte b4 = buf.readByte();
+            byte b5 = buf.readByte();
+
+            return  (((long) b1 << 32) & 0x00000000000000FF) |
+                    (((long) b2 << 24) & 0x00000000000000FF) |
+                    (((long) b3 << 16) & 0x00000000000000FF) |
+                    (((long) b4 << 8) & 0x00000000000000FF)  |
+                    b5;
         }
 
         @Override
         public short write(ByteBuf buf, Object value) {
-            //TODO 补实现
             if (value == null) {
-                buf.writeInt(0);
+                buf.writeByte(0);
+                buf.writeByte(0);
+                buf.writeByte(0);
+                buf.writeByte(0);
+                buf.writeByte(0);
             } else {
-                buf.writeInt(((Number) value).intValue());
+                long v = ((Number) value).longValue();
+                buf.writeByte((byte)((v >> 32)  & 0x00000000000000FF));
+                buf.writeByte((byte)((v >> 24)  & 0x00000000000000FF));
+                buf.writeByte((byte)((v >> 16)  & 0x00000000000000FF));
+                buf.writeByte((byte)((v >> 8)   & 0x00000000000000FF));
+                buf.writeByte((byte)((v)       & 0x00000000000000FF));
             }
-            return 4;
+
+            return 5;
         }
 
         @Override
@@ -401,10 +423,9 @@ public enum BaseDataType {
         public short size() { return 0; }
     },
     /**
-     * 字节数值：长度为8, 输入输出类型：byte[]
+     * 字节数值：长度为8, 编码输入或解码输出类型：byte[]
      */
     BYTES08 {
-        //TODO
         @Override
         public Object read(ByteBuf buf, short size) {
             byte[] bytes = new byte[size()]; //TODO 优化性能
@@ -425,7 +446,7 @@ public enum BaseDataType {
         public short size() { return 8; }
     },
     /**
-     * 字符数组，长度为4（超过将截断）， 输入输出类型：String
+     * 字符数组，长度为4（超过将截断）， 编码输入或解码输出类型：String
      */
     CHARS04 {
 
@@ -449,7 +470,7 @@ public enum BaseDataType {
         public short size() { return 4; }
     },
     /**
-     * 字符数组，长度为7（超过将截断）， 输入输出类型：String
+     * 字符数组，长度为7（超过将截断）， 编码输入或解码输出类型：String
      */
     CHARS07 {
         @Override
@@ -472,7 +493,7 @@ public enum BaseDataType {
         public short size() { return 7; }
     },
     /**
-     * 字符数组，长度为8（超过将截断）， 输入输出类型：String
+     * 字符数组，长度为8（超过将截断）， 编码输入或解码输出类型：String
      */
     CHARS08 {
         @Override
@@ -495,7 +516,7 @@ public enum BaseDataType {
         public short size() { return 8; }
     },
     /**
-     * 字符数组，长度为16（超过将截断）， 输入输出类型：String
+     * 字符数组，长度为16（超过将截断）， 编码输入或解码输出类型：String
      */
     CHARS16 {
         @Override
@@ -518,7 +539,7 @@ public enum BaseDataType {
         public short size() { return 16; }
     },
     /**
-     * 字符数组，长度为17（超过将截断）， 输入输出类型：String
+     * 字符数组，长度为17（超过将截断）， 编码输入或解码输出类型：String
      */
     CHARS17 {
         @Override
@@ -564,9 +585,9 @@ public enum BaseDataType {
         public short size() { return 32; }
     },
     /**
-     * 8421BCD码，长度1字节或2个数字字符（超过将截断），输入输出类型：String（合法字符'0'~'9','-','+')
+     * 8421BCD码，长度1字节或2个数字字符（超过将截断），编码输入或解码输出类型：String（合法字符'0'~'9','-','+')
      */
-    BCD01 {
+    BCD01_STR {
         @Override
         public Object read(ByteBuf buf, short size) {
             byte[] bytes = new byte[size()];
@@ -588,9 +609,9 @@ public enum BaseDataType {
         public short size() { return 1; }
     },
     /**
-     * 8421BCD码，长度2字节或4个数字字符（超过将截断），输入输出类型：String（合法字符'0'~'9','-','+')
+     * 8421BCD码，长度2字节或4个数字字符（超过将截断），编码输入或解码输出类型：String（合法字符'0'~'9','-','+')
      */
-    BCD02 {
+    BCD02_STR {
         @Override
         public Object read(ByteBuf buf, short size) {
             byte[] bytes = new byte[size()];
@@ -612,7 +633,7 @@ public enum BaseDataType {
         public short size() { return 2; }
     },
     /**
-     * 8421BCD码，长度7字节或14个数字字符（超过将截断），输入输出类型：String（合法字符'0'~'9','-','+')
+     * 8421BCD码，长度7字节或14个数字字符（超过将截断），编码输入或解码输出类型：String（合法字符'0'~'9','-','+')
      */
     BCD07_STR {
         @Override
@@ -636,7 +657,7 @@ public enum BaseDataType {
         public short size() { return 7; }
     },
     /**
-     * 8421BCD码，长度8字节或16个数字字符（超过将截断），输入输出类型：String（合法字符'0'~'9','-','+')
+     * 8421BCD码，长度8字节或16个数字字符（超过将截断），编码输入或解码输出类型：String（合法字符'0'~'9','-','+')
      */
     BCD08_STR {
         @Override
@@ -660,7 +681,7 @@ public enum BaseDataType {
         public short size() { return 8; }
     },
     /**
-     * 8421BCD码，长度10字节或20个数字字符（超过将截断），输入输出类型：String（合法字符'0'~'9','-','+')
+     * 8421BCD码，长度10字节或20个数字字符（超过将截断），编码输入或解码输出类型：String（合法字符'0'~'9','-','+')
      */
     BCD10_STR {
         @Override
@@ -684,7 +705,7 @@ public enum BaseDataType {
         public short size() { return 10; }
     },
     /**
-     * 8421BCD码，长度16字节或32个数字字符（超过将截断），输入输出类型：String（合法字符'0'~'9','-','+')
+     * 8421BCD码，长度16字节或32个数字字符（超过将截断），编码输入或解码输出类型：String（合法字符'0'~'9','-','+')
      */
     BCD16_STR {
         @Override
@@ -707,9 +728,6 @@ public enum BaseDataType {
         @Override
         public short size() { return 16; }
     },
-
-
-
 
     //0x0C
     BINARY {
@@ -759,11 +777,14 @@ public enum BaseDataType {
 
         @Override
         public short size() { return 0; }
-    },//0x0D
-    HEX_STR_4 {
+    },
+    /**
+     * 固定长度，长度4字节或8个十六进制表示字符（超过将截断），编码输入或解码输出类型：String
+     */
+    HEX04_STR {
         @Override
         public Object read(ByteBuf buf, short size) {
-            byte[] bytes = new byte[size];
+            byte[] bytes = new byte[size()];
             buf.readBytes(bytes);
             return Hex.encodeHexString(bytes);
         }
@@ -779,7 +800,7 @@ public enum BaseDataType {
                 throw new RuntimeException("解码HEX字符串失败：", e);
             }
             if (bytes.length > 4) {
-                buf.writeBytes(bytes, 0, 8);
+                buf.writeBytes(bytes, 0, size() * 2);
             } else {
                 buf.writeBytes(bytes);
                 for (int i = bytes.length; i < 4; i++) {
@@ -787,16 +808,19 @@ public enum BaseDataType {
                 }
             }
 
-            return (short)(4);
+            return size();
         }
 
         @Override
         public short size() { return 4; }
     },
-    HEX_STR_8 {
+    /**
+     * 固定长度，长度8字节或16个十六进制表示字符（超过将截断），编码输入或解码输出类型：String
+     */
+    HEX08_STR {
         @Override
         public Object read(ByteBuf buf, short size) {
-            byte[] bytes = new byte[size];
+            byte[] bytes = new byte[size()];
             buf.readBytes(bytes);
             return Hex.encodeHexString(bytes);
         }
@@ -812,7 +836,7 @@ public enum BaseDataType {
                 throw new RuntimeException("解码HEX字符串失败：", e);
             }
             if (bytes.length > 4) {
-                buf.writeBytes(bytes, 0, 8);
+                buf.writeBytes(bytes, 0, size() * 2);
             } else {
                 buf.writeBytes(bytes);
                 for (int i = bytes.length; i < 4; i++) {
@@ -820,17 +844,19 @@ public enum BaseDataType {
                 }
             }
 
-            return (short)(4);
+            return size();
         }
 
         @Override
         public short size() { return 4; }
     },
-    HEX_STR_16 {
-        //TODO
+    /**
+     * 固定长度，长度16字节或32个十六进制表示字符（超过将截断），编码输入或解码输出类型：String
+     */
+    HEX16_STR {
         @Override
         public Object read(ByteBuf buf, short size) {
-            byte[] bytes = new byte[size];
+            byte[] bytes = new byte[size()];
             buf.readBytes(bytes);
             return Hex.encodeHexString(bytes);
         }
@@ -846,7 +872,7 @@ public enum BaseDataType {
                 throw new RuntimeException("解码HEX字符串失败：", e);
             }
             if (bytes.length > 4) {
-                buf.writeBytes(bytes, 0, 8);
+                buf.writeBytes(bytes, 0, size() * 2);
             } else {
                 buf.writeBytes(bytes);
                 for (int i = bytes.length; i < 4; i++) {
@@ -854,13 +880,15 @@ public enum BaseDataType {
                 }
             }
 
-            return (short)(4);
+            return size();
         }
 
         @Override
-        public short size() { return 4; }
+        public short size() { return 16; }
     },
-    //0x0D
+    /**
+     * 动态长度的BASE64编码的, 编码输入或解码输出类型：String
+     */
     BASE64_STR {
         @Override
         public Object read(ByteBuf buf, short size) {
@@ -883,7 +911,9 @@ public enum BaseDataType {
         public short size() { return 0; }
     },
 
-    //CP56Time2a
+    /**
+     * CP56Time2a编码的日期，编码输入或解码输出类型：java.util.Date
+     */
     CP56Time2a {
         @Override
         public Object read(ByteBuf buf, short size) {

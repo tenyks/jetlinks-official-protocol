@@ -25,8 +25,7 @@ public class QiYunTcpStaticCodeAuthenticator implements Authenticator {
 
     public static final DefaultConfigMetadata CONFIG = new DefaultConfigMetadata(
             "TCP静态码认证配置",
-            "TCP认证时需要的配置：\n" +
-                    " 使用TCP协议报文中的设备码或加上鉴权码进行设备认证\n")
+            "TCP认证时需要的配置：使用TCP协议报文中的设备码或加上鉴权码进行设备认证\n")
             .add("secret", "鉴权码", "32个字符的随机数字和字符串", new PasswordType());
 
 

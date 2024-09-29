@@ -20,6 +20,23 @@ public class ByteUtils {
         return Hex.encodeHexString(tmp, false);
     }
 
+    public static String toHexStr(byte[] buf) {
+        if (buf == null) return null;
+
+        return Hex.encodeHexString(buf, false);
+    }
+
+    public static String toBitStr(byte[] buf) {
+        if (buf == null) return null;
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < buf.length; i++) {
+            sb.append(Integer.toBinaryString(0x000000FF & buf[i])).append(' ');
+        }
+
+        return sb.toString();
+    }
+
     public static String toHexStrPretty(ByteBuf buf) {
         //TODO 优化性能
         String tmp = toHexStr(buf);

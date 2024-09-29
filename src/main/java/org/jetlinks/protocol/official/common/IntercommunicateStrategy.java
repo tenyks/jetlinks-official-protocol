@@ -12,6 +12,9 @@ import org.jetlinks.core.message.DeviceOnlineMessage;
  */
 public interface IntercommunicateStrategy {
 
+    /**
+     * @return  如果指定消息应当触发设备认证，返回true，否则返回false
+     */
     boolean     canFireLogin(DeviceMessage msg);
 
     DeviceOnlineMessage buildLoginMessage(DeviceMessage sourceMsg);
