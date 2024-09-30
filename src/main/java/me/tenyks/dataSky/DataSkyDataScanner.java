@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.dataSky;
+package me.tenyks.dataSky;
 
 import me.tenyks.core.cr.CRDataBlock;
 import me.tenyks.core.cr.CRDataScanner;

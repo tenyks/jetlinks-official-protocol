@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.dataSky;
+package me.tenyks.dataSky;
 
 import org.jetlinks.protocol.common.DedicatedMessage;
 

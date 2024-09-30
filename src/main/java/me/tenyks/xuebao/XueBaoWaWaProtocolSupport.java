@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.xuebao;
+package me.tenyks.xuebao;
 
 import io.netty.buffer.ByteBuf;
 import me.tenyks.core.crc.CRCCalculator;

@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.michong;
+package me.tenyks.michong;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

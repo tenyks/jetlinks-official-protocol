@@ -1,26 +1,4 @@
-package org.jetlinks.protocol.michong;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import org.apache.commons.codec.binary.Hex;
-import org.jetlinks.core.message.DeviceMessage;
-import org.jetlinks.core.message.codec.DefaultTransport;
-import org.jetlinks.core.message.codec.EncodedMessage;
-import org.jetlinks.core.message.event.EventMessage;
-import org.jetlinks.core.message.function.FunctionInvokeMessage;
-import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
-import org.jetlinks.core.message.property.ReportPropertyMessage;
-import org.jetlinks.protocol.common.FunctionHandler;
-import org.jetlinks.protocol.common.SimpleFunctionHandler;
-import org.jetlinks.protocol.common.mapping.*;
-import org.jetlinks.protocol.official.PluginConfig;
-import org.jetlinks.protocol.official.binary2.*;
-import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
-import org.jetlinks.protocol.official.common.DictBook;
-import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
-import org.jetlinks.protocol.qiyun.mqtt.QiYunOverMqttDeviceMessageCodec;
-
-import javax.annotation.Nullable;
+package me.tenyks.michong;
 
 /**
  * 米充IEVC V1协议

@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.dataSky;
+package me.tenyks.dataSky;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
