@@ -1,11 +1,14 @@
 package org.jetlinks.protocol.common;
 
 import org.jetlinks.core.device.DeviceOperator;
+import org.jetlinks.core.message.event.ThingEventMessage;
 import org.jetlinks.core.message.request.DeviceRequestMessage;
 import org.jetlinks.core.message.request.DeviceRequestMessageReply;
+import reactor.util.function.Tuple2;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 /**
  * 业务请求处理
@@ -23,6 +26,7 @@ public interface DeviceRequestHandler {
      * @return  如无返回空
      */
     @Nullable
-    DeviceRequestMessageReply apply(@Nonnull DeviceOperator device, @Nonnull DeviceRequestMessage<?> reqMsg);
+    Tuple2<DeviceRequestMessageReply, Optional<ThingEventMessage>>
+    apply(@Nonnull DeviceOperator device, @Nonnull DeviceRequestMessage<?> reqMsg);
 
 }

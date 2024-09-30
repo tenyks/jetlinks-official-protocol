@@ -13,12 +13,16 @@ import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
 import org.jetlinks.core.message.request.DefaultDeviceRequestMessage;
 import org.jetlinks.core.message.request.DefaultDeviceRequestMessageReply;
+import org.jetlinks.protocol.common.DeviceRequestHandler;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
+import org.jetlinks.protocol.common.mapping.ThingValueNormalization;
+import org.jetlinks.protocol.common.mapping.ThingValueNormalizations;
 import org.jetlinks.protocol.official.PluginConfig;
 import org.jetlinks.protocol.official.binary2.*;
 import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
 import org.jetlinks.protocol.official.tcp.StrategyTcpDeviceMessageCodec;
+import org.jetlinks.protocol.qiyun.tcp.QiYunStrategyBaseTcpDeviceMessageCodec;
 
 /**
  * 云快充新能源汽车充电桩协议
@@ -40,10 +44,18 @@ public class YKCV1ProtocolSupport {
 
     private static final String     CODE_OF_ENCY_FLAG_FIELD = "ENCY_NO";
 
-    public static StrategyTcpDeviceMessageCodec buildDeviceMessageCodec(PluginConfig config) {
+    private static final ThingValueNormalization<Integer> NormToInt = ThingValueNormalizations.ofToInt(-1);
+
+    public static QiYunStrategyBaseTcpDeviceMessageCodec buildDeviceMessageCodec(PluginConfig config) {
         BinaryMessageCodec bmCodec = buildBinaryMessageCodec(config);
 
-        return new StrategyTcpDeviceMessageCodec(bmCodec, buildIntercommunicateStrategy(config));
+        return new QiYunStrategyBaseTcpDeviceMessageCodec(
+                bmCodec, buildIntercommunicateStrategy(config), buildDevReqHandler(config)
+        );
+    }
+
+    public static DeviceRequestHandler          buildDevReqHandler(PluginConfig config) {
+        return new YKCV1APIBuilder().build();
     }
 
     public static BinaryMessageCodec            buildBinaryMessageCodec(PluginConfig config) {
@@ -367,7 +379,7 @@ public class YKCV1ProtocolSupport {
 
         //首次连接到平台时置零
         fieldDcl = buildDataFieldDcl("计费模型编号", "termsNo", BaseDataType.UINT16, (short) (7));
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.DevReqInput(NormToInt)));
 
         structDcl.addField(buildCRCFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
@@ -399,7 +411,7 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(fieldDcl);
 
         //0x00 桩计费模型与平台一致 0x01 桩计费模型与平台不一致
-        fieldDcl = buildDataFieldDcl("验证结果", "rstCode", BaseDataType.UINT8, (short) (9));
+        fieldDcl = buildDataFieldDcl("验证结果", "rstFlag", BaseDataType.UINT8, (short) (9));
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -1173,11 +1185,11 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(fieldDcl);
 
         // 保留两位小数
-        fieldDcl = buildDataFieldDcl("账户余额", "accountBalance", BaseDataType.INT32, (short) 32);
+        fieldDcl = buildDataFieldDcl("账户余额", "accountAmount", BaseDataType.INT32, (short) 32);
         structDcl.addField(fieldDcl);
 
         // 0x00 失败 0x01 成功
-        fieldDcl = buildDataFieldDcl("鉴权成功标志", "rstCode", BaseDataType.UINT8, (short) 36);
+        fieldDcl = buildDataFieldDcl("鉴权成功标志", "rstFlag", BaseDataType.UINT8, (short) 36);
         structDcl.addField(fieldDcl);
 
         //0x01 账户不存在
@@ -1191,7 +1203,6 @@ public class YKCV1ProtocolSupport {
         //0x09 系统中 vin 码不存在0x0A 该桩存在未结账记录0x0B 该桩不支持刷卡
         fieldDcl = buildDataFieldDcl("失败原因", "reasonCode", BaseDataType.BCD01_STR, (short) 37);
         structDcl.addField(fieldDcl);
-
 
         structDcl.addField(buildCRCFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());

@@ -13,6 +13,7 @@ import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.function.FunctionParameter;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
+import org.jetlinks.core.message.request.DeviceRequestMessage;
 import reactor.util.function.Tuple2;
 
 import java.util.HashMap;
@@ -170,6 +171,49 @@ public abstract class ThingAnnotation {
                 if (itemKey == null) return ;
 
                 FunctionInvokeMessage fiMsg = (FunctionInvokeMessage)msg;
+                fiMsg.addInput(itemKey, itemVal);
+            }
+        };
+    }
+
+
+    public static ThingAnnotation DevReqInput() {
+        return new ThingAnnotation("inputs", null) {
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                if (itemKey == null) return null;
+
+                DeviceRequestMessage<?> fiMsg = (DeviceRequestMessage<?>)msg;
+
+                return fiMsg.getInput(itemKey);
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                if (itemKey == null) return ;
+
+                DeviceRequestMessage<?> fiMsg = (DeviceRequestMessage<?>)msg;
+                fiMsg.addInput(itemKey, itemVal);
+            }
+        };
+    }
+
+    public static ThingAnnotation DevReqInput(final ThingValueNormalization<Integer> norm) {
+        return new ThingAnnotation("inputs", null) {
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                if (itemKey == null) return null;
+
+                DeviceRequestMessage<?> fiMsg = (DeviceRequestMessage<?>)msg;
+
+                return norm.apply(fiMsg.getInput(itemKey));
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                if (itemKey == null) return ;
+
+                DeviceRequestMessage<?> fiMsg = (DeviceRequestMessage<?>)msg;
                 fiMsg.addInput(itemKey, itemVal);
             }
         };

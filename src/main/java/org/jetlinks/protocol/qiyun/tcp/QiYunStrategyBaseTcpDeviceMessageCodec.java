@@ -5,6 +5,7 @@ import lombok.NonNull;
 import org.jetlinks.core.device.AuthenticationRequest;
 import org.jetlinks.core.message.*;
 import org.jetlinks.core.message.codec.*;
+import org.jetlinks.protocol.common.DeviceRequestHandler;
 import org.jetlinks.protocol.official.binary.AckCode;
 import org.jetlinks.protocol.official.binary.BinaryAcknowledgeDeviceMessage;
 import org.jetlinks.protocol.official.binary.BinaryMessageType;
@@ -29,9 +30,14 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
 
     private final IntercommunicateStrategy itcmncStrategy;
 
-    public QiYunStrategyBaseTcpDeviceMessageCodec(BinaryMessageCodec codec, IntercommunicateStrategy strategy) {
+    private final DeviceRequestHandler    requestHandler;
+
+    public QiYunStrategyBaseTcpDeviceMessageCodec(BinaryMessageCodec codec,
+                                                  IntercommunicateStrategy strategy,
+                                                  DeviceRequestHandler requestHandler) {
         this.codec = codec;
         this.itcmncStrategy = strategy;
+        this.requestHandler = requestHandler;
     }
 
     @Override
