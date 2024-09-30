@@ -5,6 +5,10 @@ import lombok.NonNull;
 import org.jetlinks.core.device.AuthenticationRequest;
 import org.jetlinks.core.message.*;
 import org.jetlinks.core.message.codec.*;
+import org.jetlinks.core.message.event.ThingEventMessage;
+import org.jetlinks.core.message.request.DefaultDeviceRequestMessageReply;
+import org.jetlinks.core.message.request.DeviceRequestMessage;
+import org.jetlinks.core.message.request.DeviceRequestMessageReply;
 import org.jetlinks.protocol.common.DeviceRequestHandler;
 import org.jetlinks.protocol.official.binary.AckCode;
 import org.jetlinks.protocol.official.binary.BinaryAcknowledgeDeviceMessage;
@@ -16,6 +20,9 @@ import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+
+import java.util.Optional;
 
 /**
  * TCP通讯交互行为：<br>
@@ -85,7 +92,23 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
                 log.debug("[TCPCodec]消息解码成功：payload={}, msg={}", ByteUtils.toHexStr(payload), devMsg.toJson());
             }
 
-            return Mono.just(devMsg);
+            if (!(devMsg instanceof DeviceRequestMessage<?>)) return Mono.just(devMsg);
+
+            // 请求消息
+            if (requestHandler == null) return Mono.just(devMsg);
+
+            Tuple2<DeviceRequestMessageReply, Optional<ThingEventMessage>> reqReplyTuple;
+            reqReplyTuple = requestHandler.apply(context.getDevice(), (DeviceRequestMessage<?>) devMsg);
+
+            EncodedMessage encMsg = EncodedMessage.simple(codec.encode(context, (DefaultDeviceRequestMessageReply)reqReplyTuple.getT1()));
+
+            Mono<Boolean> sendAckMono = ((FromDeviceMessageContext) context).getSession().send(encMsg);
+
+            if (reqReplyTuple.getT2().isPresent()) {
+                return sendAckMono.thenReturn(reqReplyTuple.getT2().get());
+            } else {
+                return sendAckMono.then(Mono.empty());
+            }
         });
     }
 
