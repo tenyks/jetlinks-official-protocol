@@ -1,11 +1,9 @@
 package org.jetlinks.protocol.official;
 
+import me.tenyks.qiyun.protocol.YKCV1ProtocolSupport;
 import org.jetlinks.core.defaults.CompositeProtocolSupport;
 import org.jetlinks.core.message.codec.DefaultTransport;
-import org.jetlinks.core.message.codec.mqtt.MqttMessage;
-import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.route.HttpRoute;
-import org.jetlinks.core.route.MqttRoute;
 import org.jetlinks.core.route.WebsocketRoute;
 import org.jetlinks.core.spi.ProtocolSupportProvider;
 import org.jetlinks.core.spi.ServiceContext;
@@ -13,11 +11,11 @@ import org.jetlinks.protocol.dataSky.DataSkyDedicatedMessageCodec;
 import org.jetlinks.protocol.dataSky.DataSkyProtocolSupport;
 import org.jetlinks.protocol.e53.E53IAxProtocolSupport;
 import org.jetlinks.protocol.michong.MiChongV2ProtocolSupport;
-import org.jetlinks.protocol.official.binary2.BinaryMessageCodec;
 import org.jetlinks.protocol.official.http.QiYunHttpDeviceMessageCodec;
 import org.jetlinks.protocol.official.lwm2m.QiYunLwM2MAuthenticator;
 import org.jetlinks.protocol.qiyun.mqtt.QiYunMqttStaticCodeAuthenticator;
 import org.jetlinks.protocol.qiyun.mqtt.QiYunOverMqttDeviceMessageCodec;
+import org.jetlinks.protocol.qiyun.tcp.QiYunTcpStaticCodeAuthenticator;
 import org.jetlinks.protocol.xuebao.XueBaoWaWaProtocolSupport;
 import org.jetlinks.protocol.official.core.TopicMessageCodec;
 import org.jetlinks.protocol.official.http.JetLinksHttpDeviceMessageCodec;
@@ -26,9 +24,6 @@ import org.jetlinks.protocol.official.mqtt.JetLinksMqttDeviceMessageCodec;
 import org.jetlinks.protocol.official.tcp.TcpDeviceMessageCodec;
 import org.jetlinks.protocol.official.udp.UDPDeviceMessageCodec;
 import org.jetlinks.supports.official.JetLinksDeviceMetadataCodec;
-import org.jetlinks.supports.protocol.SimpleMessageCodecDeclaration;
-import org.jetlinks.supports.protocol.codec.MessageCodecDeclaration;
-import org.jetlinks.supports.protocol.codec.MessageContentType;
 import org.jetlinks.supports.protocol.serial.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,8 +111,12 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
 
             //TCP
             support.addConfigMetadata(DefaultTransport.TCP, TcpDeviceMessageCodec.tcpConfig);
-            if (XueBaoWaWaProtocolSupport.NAME.equals(pluginConfig.getTcpCodec())) {
+            if (XueBaoWaWaProtocolSupport.NAME_AND_VER.equals(pluginConfig.getTcpCodec())) {
                 support.addMessageCodecSupport(XueBaoWaWaProtocolSupport.buildDeviceMessageCodec(pluginConfig));
+            } else if (YKCV1ProtocolSupport.NAME_AND_VER.equals(pluginConfig.getTcpCodec())) {
+                support.addMessageCodecSupport(YKCV1ProtocolSupport.buildDeviceMessageCodec(pluginConfig));
+                support.addAuthenticator(DefaultTransport.TCP, new QiYunTcpStaticCodeAuthenticator());
+                support.addConfigMetadata(DefaultTransport.TCP, QiYunTcpStaticCodeAuthenticator.CONFIG);
             } else {
                 support.addMessageCodecSupport(new TcpDeviceMessageCodec());
             }

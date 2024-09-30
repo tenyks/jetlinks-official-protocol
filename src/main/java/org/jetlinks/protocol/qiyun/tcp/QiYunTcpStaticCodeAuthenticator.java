@@ -31,22 +31,22 @@ public class QiYunTcpStaticCodeAuthenticator implements Authenticator {
 
     @Override
     public Mono<AuthenticationResponse> authenticate(@Nonnull AuthenticationRequest request, @Nonnull DeviceOperator device) {
-        if (!(request instanceof TcpAuthenticationRequest)) {
+        if (!(request instanceof TcpAuthenticationMessage)) {
             return Mono.just(AUTH_METHOD_NOT_SUPPORT);
         }
 
-        final TcpAuthenticationRequest req = ((TcpAuthenticationRequest) request);
+        final TcpAuthenticationMessage req = ((TcpAuthenticationMessage) request);
         final String clientId = req.getClientId();
 
         if (!clientId.equals(device.getDeviceId())) {
-            log.info("[MQTT][U+P]设备认证不通过，不匹配的设备：clientId({}) != deviceId({})", clientId, device.getDeviceId());
+            log.info("[TCP][U+P]设备认证不通过，不匹配的设备：clientId({}) != deviceId({})", clientId, device.getDeviceId());
             return Mono.just(AUTH_FAIL);
         }
 
         return device.getProduct()
                 .zipWith(device.getConfig("secret").switchIfEmpty(Mono.just(Value.simple(""))))
                 .map(tuple -> {
-                    log.debug("[MQTT][U+P]设备认证通过：clientId=deviceId={}", clientId);
+                    log.debug("[TCP][U+P]设备认证通过：clientId=deviceId={}", clientId);
                     return AuthenticationResponse.success(device.getDeviceId());
                 });
     }
@@ -54,12 +54,12 @@ public class QiYunTcpStaticCodeAuthenticator implements Authenticator {
     @Override
     public Mono<AuthenticationResponse> authenticate(@Nonnull AuthenticationRequest request,
                                                      @Nonnull DeviceRegistry registry) {
-        TcpAuthenticationRequest req = ((TcpAuthenticationRequest) request);
+        TcpAuthenticationMessage req = ((TcpAuthenticationMessage) request);
 
         return registry.getDevice(req.getClientId())
                 .flatMap(device -> authenticate(request, device))
                 .switchIfEmpty(Mono.defer(() -> {
-                    log.warn("[MQTT][U+P]设备认证不通过，未登记的设备：clientId={}", req.getClientId());
+                    log.warn("[TCP][U+P]设备认证不通过，未登记的设备：clientId={}", req.getClientId());
                     return Mono.just(AUTH_FAIL);
                 }));
     }

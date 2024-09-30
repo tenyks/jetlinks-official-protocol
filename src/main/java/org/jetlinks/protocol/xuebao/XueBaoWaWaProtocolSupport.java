@@ -21,7 +21,7 @@ import org.jetlinks.protocol.official.tcp.StrategyTcpDeviceMessageCodec;
  */
 public class XueBaoWaWaProtocolSupport {
 
-    public static final String NAME = "XueBaoWaWa_V2.6";
+    public static final String NAME_AND_VER = "XueBaoWaWa_V2.6";
 
     public static DeviceMessageCodec buildDeviceMessageCodec(PluginConfig config) {
         IntercommunicateStrategy strategy = buildIntercommunicateStrategy(config);
