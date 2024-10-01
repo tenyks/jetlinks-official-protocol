@@ -35,6 +35,8 @@ public class DefaultStructDeclaration implements StructDeclaration {
      */
     private boolean     enableDecode;
 
+    private transient String    _serviceIdOrFunctionId;
+
     public DefaultStructDeclaration(String name, String featureCode) {
         if (name == null || featureCode == null) {
             throw new IllegalArgumentException("参数不全。[0x66DSD1564]");
@@ -143,10 +145,23 @@ public class DefaultStructDeclaration implements StructDeclaration {
 
     public DefaultStructDeclaration addThingAnnotation(Iterable<ThingAnnotation> tAnnIterable) {
         if (tAnnIterable != null) {
-            tAnnIterable.forEach(v -> this.thingAnnotations.add(v));
+            tAnnIterable.forEach(this.thingAnnotations::add);
         }
 
         return this;
+    }
+
+    public String     getServiceIdOrFunctionId() {
+        if (_serviceIdOrFunctionId != null) return _serviceIdOrFunctionId;
+
+        for (ThingAnnotation ta : thingAnnotations()) {
+            if ("event".equals(ta.getThingKey())) {
+                _serviceIdOrFunctionId = ta.getThingValue();
+                return _serviceIdOrFunctionId;
+            }
+        }
+
+        return null;
     }
 
     @Override

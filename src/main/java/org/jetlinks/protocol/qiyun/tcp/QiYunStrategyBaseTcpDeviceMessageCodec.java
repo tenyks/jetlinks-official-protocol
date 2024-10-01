@@ -10,6 +10,7 @@ import org.jetlinks.core.message.request.DefaultDeviceRequestMessageReply;
 import org.jetlinks.core.message.request.DeviceRequestMessage;
 import org.jetlinks.core.message.request.DeviceRequestMessageReply;
 import org.jetlinks.protocol.common.DeviceRequestHandler;
+import org.jetlinks.protocol.common.UplinkMessageReplyResponder;
 import org.jetlinks.protocol.official.binary.AckCode;
 import org.jetlinks.protocol.official.binary.BinaryAcknowledgeDeviceMessage;
 import org.jetlinks.protocol.official.binary.BinaryMessageType;
@@ -37,14 +38,16 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
 
     private final IntercommunicateStrategy itcmncStrategy;
 
-    private final DeviceRequestHandler    requestHandler;
+    private final UplinkMessageReplyResponder   replyResponder;
+
+    private final DeviceRequestHandler          requestHandler;
 
     public QiYunStrategyBaseTcpDeviceMessageCodec(BinaryMessageCodec codec,
-                                                  IntercommunicateStrategy strategy,
-                                                  DeviceRequestHandler requestHandler) {
+                                                  IntercommunicateStrategy strategy) {
         this.codec = codec;
         this.itcmncStrategy = strategy;
-        this.requestHandler = requestHandler;
+        this.replyResponder = strategy.getReplyResponder();
+        this.requestHandler = strategy.getRequestHandler();
     }
 
     @Override
@@ -65,7 +68,7 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
             }
 
             if (devMsg instanceof AuthenticationRequest) {
-
+                return Mono.just(devMsg);
             }
 
             boolean fireLogin = itcmncStrategy.canFireLogin(devMsg);
@@ -78,7 +81,7 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
             }
 
             DeviceOnlineMessage onlineMsg = itcmncStrategy.buildLoginMessage(devMsg);
-            return handleLogin(context, onlineMsg);
+            return handleAutoLogin(context, onlineMsg);
         }
 
         return Mono.defer(() -> {
@@ -92,27 +95,32 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
                 log.debug("[TCPCodec]消息解码成功：payload={}, msg={}", ByteUtils.toHexStr(payload), devMsg.toJson());
             }
 
-            if (!(devMsg instanceof DeviceRequestMessage<?>)) return Mono.just(devMsg);
+            if (replyResponder != null && replyResponder.hasAckForMessage(devMsg)) {
+                AcknowledgeDeviceMessage ackMsg = replyResponder.buildAckMessage(context.getDevice(), devMsg);
 
-            // 请求消息
-            if (requestHandler == null) return Mono.just(devMsg);
-
-            Tuple2<DeviceRequestMessageReply, Optional<ThingEventMessage>> reqReplyTuple;
-            reqReplyTuple = requestHandler.apply(context.getDevice(), (DeviceRequestMessage<?>) devMsg);
-
-            EncodedMessage encMsg = EncodedMessage.simple(codec.encode(context, (DefaultDeviceRequestMessageReply)reqReplyTuple.getT1()));
-
-            Mono<Boolean> sendAckMono = ((FromDeviceMessageContext) context).getSession().send(encMsg);
-
-            if (reqReplyTuple.getT2().isPresent()) {
-                return sendAckMono.thenReturn(reqReplyTuple.getT2().get());
-            } else {
-                return sendAckMono.then(Mono.empty());
+                return sendAckAndReturn(context, ackMsg, devMsg);
             }
+
+            if (requestHandler != null && devMsg instanceof DeviceRequestMessage<?>) {
+                Tuple2<DeviceRequestMessageReply, Optional<ThingEventMessage>> reqReplyTuple;
+                reqReplyTuple = requestHandler.apply(context.getDevice(), (DeviceRequestMessage<?>) devMsg);
+
+                if (reqReplyTuple == null) return Mono.just(devMsg);
+
+                EncodedMessage encMsg = EncodedMessage.simple(codec.encode(context, (DefaultDeviceRequestMessageReply)reqReplyTuple.getT1()));
+                Mono<Boolean> sendAckMono = ((FromDeviceMessageContext) context).getSession().send(encMsg);
+                if (reqReplyTuple.getT2().isPresent()) {
+                    return sendAckMono.thenReturn(reqReplyTuple.getT2().get());
+                } else {
+                    return sendAckMono.then(Mono.empty());
+                }
+            }
+
+            return Mono.just(devMsg);
         });
     }
 
-    private Mono<DeviceMessage> handleLogin(MessageDecodeContext context, DeviceOnlineMessage message) {
+    private Mono<DeviceMessage> handleAutoLogin(MessageDecodeContext context, DeviceOnlineMessage message) {
         if (log.isInfoEnabled()) {
             log.info("[TCPCodec]发现设备上线消息：msg={}", message.toJson());
         }
@@ -124,7 +132,7 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
                     log.info("[TCPCodec]设备上线OK：deviceId={}", deviceId);
 
                     if (itcmncStrategy.needAckWhileLoginSuccess()) {
-                        return doAck(message, AckCode.ok, context)
+                        return doAck(context, AckCode.ok, message)
                                 .thenReturn((DeviceMessage)message);
                     } else {
                         return Mono.justOrEmpty(message);
@@ -134,25 +142,38 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
                     log.warn("[TCPCodec]设备上线Fail：deviceId={}", deviceId);
 
                     if (itcmncStrategy.needAckWhileLoginFail()) {
-                        return doAck(message, AckCode.noAuth, context);
+                        return doAck(context, AckCode.noAuth, message);
                     } else {
                         return Mono.empty();
                     }
                 }));
     }
 
-    private <T> Mono<T> doAck(DeviceMessage source, AckCode code, MessageDecodeContext context) {
+    private Mono<DeviceMessage> doAck(MessageDecodeContext context, AckCode code, DeviceMessage source) {
         AcknowledgeDeviceMessage ackMsg = buildAckMessage(source, code);
-        final EncodedMessage encMsg = EncodedMessage.simple(codec.encode(context, ackMsg));
+        return sendAckAndReturn(context, ackMsg, source);
+    }
+
+    private Mono<DeviceMessage> sendAckAndReturn(MessageDecodeContext context, AcknowledgeDeviceMessage ackMsg,
+                                         DeviceMessage source) {
+        if (ackMsg == null) return Mono.just(source);
+
+        ByteBuf payload = codec.encode(context, ackMsg);
+        final EncodedMessage encMsg = EncodedMessage.simple(payload);
+        if (log.isDebugEnabled()) {
+            log.debug("[TCPCodec]ACK消息编码结果：msg={}, payload={}", ackMsg.toJson(), ByteUtils.toHexStr(payload));
+        }
+        payload.readerIndex(0);
 
         return ((FromDeviceMessageContext) context)
                 .getSession()
                 .send(encMsg)
                 .then(Mono.fromRunnable(() -> {
                     if (itcmncStrategy.needCloseConnectionWhileSendAckFail()) {
-                        if (source instanceof DeviceOnlineMessage && code != AckCode.ok) {
-                            ((FromDeviceMessageContext) context).getSession().close();
-                        }
+                        log.warn("[TCPCodec]发送ACK消息失败，关闭TCP会话。");
+                        ((FromDeviceMessageContext) context).getSession().close();
+                    } else {
+                        log.warn("[TCPCodec]发送ACK消息失败。");
                     }
                 }));
     }
@@ -187,8 +208,8 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
         if (log.isDebugEnabled()) {
             log.debug("[TCPCodec]设备消息编码结果：msg={}, payload={}", deviceMessage.toJson(), ByteUtils.toHexStr(payload));
         }
-
         payload.readerIndex(0);
+
         return Mono.just(EncodedMessage.simple(payload));
     }
 }

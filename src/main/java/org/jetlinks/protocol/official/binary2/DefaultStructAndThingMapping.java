@@ -1,13 +1,9 @@
 package org.jetlinks.protocol.official.binary2;
 
-import org.jetlinks.core.device.AuthenticationRequest;
-import org.jetlinks.core.device.AuthenticationResponse;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.event.EventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
-import org.jetlinks.core.message.request.DeviceRequestMessage;
-import org.jetlinks.core.message.request.DeviceRequestMessageReply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,14 +29,6 @@ public class DefaultStructAndThingMapping implements StructAndThingMapping {
 
     public void addMapping(StructDeclaration structDcl, Class<? extends DeviceMessage> msgClazz) {
         this.struct2ClassMap.put(structDcl, msgClazz);
-    }
-
-    public void addMappingDevReq(StructDeclaration structDcl, Class<? extends DeviceRequestMessage<?>> msgClazz) {
-        //TODO YKC
-    }
-
-    public void addMappingDevReqReply(StructDeclaration structDcl, Class<? extends DeviceRequestMessageReply> msgClazz) {
-        //TODO YKC
     }
 
     public void addMapping(Class<? extends DeviceMessage> msgClazz, String subKey, StructDeclaration structDcl) {

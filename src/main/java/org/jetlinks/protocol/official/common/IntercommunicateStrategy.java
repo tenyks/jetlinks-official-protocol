@@ -2,6 +2,8 @@ package org.jetlinks.protocol.official.common;
 
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.DeviceOnlineMessage;
+import org.jetlinks.protocol.common.DeviceRequestHandler;
+import org.jetlinks.protocol.common.UplinkMessageReplyResponder;
 
 /**
  * 通讯交互策略：
@@ -13,20 +15,24 @@ import org.jetlinks.core.message.DeviceOnlineMessage;
 public interface IntercommunicateStrategy {
 
     /**
+     * 自动触发已登陆
      * @return  如果指定消息应当触发设备认证，返回true，否则返回false
      */
-    boolean     canFireLogin(DeviceMessage msg);
+    boolean                         canFireLogin(DeviceMessage msg);
 
-    DeviceOnlineMessage buildLoginMessage(DeviceMessage sourceMsg);
+    DeviceOnlineMessage             buildLoginMessage(DeviceMessage sourceMsg);
 
-    boolean     needAckWhileLoginSuccess();
+    boolean                         needAckWhileLoginSuccess();
 
-    boolean     needAckWhileLoginFail();
+    boolean                         needAckWhileLoginFail();
 
-    boolean     needCloseConnectionWhileSendAckFail();
+    boolean                         needCloseConnectionWhileSendAckFail();
 
-    boolean     isAckWhileIgnored();
+    boolean                         isAckWhileIgnored();
 
-    boolean     ackWhileReceived();
+    boolean                         ackWhileReceived();
 
+    DeviceRequestHandler            getRequestHandler();
+
+    UplinkMessageReplyResponder     getReplyResponder();
 }

@@ -91,4 +91,8 @@ public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
 
         return ctx;
     }
+
+    public StructSuit getStructSuit() {
+        return structSuit;
+    }
 }

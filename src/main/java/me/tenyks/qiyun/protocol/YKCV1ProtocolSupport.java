@@ -14,6 +14,7 @@ import org.jetlinks.core.message.property.ReportPropertyMessage;
 import org.jetlinks.core.message.request.DefaultDeviceRequestMessage;
 import org.jetlinks.core.message.request.DefaultDeviceRequestMessageReply;
 import org.jetlinks.protocol.common.DeviceRequestHandler;
+import org.jetlinks.protocol.common.SimpleUplinkMessageReplyResponder;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
 import org.jetlinks.protocol.common.mapping.ThingValueNormalization;
 import org.jetlinks.protocol.common.mapping.ThingValueNormalizations;
@@ -47,18 +48,14 @@ public class YKCV1ProtocolSupport {
     private static final ThingValueNormalization<Integer> NormToInt = ThingValueNormalizations.ofToInt(-1);
 
     public static QiYunStrategyBaseTcpDeviceMessageCodec buildDeviceMessageCodec(PluginConfig config) {
-        BinaryMessageCodec bmCodec = buildBinaryMessageCodec(config);
+        AbstractIntercommunicateStrategy strategy = buildIntercommunicateStrategy(config);
+        DeclarationBasedBinaryMessageCodec bmCodec = buildBinaryMessageCodec(config);
+        strategy.setReplyResponder(new YKCV1ReplyResponderBuilder().build(bmCodec.getStructSuit()));
 
-        return new QiYunStrategyBaseTcpDeviceMessageCodec(
-                bmCodec, buildIntercommunicateStrategy(config), buildDevReqHandler(config)
-        );
+        return new QiYunStrategyBaseTcpDeviceMessageCodec(bmCodec, strategy);
     }
 
-    public static DeviceRequestHandler          buildDevReqHandler(PluginConfig config) {
-        return new YKCV1APIBuilder().build();
-    }
-
-    public static BinaryMessageCodec            buildBinaryMessageCodec(PluginConfig config) {
+    public static DeclarationBasedBinaryMessageCodec            buildBinaryMessageCodec(PluginConfig config) {
         StructSuit structSuit = buildStructSuitV2();
         StructAndMessageMapper mapper = buildMapper(structSuit);
         return new DeclarationBasedBinaryMessageCodec(structSuit, mapper);
@@ -143,8 +140,9 @@ public class YKCV1ProtocolSupport {
         return suit;
     }
 
-    public static IntercommunicateStrategy      buildIntercommunicateStrategy(PluginConfig config) {
-        return new AbstractIntercommunicateStrategy() {};
+    public static AbstractIntercommunicateStrategy      buildIntercommunicateStrategy(PluginConfig config) {
+        return new AbstractIntercommunicateStrategy() {}
+        .setRequestHandler(new YKCV1APIBuilder().build());
     }
 
     public static StructAndMessageMapper        buildMapper(StructSuit structSuit) {
@@ -155,12 +153,13 @@ public class YKCV1ProtocolSupport {
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩登录认证应答"), TcpAuthenticationMessageReply.class);
 
         // 心跳包
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩心跳包[上行]"), ReportPropertyMessage.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("心跳包应答[下行]"), AcknowledgeDeviceMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩心跳包[上行]"), EventMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("心跳包应答[下行]"),   AcknowledgeDeviceMessage.class);
 
         // 计费相关
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("计费模型验证请求[上行]"), DefaultDeviceRequestMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("计费模型验证请求应答[下行]"), DefaultDeviceRequestMessageReply.class);
+
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩计费模型请求[上行]"), DefaultDeviceRequestMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("计费模型请求应答[下行]"), DefaultDeviceRequestMessageReply.class);
 
@@ -184,8 +183,8 @@ public class YKCV1ProtocolSupport {
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("写计费模型设置响应[指令响应]"), FunctionInvokeMessageReply.class);
 
         // 充电发起
-        structAndThingMapping.addMappingDevReq(structSuit.getStructDeclaration("充电桩主动申请启动充电[上行]"), DefaultDeviceRequestMessage.class);
-        structAndThingMapping.addMappingDevReqReply(structSuit.getStructDeclaration("运营平台确认启动充电[下行]"), DefaultDeviceRequestMessageReply.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩主动申请启动充电[上行]"), DefaultDeviceRequestMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("运营平台确认启动充电[下行]"), DefaultDeviceRequestMessageReply.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("运营平台远程控制启机命令[下行]"), FunctionInvokeMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("远程启动充电命令回复[上行]"), FunctionInvokeMessageReply.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("运营平台远程停机[下行]"), FunctionInvokeMessage.class);

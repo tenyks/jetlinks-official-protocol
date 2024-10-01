@@ -13,11 +13,11 @@ import javax.validation.constraints.NotNull;
  */
 public interface StructDeclaration {
 
-    StructFieldDeclaration  getField(String code);
+    StructFieldDeclaration              getField(String code);
 
-    NRepeatGroupDeclaration getFieldGroup(String code);
+    NRepeatGroupDeclaration             getFieldGroup(String code);
 
-    StructPartDeclaration   getPart(String code);
+    StructPartDeclaration               getPart(String code);
 
     @NotNull
     String  getFeatureCode();
@@ -26,16 +26,18 @@ public interface StructDeclaration {
 
     Iterable<ThingAnnotation>           thingAnnotations();
 
+    String  getServiceIdOrFunctionId();
+
     MessageIdMappingAnnotation          messageIdMappingAnnotation();
 
     Iterable<StructPartDeclaration>     parts();
 
     Iterable<StructFieldDeclaration>    fields();
 
-    CRCCalculator getCRCCalculator();
+    CRCCalculator   getCRCCalculator();
 
-    boolean     isEnableEncode();
+    boolean         isEnableEncode();
 
-    boolean     isEnableDecode();
+    boolean         isEnableDecode();
 
 }
