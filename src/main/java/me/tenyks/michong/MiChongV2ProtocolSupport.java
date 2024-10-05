@@ -20,7 +20,7 @@ import org.jetlinks.protocol.official.binary2.*;
 import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
 import org.jetlinks.protocol.official.common.DictBook;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
-import org.jetlinks.protocol.qiyun.mqtt.QiYunOverMqttDeviceMessageCodec;
+import me.tenyks.qiyun.mqtt.QiYunOverMqttDeviceMessageCodec;
 
 import javax.annotation.Nullable;
 

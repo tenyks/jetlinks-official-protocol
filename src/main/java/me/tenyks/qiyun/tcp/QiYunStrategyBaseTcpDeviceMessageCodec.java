@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.qiyun.tcp;
+package me.tenyks.qiyun.tcp;
 
 import io.netty.buffer.ByteBuf;
 import lombok.NonNull;
@@ -34,9 +34,9 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
 
     private static final Logger log = LoggerFactory.getLogger(QiYunStrategyBaseTcpDeviceMessageCodec.class);
 
-    private final BinaryMessageCodec  codec;
+    private final BinaryMessageCodec            codec;
 
-    private final IntercommunicateStrategy itcmncStrategy;
+    private final IntercommunicateStrategy      itcmncStrategy;
 
     private final UplinkMessageReplyResponder   replyResponder;
 
@@ -155,7 +155,7 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
     }
 
     private Mono<DeviceMessage> sendAckAndReturn(MessageDecodeContext context, AcknowledgeDeviceMessage ackMsg,
-                                         DeviceMessage source) {
+                                                DeviceMessage source) {
         if (ackMsg == null) return Mono.just(source);
 
         ByteBuf payload = codec.encode(context, ackMsg);

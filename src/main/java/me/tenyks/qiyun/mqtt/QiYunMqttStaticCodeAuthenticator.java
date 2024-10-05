@@ -1,18 +1,15 @@
-package org.jetlinks.protocol.qiyun.mqtt;
+package me.tenyks.qiyun.mqtt;
 
 import org.jetlinks.core.Value;
 import org.jetlinks.core.defaults.Authenticator;
 import org.jetlinks.core.device.*;
 import org.jetlinks.core.metadata.DefaultConfigMetadata;
-import org.jetlinks.core.metadata.DeviceConfigScope;
-import org.jetlinks.core.metadata.types.EnumType;
 import org.jetlinks.core.metadata.types.PasswordType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
-import java.time.Duration;
 
 /**
  * 祺云IOT标准协议之MQTT设备认证：静态码，支持一型一密，一机一密，牵涉到MQTT协议的clientId、username和password

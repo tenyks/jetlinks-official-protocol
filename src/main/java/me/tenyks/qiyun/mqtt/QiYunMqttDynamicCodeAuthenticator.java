@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.qiyun.mqtt;
+package me.tenyks.qiyun.mqtt;
 
 import org.jetlinks.core.defaults.Authenticator;
 import org.jetlinks.core.device.AuthenticationRequest;

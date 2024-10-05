@@ -13,17 +13,13 @@ import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
 import org.jetlinks.core.message.request.DefaultDeviceRequestMessage;
 import org.jetlinks.core.message.request.DefaultDeviceRequestMessageReply;
-import org.jetlinks.protocol.common.DeviceRequestHandler;
-import org.jetlinks.protocol.common.SimpleUplinkMessageReplyResponder;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
 import org.jetlinks.protocol.common.mapping.ThingValueNormalization;
 import org.jetlinks.protocol.common.mapping.ThingValueNormalizations;
 import org.jetlinks.protocol.official.PluginConfig;
 import org.jetlinks.protocol.official.binary2.*;
 import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
-import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
-import org.jetlinks.protocol.official.tcp.StrategyTcpDeviceMessageCodec;
-import org.jetlinks.protocol.qiyun.tcp.QiYunStrategyBaseTcpDeviceMessageCodec;
+import me.tenyks.qiyun.tcp.QiYunStrategyBaseTcpDeviceMessageCodec;
 
 /**
  * 云快充新能源汽车充电桩协议

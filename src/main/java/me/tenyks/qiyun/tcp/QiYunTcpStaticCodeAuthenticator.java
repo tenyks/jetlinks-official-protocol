@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.qiyun.tcp;
+package me.tenyks.qiyun.tcp;
 
 import org.jetlinks.core.Value;
 import org.jetlinks.core.defaults.Authenticator;

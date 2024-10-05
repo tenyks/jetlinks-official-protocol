@@ -1,10 +1,8 @@
-package org.jetlinks.protocol.e53;
+package me.tenyks.e53;
 
 import io.netty.buffer.ByteBuf;
 import org.apache.commons.codec.binary.Hex;
-import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.codec.DeviceMessageCodec;
-import org.jetlinks.core.message.event.EventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
@@ -14,7 +12,6 @@ import org.jetlinks.protocol.official.binary2.*;
 import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
 import org.jetlinks.protocol.official.lwm2m.StructLwM2M11DeviceMessageCodec;
-import org.jetlinks.protocol.official.tcp.StrategyTcpDeviceMessageCodec;
 
 /**
  * E53版IA2协议
