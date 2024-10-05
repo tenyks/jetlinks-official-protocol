@@ -4,6 +4,8 @@ import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.event.EventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
+import org.jetlinks.core.message.request.DeviceRequestMessage;
+import org.jetlinks.core.message.request.DeviceRequestMessageReply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +77,10 @@ public class DefaultStructAndThingMapping implements StructAndThingMapping {
             subKey = ((EventMessage) message).getEvent();
         } else if (message instanceof FunctionInvokeMessageReply) {
             subKey = ((FunctionInvokeMessageReply) message).getFunctionId();
+        } else if (message instanceof DeviceRequestMessage<?>) {
+            subKey = ((DeviceRequestMessage<?>) message).getFunctionId();
+        } else if (message instanceof DeviceRequestMessageReply) {
+            subKey = ((DeviceRequestMessageReply) message).getFunctionId();
         }
 
         return buildMappingKey(message.getClass(), subKey);

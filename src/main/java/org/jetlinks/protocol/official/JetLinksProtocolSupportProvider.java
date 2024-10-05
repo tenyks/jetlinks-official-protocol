@@ -50,9 +50,9 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
         return Mono.defer(() -> {
             CompositeProtocolSupport support = new CompositeProtocolSupport();
 
-            support.setId("jetlinks.v3.0");
-            support.setName("JetLinks V3.0");
-            support.setDescription("JetLinks Protocol Version 3.0");
+            support.setId("jetlinks.v3.3");
+            support.setName("JetLinks V3.3");
+            support.setDescription("JetLinks Protocol Version 3.3");
 
             //MQTT
             if (MiChongV2ProtocolSupport.NAME_AND_VER.equals(pluginConfig.getMQTTCodec())) {
@@ -60,8 +60,7 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
                 codec = MiChongV2ProtocolSupport.buildDeviceMessageCodec(pluginConfig);
 
                 support.addRoutes(DefaultTransport.MQTT, codec.collectRoutes());
-                support.setDocument(DefaultTransport.MQTT,
-                        "document-mqtt-MiChong.md",
+                support.setDocument(DefaultTransport.MQTT, "document-mqtt-MiChong.md",
                         JetLinksProtocolSupportProvider.class.getClassLoader());
 
                 support.addAuthenticator(DefaultTransport.MQTT, new QiYunMqttStaticCodeAuthenticator());
@@ -74,8 +73,7 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList())
                 );
-                support.setDocument(DefaultTransport.MQTT,
-                        "document-mqtt.md",
+                support.setDocument(DefaultTransport.MQTT, "document-mqtt.md",
                         JetLinksProtocolSupportProvider.class.getClassLoader());
 
                 support.addAuthenticator(DefaultTransport.MQTT, new JetLinksAuthenticator());
@@ -103,8 +101,7 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
                     .collect(Collectors.toList())
             );
 
-            support.setDocument(DefaultTransport.HTTP,
-                                "document-http.md",
+            support.setDocument(DefaultTransport.HTTP, "document-http.md",
                                 JetLinksProtocolSupportProvider.class.getClassLoader());
 
             support.setMetadataCodec(new JetLinksDeviceMetadataCodec());
@@ -120,8 +117,7 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
             } else {
                 support.addMessageCodecSupport(new TcpDeviceMessageCodec());
             }
-            support.setDocument(DefaultTransport.TCP,
-                                "document-tcp.md",
+            support.setDocument(DefaultTransport.TCP, "document-tcp.md",
                                 JetLinksProtocolSupportProvider.class.getClassLoader());
 
             //UDP

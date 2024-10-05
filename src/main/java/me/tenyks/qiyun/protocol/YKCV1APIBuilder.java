@@ -64,7 +64,7 @@ public class YKCV1APIBuilder {
             output.put("termsNo", CUR_TERMS_NO);
             output.put("rstFlag", (byte) 0x01);
         }
-        reply.setOutput(output);
+        reply.setOutputs(output);
 
         return reply;
     }
@@ -73,7 +73,7 @@ public class YKCV1APIBuilder {
                                                                @Nonnull DeviceRequestMessage<?> reqMsg) {
         DefaultDeviceRequestMessageReply reply = new DefaultDeviceRequestMessageReply().from(reqMsg);
         JSONObject output = new JSONObject(BILLING_TERMS);
-        reply.setOutput(output);
+        reply.setOutputs(output);
 
         return reply;
     }
@@ -99,7 +99,7 @@ public class YKCV1APIBuilder {
         output.put("rstFlag", (byte)0x00);
         output.put("reasonCode", "0000");
 
-        reply.setOutput(output);
+        reply.setOutputs(output);
 
         EventMessage eventMsg = new EventMessage();
         eventMsg.event("PileSwitchOnChargingEvent");

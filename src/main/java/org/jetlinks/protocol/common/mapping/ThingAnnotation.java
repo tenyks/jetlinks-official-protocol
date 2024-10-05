@@ -9,11 +9,13 @@ import org.apache.commons.collections.CollectionUtils;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.DeviceMessageReply;
 import org.jetlinks.core.message.event.EventMessage;
+import org.jetlinks.core.message.event.ThingEventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.function.FunctionParameter;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
 import org.jetlinks.core.message.request.DeviceRequestMessage;
+import org.jetlinks.core.message.request.DeviceRequestMessageReply;
 import reactor.util.function.Tuple2;
 
 import java.util.HashMap;
@@ -76,6 +78,12 @@ public abstract class ThingAnnotation {
                     return ((FunctionInvokeMessage) msg).getFunctionId();
                 } else if (msg instanceof FunctionInvokeMessageReply) {
                     return ((FunctionInvokeMessageReply) msg).getFunctionId();
+                } else if (msg instanceof DeviceRequestMessage<?>) {
+                    return ((DeviceRequestMessage<?>) msg).getFunctionId();
+                } else if (msg instanceof DeviceRequestMessageReply) {
+                    return ((DeviceRequestMessageReply) msg).getFunctionId();
+                } else if (msg instanceof ThingEventMessage) {
+                    return ((ThingEventMessage) msg).getEvent();
                 }
 
                 return null;
@@ -87,6 +95,12 @@ public abstract class ThingAnnotation {
                     ((FunctionInvokeMessage) msg).functionId(thingValue);
                 } else if (msg instanceof FunctionInvokeMessageReply) {
                     ((FunctionInvokeMessageReply) msg).functionId(thingValue);
+                } else if (msg instanceof DeviceRequestMessage<?>) {
+                    ((DeviceRequestMessage<?>) msg).functionId(thingValue);
+                } else if (msg instanceof DeviceRequestMessageReply) {
+                    ((DeviceRequestMessageReply) msg).functionId(thingValue);
+                } else if (msg instanceof ThingEventMessage) {
+                    ((ThingEventMessage) msg).event(thingValue);
                 }
             }
         };
@@ -312,6 +326,93 @@ public abstract class ThingAnnotation {
                 if (outputObj == null) {
                     outputObj = new JSONObject();
                     fiMsg.setOutput(outputObj);
+                }
+
+                itemMapping.bind(context.getStructInstance());
+                List<Tuple2<String, String>> items = itemMapping.apply(itemKey, itemVal);
+                for (Tuple2<String, String> item : items) {
+                    outputObj.put(item.getT1(), item.getT2());
+                }
+            }
+        };
+    }
+
+
+    public static ThingAnnotation DevReqReplyOutput() {
+        return new ThingAnnotation("outputs", null) {
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                DeviceRequestMessageReply fiMsg = (DeviceRequestMessageReply)msg;
+
+                if (itemKey == null) return fiMsg.getOutputs();
+
+                return fiMsg.getOutput(itemKey);
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                DeviceRequestMessageReply fiMsg = (DeviceRequestMessageReply)msg;
+
+                JSONObject outputObj = fiMsg.getOutputs();
+                if (outputObj == null) {
+                    outputObj = new JSONObject();
+                    fiMsg.setOutputs(outputObj);
+                }
+                outputObj.put(itemKey, itemVal);
+            }
+        };
+    }
+
+    public static <T> ThingAnnotation DevReqReplyOutput(ThingValueNormalization<T> norm) {
+        return new ThingAnnotation("outputs", null) {
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                DeviceRequestMessageReply fiMsg = (DeviceRequestMessageReply)msg;
+
+                if (itemKey == null) return fiMsg.getOutputs();
+
+                JSONObject outputObject = fiMsg.getOutputs();
+                if (outputObject == null) return null;
+
+                return outputObject.get(itemKey);
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                DeviceRequestMessageReply fiMsg = (DeviceRequestMessageReply)msg;
+
+                JSONObject outputObj = fiMsg.getOutputs();
+                if (outputObj == null) {
+                    outputObj = new JSONObject();
+                    fiMsg.setOutputs(outputObj);
+                }
+                outputObj.put(itemKey, norm.apply(itemVal));
+            }
+        };
+    }
+
+    public static ThingAnnotation DevReqReplyOutput(ThingItemMapping<String> itemMapping) {
+        return new ThingAnnotation("outputs", null) {
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                DeviceRequestMessageReply fiMsg = (DeviceRequestMessageReply)msg;
+
+                if (itemKey == null) return fiMsg.getOutputs();
+
+                JSONObject outputObject = fiMsg.getOutputs();
+                if (outputObject == null) return null;
+
+                return outputObject.get(itemKey);
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                DeviceRequestMessageReply fiMsg = (DeviceRequestMessageReply)msg;
+
+                JSONObject outputObj = fiMsg.getOutputs();
+                if (outputObj == null) {
+                    outputObj = new JSONObject();
+                    fiMsg.setOutputs(outputObj);
                 }
 
                 itemMapping.bind(context.getStructInstance());

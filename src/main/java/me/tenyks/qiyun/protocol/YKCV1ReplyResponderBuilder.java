@@ -18,10 +18,26 @@ public class YKCV1ReplyResponderBuilder {
     public UplinkMessageReplyResponder  build(StructSuit suit) {
         SimpleUplinkMessageReplyResponder rst = new SimpleUplinkMessageReplyResponder();
 
+        rst.addMappingAndReply(suit.getStructDeclaration("充电桩登录认证消息[上行]"), this::buildAckForHeartBeatPing);
         rst.addMappingAndReply(suit.getStructDeclaration("充电桩心跳包[上行]"), this::buildAckForHeartBeatPing);
         rst.addMappingAndReply(suit.getStructDeclaration("上报交易记录[上行]"), this::buildAckForReportTransOrderAck);
 
         return rst;
+    }
+
+    private JSONObject buildAckForLogin(DeviceMessage devMsg) {
+        EventMessage event = (EventMessage) devMsg;
+
+        JSONObject data = (JSONObject)event.getData();
+        String  pileNo = data.getString("pileNo");
+        Byte gunNo = data.getByte("gunNo");
+
+        JSONObject ackPayload = new JSONObject();
+        ackPayload.put("pileNo", pileNo);
+        ackPayload.put("gunNo", gunNo);
+        ackPayload.put("pongFlag", (byte) 0);
+
+        return ackPayload;
     }
 
     private JSONObject buildAckForHeartBeatPing(DeviceMessage devMsg) {

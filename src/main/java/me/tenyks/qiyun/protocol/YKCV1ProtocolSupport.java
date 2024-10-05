@@ -3,9 +3,8 @@ package me.tenyks.qiyun.protocol;
 import io.netty.buffer.ByteBuf;
 import me.tenyks.core.crc.CRCCalculator;
 import me.tenyks.core.crc.XORCRCCalculator;
+import me.tenyks.qiyun.tcp.QiYunStrategyBaseTcpDeviceMessageCodec;
 import org.apache.commons.codec.binary.Hex;
-import org.jetlinks.core.device.TcpAuthenticationMessage;
-import org.jetlinks.core.device.TcpAuthenticationMessageReply;
 import org.jetlinks.core.message.AcknowledgeDeviceMessage;
 import org.jetlinks.core.message.event.EventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
@@ -19,7 +18,6 @@ import org.jetlinks.protocol.common.mapping.ThingValueNormalizations;
 import org.jetlinks.protocol.official.PluginConfig;
 import org.jetlinks.protocol.official.binary2.*;
 import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
-import me.tenyks.qiyun.tcp.QiYunStrategyBaseTcpDeviceMessageCodec;
 
 /**
  * 云快充新能源汽车充电桩协议
@@ -52,16 +50,16 @@ public class YKCV1ProtocolSupport {
     }
 
     public static DeclarationBasedBinaryMessageCodec            buildBinaryMessageCodec(PluginConfig config) {
-        StructSuit structSuit = buildStructSuitV2();
+        StructSuit structSuit = buildStructSuitV1();
         StructAndMessageMapper mapper = buildMapper(structSuit);
         return new DeclarationBasedBinaryMessageCodec(structSuit, mapper);
     }
 
-    public static StructSuit                    buildStructSuitV2() {
+    public static StructSuit buildStructSuitV1() {
         StructSuit suit = new StructSuit(
                 "云快充新能源汽车充电桩协议",
                 "V1.6",
-                "document-mqtt-MiChong.md",
+                "document-mqtt-YKCV1.md",
                 new YKCV1FeatureCodeExtractor()
         );
 
@@ -145,8 +143,9 @@ public class YKCV1ProtocolSupport {
         DefaultStructAndThingMapping structAndThingMapping = new DefaultStructAndThingMapping();
 
         // 充电桩登陆认证相关
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩登录认证消息[上行]"), TcpAuthenticationMessage.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩登录认证应答"), TcpAuthenticationMessageReply.class);
+        //TODO 临时处理，应该在TCPGateway处实现
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩登录认证消息[上行]"), DefaultDeviceRequestMessage.class);
+        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩登录认证应答"), DefaultDeviceRequestMessageReply.class);
 
         // 心跳包
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩心跳包[上行]"), EventMessage.class);
@@ -221,7 +220,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电桩登录认证消息[上行]", "CMD:0x01");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("AuthRequest"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("AuthRequest"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 30));
@@ -266,7 +265,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电桩登录认证应答[下行]", "CMD:0x02");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("AuthResponse"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("AuthResponse"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 8));
@@ -296,7 +295,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电桩心跳包[上行]", "CMD:0x03");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("HeartBeatPing"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("HeartBeatPing"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 9));
@@ -327,7 +326,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("心跳包应答[下行]", "CMD:0x04");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("HeartBeatPong"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("HeartBeatPong"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 9));
@@ -359,7 +358,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("计费模型验证请求[上行]", "CMD:0x05");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("CheckFeeTermsRequest"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("CheckFeeTermsRequest"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 9));
@@ -389,7 +388,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("计费模型验证请求应答[下行]", "CMD:0x06");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("CheckFeeTermsRequestReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("CheckFeeTermsRequestReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 10));
@@ -424,7 +423,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电桩计费模型请求[上行]", "CMD:0x09");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("BillingTermsRequest"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("BillingTermsRequest"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -449,7 +448,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("计费模型请求应答[下行]", "CMD:0x0A");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("BillingTermsRequestReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("BillingTermsRequestReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 90));
@@ -521,7 +520,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("读取实时监测数据[指令]", "CMD:0x12");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("CallOfRealTimeMonitorData"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("CallOfRealTimeMonitorData"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 8));
@@ -548,7 +547,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("上传实时监测数据[上行]", "CMD:0x13");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportRealTimeMonitorData"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReportRealTimeMonitorData"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 60));
@@ -634,7 +633,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电握手[上行]", "CMD:0x15");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportChargingHandshakeData"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReportChargingHandshakeData"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 73));
@@ -708,7 +707,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("参数配置[上行]", "CMD:0x17");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportChargingSettingWithBMS"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReportChargingSettingWithBMS"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 45));
@@ -782,7 +781,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电结束[上行]", "CMD:0x19");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportChargingFinishEvent"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReportChargingFinishEvent"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 39));
@@ -844,7 +843,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("错误报文[上行]", "CMD:0x1B");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportErrorEvent"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReportErrorEvent"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 32));
@@ -876,7 +875,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电阶段BMS中止[上行]", "CMD:0x1D");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportBMSStopEvent"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReportBMSStopEvent"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 28));
@@ -924,7 +923,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电阶段充电机中止[上行]", "CMD:0x21");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportChargerStopEvent"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReportChargerStopEvent"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 28));
@@ -975,7 +974,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电过程BMS需求与充电机输出[上行]", "CMD:0x23");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportBMSRequirementAndChargerOutputData"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReportBMSRequirementAndChargerOutputData"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 44));
@@ -1051,7 +1050,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电过程BMS信息[上行]", "CMD:0x25");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportBMSChargingData"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReportBMSChargingData"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 31));
@@ -1109,7 +1108,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电桩主动申请启动充电[上行]", "CMD:0x31");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("PileSwitchOnChargingRequest"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("PileSwitchOnChargingRequest"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 51));
@@ -1160,7 +1159,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("运营平台确认启动充电[下行]", "CMD:0x32");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("PileSwitchOnChargingRequestReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("PileSwitchOnChargingRequestReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 38));
@@ -1214,7 +1213,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("运营平台远程控制启机命令[下行]", "CMD:0x34");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOnChargingFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("SwitchOnChargingFunInv"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 44));
@@ -1256,7 +1255,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("远程启动充电命令回复[上行]", "CMD:0x33");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOnChargingFunInvReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("SwitchOnChargingFunInvReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -1300,7 +1299,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("运营平台远程停机[下行]", "CMD:0x36");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("SwitchOffChargingFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("SwitchOffChargingFunInv"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 8));
@@ -1329,7 +1328,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("远程停机命令回复[上行]", "CMD:0x35");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("PileSwitchOffFunInvReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("PileSwitchOffFunInvReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 10));
@@ -1370,7 +1369,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("上报交易记录[上行]", "CMD:0x3B");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportTransOrder"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReportTransOrder"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 158));
@@ -1514,7 +1513,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("交易记录确认[下行]", "CMD:0x40");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportTransOrderAck"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReportTransOrderAck"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 17));
@@ -1546,7 +1545,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("远程账户余额更新[下行]", "CMD:0x42");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("WriteCardBalanceFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("WriteCardBalanceFunInv"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 20));
@@ -1585,7 +1584,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("余额更新应答[上行]", "CMD:0x41");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("UpdateAccountBalanceFunInvReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("UpdateAccountBalanceFunInvReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -1625,7 +1624,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("下发离线卡数据指令[下行]", "CMD:0x44");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("AddOrUpdateCardFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("AddOrUpdateCardFunInv"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -1690,7 +1689,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("下发离线卡数据指令响应[上行]", "CMD:0x43");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("WriteICDataFunInvReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("WriteICDataFunInvReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -1729,7 +1728,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("清除离线卡数据指令[下行]", "CMD:0x46");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("CleanICDataFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("CleanICDataFunInv"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -1792,7 +1791,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("清除离线卡数据指令响应[上行]", "CMD:0x45");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("CleanICDataFunInvReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("CleanICDataFunInvReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -1855,7 +1854,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("写充电桩工作参数设置[指令]", "CMD:0x52");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("WritePileSettingFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("WritePileSettingFunInv"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -1892,7 +1891,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("写充电桩工作参数设置响应[指令响应]", "CMD:0x51");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("WritePileSettingFunInvReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("WritePileSettingFunInvReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 8));
@@ -1925,7 +1924,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("写对时设置[指令]", "CMD:0x56");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("WriteTimestampFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("WriteTimestampFunInv"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 14));
@@ -1958,7 +1957,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("写对时设置响应[指令响应]", "CMD:0x55");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("WriteTimestampFunInvReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("WriteTimestampFunInvReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 14));
@@ -1991,7 +1990,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("写计费模型设置[指令]", "CMD:0x58");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("WriteBillingTermsFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("WriteBillingTermsFunInv"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 90));
@@ -2064,7 +2063,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("写计费模型设置响应[指令响应]", "CMD:0x57");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("WriteBillingTermsFunInvReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("WriteBillingTermsFunInvReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 8));
@@ -2097,7 +2096,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("地锁数据上送[上行]", "CMD:0x61");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ReportParkLockData"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReportParkLockData"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -2149,7 +2148,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("遥控地锁升锁与降锁命令[下行]", "CMD:0x62");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ParkLockControlFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ParkLockControlFunInv"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -2186,7 +2185,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("遥控地锁升锁与降锁命令响应[上行]", "CMD:0x63");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("ParkLockControlFunInvReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ParkLockControlFunInvReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -2224,7 +2223,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("远程重启命令[指令]", "CMD:0x92");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("RebootFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("RebootFunInv"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -2257,7 +2256,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("远程重启应答[指令响应]", "CMD:0x91");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("RebootFunInvReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("RebootFunInvReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -2291,7 +2290,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("远程更新[指令]", "CMD:0x94");
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("CallOfOTAFunInv"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("CallOfOTAFunInv"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -2307,7 +2306,7 @@ public class YKCV1ProtocolSupport {
 
         //0x01：直流  0x02：交流
         fieldDcl = buildDataFieldDcl("桩型号", "", BaseDataType.UINT8, (short)(7));
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.DeviceId()));
 
         //不足 2 位补零
         fieldDcl = buildDataFieldDcl("桩功率", "", BaseDataType.UINT16, (short)(8));
@@ -2356,7 +2355,7 @@ public class YKCV1ProtocolSupport {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("远程更新应答[指令响应]", "CMD:0x93");
 
         structDcl.enableDecode();
-        structDcl.addThingAnnotation(ThingAnnotation.Event("CallOfOTAFunInvReply"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("CallOfOTAFunInvReply"));
 
         structDcl.addField(buildSOP());
         structDcl.addField(buildLENFieldDcl((byte) 7));
@@ -2393,14 +2392,16 @@ public class YKCV1ProtocolSupport {
      * 数据字段：桩编码
      */
     private static DefaultFieldDeclaration buildDFDclOfPileNo() {
-        return new DefaultFieldDeclaration("桩编码", "pileNo", BaseDataType.CHARS07, DATA_BEGIN_IDX);
+        return new DefaultFieldDeclaration("桩编码", "pileNo", BaseDataType.BCD07_STR, DATA_BEGIN_IDX)
+                .addMeta(ThingAnnotation.DeviceId());
     }
 
     /**
      * 数据字段：桩编码
      */
     private static DefaultFieldDeclaration buildDFDclOfPileNo(short absOffset) {
-        return new DefaultFieldDeclaration("桩编码", "pileNo", BaseDataType.CHARS07, (short)(DATA_BEGIN_IDX + absOffset));
+        return new DefaultFieldDeclaration("桩编码", "pileNo", BaseDataType.BCD07_STR, (short)(DATA_BEGIN_IDX + absOffset))
+                .addMeta(ThingAnnotation.DeviceId());
     }
 
     /**
@@ -2469,7 +2470,7 @@ public class YKCV1ProtocolSupport {
      * 公共字段：校验
      */
     private static DefaultFieldDeclaration buildCRCFieldDcl() {
-        return new DefaultFieldDeclaration("校验", "CHECK_SUM", BaseDataType.UINT16, (short) -1)
+        return new DefaultFieldDeclaration("校验", "CHECK_SUM", BaseDataType.UINT16, (short) -2)
                     .setDefaultValue((short) 0x0000);
     }
 

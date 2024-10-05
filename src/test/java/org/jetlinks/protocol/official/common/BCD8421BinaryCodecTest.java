@@ -38,6 +38,18 @@ public class BCD8421BinaryCodecTest {
     }
 
     @Test
+    public void encodeQuick() {
+        byte[] rst = BCD8421BinaryCodec.encode("55031412782305");
+        System.out.println(ByteUtils.toHexStr(rst));
+    }
+
+    @Test
+    public void decodeQuick() {
+        String rst = BCD8421BinaryCodec.decode(new byte[]{0x55, 0x03, 0x14, 0x12, 0x78, 0x23, 0x05});
+        System.out.println(rst);
+    }
+
+    @Test
     public void encodeWithPadding() {
         byte[] rst;
 
