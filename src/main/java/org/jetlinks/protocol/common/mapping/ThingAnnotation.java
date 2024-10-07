@@ -371,10 +371,9 @@ public abstract class ThingAnnotation {
 
                 if (itemKey == null) return fiMsg.getOutputs();
 
-                JSONObject outputObject = fiMsg.getOutputs();
-                if (outputObject == null) return null;
+                Object itemVal = fiMsg.getOutput(itemKey);
 
-                return outputObject.get(itemKey);
+                return norm.apply(itemVal);
             }
 
             @Override

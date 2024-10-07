@@ -1,6 +1,7 @@
 package org.jetlinks.protocol.common.mapping;
 
 import org.jetlinks.protocol.official.binary2.BaseDataTypeConvertors;
+import org.jetlinks.protocol.official.common.DictBook;
 
 import java.util.function.Function;
 
@@ -53,6 +54,17 @@ public class ThingValueNormalizations {
 
                 return toIntFun.apply(itemValue);
             }
+        };
+    }
+
+    public static <R> ThingValueNormalization<R> ofToDictVal(final DictBook<?, R> dictBook, final R defVal) {
+        return itemValue -> {
+            if (itemValue == null) return defVal;
+
+            DictBook.Item<?, R> item = dictBook.getOrCreate(itemValue);
+            if (item == null) return defVal;
+
+            return item.getOutputCode();
         };
     }
 

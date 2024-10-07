@@ -8,7 +8,7 @@ import io.netty.buffer.ByteBuf;
  */
 public class DeclarationBasedFieldWriter implements FieldWriter {
 
-    private StructFieldDeclaration fieldDcl;
+    private final StructFieldDeclaration fieldDcl;
 
     public DeclarationBasedFieldWriter(StructFieldDeclaration fieldDcl) {
         this.fieldDcl = fieldDcl;

@@ -44,13 +44,11 @@ public class YKCV1DictBookBuilder {
     /**
      * @return  登陆结果
      */
-    public static DictBook<Byte, String>    buildLoginAuthRstCodeDict() {
-        DictBook<Byte, String> rst = new DictBook<>();
+    public static DictBook<String, Byte> buildLoginAuthRstFlagDict() {
+        DictBook<String, Byte> rst = new DictBook<>();
 
-        rst.add((byte) 0x00, "SUCCESS", "登陆成功");
-        rst.add((byte) 0x00, "FAIL", "登陆失败");
-
-        rst.addOtherItemTemplate((srcCode) -> "FAIL_OTHER_" + srcCode.toString(), "登陆失败：其他");
+        rst.add("SUCCESS" , (byte) 0x00,"登陆成功");
+        rst.add( "FAIL", (byte) 0x01,"登陆失败");
 
         return rst;
     }

@@ -37,6 +37,11 @@ public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
     @Override
     public StructInstance toStructInstance(@Nullable MapperContext context, DeviceMessage message) {
         StructDeclaration   structDcl = structAndThingMapping.map(message);
+        if (structDcl == null) {
+            log.warn("[StructCodecMapper]不识别的消息，无法编码：{}", message.toJson());
+            return null;
+        }
+
         StructInstance structInst = new SimpleStructInstance(structDcl);
 
         for (StructFieldDeclaration fieldDcl : structDcl.fields()) {

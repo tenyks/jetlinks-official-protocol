@@ -13,6 +13,7 @@ import org.jetlinks.core.message.property.ReportPropertyMessage;
 import org.jetlinks.core.message.request.DefaultDeviceRequestMessage;
 import org.jetlinks.core.message.request.DefaultDeviceRequestMessageReply;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
+import org.jetlinks.protocol.common.mapping.ThingItemMappings;
 import org.jetlinks.protocol.common.mapping.ThingValueNormalization;
 import org.jetlinks.protocol.common.mapping.ThingValueNormalizations;
 import org.jetlinks.protocol.official.PluginConfig;
@@ -145,7 +146,7 @@ public class YKCV1ProtocolSupport {
         // 充电桩登陆认证相关
         //TODO 临时处理，应该在TCPGateway处实现
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩登录认证消息[上行]"), DefaultDeviceRequestMessage.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩登录认证应答"), DefaultDeviceRequestMessageReply.class);
+        structAndThingMapping.addMapping(DefaultDeviceRequestMessageReply.class, "AuthResponse", structSuit.getStructDeclaration("充电桩登录认证应答[下行]"));
 
         // 心跳包
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩心跳包[上行]"), EventMessage.class);
@@ -153,13 +154,13 @@ public class YKCV1ProtocolSupport {
 
         // 计费相关
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("计费模型验证请求[上行]"), DefaultDeviceRequestMessage.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("计费模型验证请求应答[下行]"), DefaultDeviceRequestMessageReply.class);
+        structAndThingMapping.addMapping(DefaultDeviceRequestMessageReply.class, "CheckFeeTermsRequestReply", structSuit.getStructDeclaration("计费模型验证请求应答[下行]"));
 
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩计费模型请求[上行]"), DefaultDeviceRequestMessage.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("计费模型请求应答[下行]"), DefaultDeviceRequestMessageReply.class);
+        structAndThingMapping.addMapping(DefaultDeviceRequestMessageReply.class, "BillingTermsRequestReply", structSuit.getStructDeclaration("计费模型请求应答[下行]"));
 
         // 数据上报相关
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("读取实时监测数据[指令]"), FunctionInvokeMessage.class);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "CallOfRealTimeMonitorData", structSuit.getStructDeclaration("读取实时监测数据[指令]"));
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("上传实时监测数据[上行]"), ReportPropertyMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电握手[上行]"), ReportPropertyMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("参数配置[上行]"), ReportPropertyMessage.class);
@@ -174,25 +175,25 @@ public class YKCV1ProtocolSupport {
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("错误报文[上行]"), EventMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电阶段BMS中止[上行]"), EventMessage.class);
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电阶段充电机中止[上行]"), EventMessage.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("写计费模型设置[指令]"), FunctionInvokeMessage.class);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "WriteBillingTermsFunInv", structSuit.getStructDeclaration("写计费模型设置[指令]"));
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("写计费模型设置响应[指令响应]"), FunctionInvokeMessageReply.class);
 
         // 充电发起
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩主动申请启动充电[上行]"), DefaultDeviceRequestMessage.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("运营平台确认启动充电[下行]"), DefaultDeviceRequestMessageReply.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("运营平台远程控制启机命令[下行]"), FunctionInvokeMessage.class);
+        structAndThingMapping.addMapping(DefaultDeviceRequestMessageReply.class, "PileSwitchOnChargingRequestReply", structSuit.getStructDeclaration("运营平台确认启动充电[下行]"));
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "SwitchOnChargingFunInv", structSuit.getStructDeclaration("运营平台远程控制启机命令[指令]"));
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("远程启动充电命令回复[上行]"), FunctionInvokeMessageReply.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("运营平台远程停机[下行]"), FunctionInvokeMessage.class);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "SwitchOffChargingFunInv", structSuit.getStructDeclaration("运营平台远程停机[下行]"));
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("远程停机命令回复[上行]"), FunctionInvokeMessageReply.class);
 
         // 运维相关
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("写充电桩工作参数设置[指令]"), FunctionInvokeMessage.class);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "WritePileSettingFunInv", structSuit.getStructDeclaration("写充电桩工作参数设置[指令]"));
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("写充电桩工作参数设置响应[指令响应]"), FunctionInvokeMessageReply.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("写对时设置[指令]"), FunctionInvokeMessage.class);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "WriteTimestampFunInv", structSuit.getStructDeclaration("写对时设置[指令]"));
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("写对时设置响应[指令响应]"), FunctionInvokeMessageReply.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("远程重启[指令]"), FunctionInvokeMessage.class);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "RebootFunInv", structSuit.getStructDeclaration("远程重启[指令]"));
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("远程重启应答[指令响应]"), FunctionInvokeMessageReply.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("远程更新[指令]"), FunctionInvokeMessage.class);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "CallOfOTAFunInv", structSuit.getStructDeclaration("远程更新[指令]"));
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("远程更新应答[指令响应]"), FunctionInvokeMessageReply.class);
 
 
@@ -278,7 +279,10 @@ public class YKCV1ProtocolSupport {
 
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = buildDataFieldDcl("登陆结果", "rstCode", BaseDataType.UINT8, (short)(7));
+        fieldDcl = buildDataFieldDcl("登陆结果", "rstFlag", BaseDataType.UINT8, (short)(7));
+        fieldDcl.addMeta(ThingAnnotation.DevReqReplyOutput(
+                ThingValueNormalizations.ofToDictVal(YKCV1DictBookBuilder.buildLoginAuthRstFlagDict(), (byte) 0x01)
+        ));
         structDcl.addField(fieldDcl);
 
         structDcl.addField(buildCRCFieldDcl());
@@ -2393,7 +2397,7 @@ public class YKCV1ProtocolSupport {
      */
     private static DefaultFieldDeclaration buildDFDclOfPileNo() {
         return new DefaultFieldDeclaration("桩编码", "pileNo", BaseDataType.BCD07_STR, DATA_BEGIN_IDX)
-                .addMeta(ThingAnnotation.DeviceId());
+                    .addMeta(ThingAnnotation.DeviceId());
     }
 
     /**
@@ -2439,7 +2443,7 @@ public class YKCV1ProtocolSupport {
      */
     private static DefaultFieldDeclaration buildLENFieldDcl(byte sizeOfData) {
         return new DefaultFieldDeclaration("报文长度", "LEN", BaseDataType.UINT8, (short) 1)
-                .setDefaultValue(sizeOfData + 8);
+                .setDefaultValue(sizeOfData + 4);
     }
 
     /**
@@ -2455,7 +2459,7 @@ public class YKCV1ProtocolSupport {
      */
     private static DefaultFieldDeclaration buildEncyFlagFieldDcl() {
         return new DefaultFieldDeclaration("加密标志", CODE_OF_ENCY_FLAG_FIELD, BaseDataType.UINT8, (short) 4)
-                .setDefaultValue(1);
+                .setDefaultValue(0);
     }
 
     /**
@@ -2489,7 +2493,7 @@ public class YKCV1ProtocolSupport {
     }
 
     private static CRCCalculator buildCRCCalculator() {
-        return new XORCRCCalculator(1, -1);
+        return new XORCRCCalculator(2, -2);
     }
 
     private static class YKCV1FeatureCodeExtractor implements FeatureCodeExtractor {

@@ -25,7 +25,7 @@ public class DefaultFieldDeclaration extends AbstractStructPartDeclaration
     }
 
     public DefaultFieldDeclaration(String name, String code, BaseDataType dataType, Short absOffset) {
-        this(name, code, dataType, absOffset, (dataType.size() >0 ? dataType.size() : null));
+        this(name, code, dataType, absOffset, (dataType.size() > 0 ? dataType.size() : null));
     }
 
     public DefaultFieldDeclaration(String name, String code, BaseDataType dataType, Short absOffset, Short size) {
