@@ -23,6 +23,11 @@ public class CRC180DCRCCalculator implements CRCCalculator {
     }
 
     @Override
+    public int size() {
+        return 2;
+    }
+
+    @Override
     public int apply(ByteBuf buf) {
         byte[]  wholeBuf = buf.array();
 

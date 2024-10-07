@@ -42,7 +42,11 @@ public class DeclarationBasedStructWriter implements StructWriter {
         CRCCalculator crcCal = structDcl.getCRCCalculator();
         if (crcCal != null) {
             int crcVal = structDcl.getCRCCalculator().apply(rst);
-            rst.writeByte(crcVal);
+            if (crcCal.size() == 2) {
+                rst.writeShort(crcVal);
+            } else {
+                rst.writeByte(crcVal);
+            }
         }
 
         return rst;

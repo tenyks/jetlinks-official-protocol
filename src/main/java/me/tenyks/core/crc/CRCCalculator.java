@@ -6,4 +6,11 @@ public interface CRCCalculator {
 
     int apply(ByteBuf buf);
 
+    /**
+     * @return 字节数
+     */
+    default int size() {
+        return 1;
+    }
+
 }

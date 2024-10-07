@@ -144,14 +144,26 @@ public class YKCV1ProtocolSupport {
     public static StructAndMessageMapper        buildMapper(StructSuit structSuit) {
         DefaultStructAndThingMapping structAndThingMapping = new DefaultStructAndThingMapping();
 
+        MessageIdMappingAnnotation msgIdMappingAnn = new AbstractMessageIdMappingAnnotation.OfFunction(
+                structInst -> structInst.getFieldStringValueWithDef(CODE_OF_MSG_TYPE_FIELD, "NO_CMD_FIELD")
+        );
+
+        DefaultStructDeclaration target;
+
         // 充电桩登陆认证相关
         //TODO 临时处理，应该在TCPGateway处实现
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩登录认证消息[上行]"), DefaultDeviceRequestMessage.class);
-        structAndThingMapping.addMapping(DefaultDeviceRequestMessageReply.class, "AuthResponse", structSuit.getStructDeclaration("充电桩登录认证应答[下行]"));
+        target = (DefaultStructDeclaration)structSuit.getStructDeclaration("充电桩登录认证消息[上行]");
+        target.addMetaAnnotation(msgIdMappingAnn);
+        structAndThingMapping.addMapping(target, DefaultDeviceRequestMessage.class);
+        target = (DefaultStructDeclaration)structSuit.getStructDeclaration("充电桩登录认证应答[下行]");
+        target.addMetaAnnotation(msgIdMappingAnn);
+        structAndThingMapping.addMapping(DefaultDeviceRequestMessageReply.class, "AuthResponse", target);
 
         // 心跳包
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩心跳包[上行]"), EventMessage.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("心跳包应答[下行]"),   AcknowledgeDeviceMessage.class);
+        target = (DefaultStructDeclaration) structSuit.getStructDeclaration("充电桩心跳包[上行]");
+        structAndThingMapping.addMapping(target, EventMessage.class);
+        target = (DefaultStructDeclaration) structSuit.getStructDeclaration("心跳包应答[下行]");
+        structAndThingMapping.addMapping(target, AcknowledgeDeviceMessage.class);
 
         // 计费相关
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("计费模型验证请求[上行]"), DefaultDeviceRequestMessage.class);
@@ -181,7 +193,7 @@ public class YKCV1ProtocolSupport {
 
         // 充电发起
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电桩主动申请启动充电[上行]"), DefaultDeviceRequestMessage.class);
-        structAndThingMapping.addMapping(DefaultDeviceRequestMessageReply.class, "PileSwitchOnChargingRequestReply", structSuit.getStructDeclaration("运营平台确认启动充电[下行]"));
+        structAndThingMapping.addMapping(DefaultDeviceRequestMessageReply.class, "PileSwitchOnChargingRequestReply", structSuit.getStructDeclaration("运营平台确认启动充电应答[下行]"));
         structAndThingMapping.addMapping(FunctionInvokeMessage.class, "SwitchOnChargingFunInv", structSuit.getStructDeclaration("运营平台远程控制启机命令[指令]"));
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("远程启动充电命令回复[上行]"), FunctionInvokeMessageReply.class);
         structAndThingMapping.addMapping(FunctionInvokeMessage.class, "SwitchOffChargingFunInv", structSuit.getStructDeclaration("运营平台远程停机[下行]"));
@@ -198,13 +210,16 @@ public class YKCV1ProtocolSupport {
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("远程更新应答[指令响应]"), FunctionInvokeMessageReply.class);
 
 
-        MessageIdMappingAnnotation msgIdMappingAnn = new AbstractMessageIdMappingAnnotation.OfFunction(
-                structInst -> structInst.getFieldStringValueWithDef(CODE_OF_MSG_TYPE_FIELD, "NO_CMD_FIELD")
-        );
-
         //指令响应：Decode
         for (StructDeclaration structDcl : structSuit.structDeclarations()) {
             if (!structDcl.getName().contains("指令响应")) continue;
+
+            ((DefaultStructDeclaration) structDcl).addMetaAnnotation(msgIdMappingAnn);
+        }
+
+        //请求应答：Encode
+        for (StructDeclaration structDcl : structSuit.structDeclarations()) {
+            if (!structDcl.getName().contains("应答[下行]")) continue;
 
             ((DefaultStructDeclaration) structDcl).addMetaAnnotation(msgIdMappingAnn);
         }
@@ -286,8 +301,8 @@ public class YKCV1ProtocolSupport {
         ));
         structDcl.addField(fieldDcl);
 
-        structDcl.addField(buildCRCFieldDcl());
-        structDcl.setCRCCalculator(buildCRCCalculator());
+//        structDcl.addField(buildCRCFieldDcl());
+        structDcl.setCRCCalculator(buildCRCCalculatorForEncode());
 
         return structDcl;
     }
@@ -1156,12 +1171,12 @@ public class YKCV1ProtocolSupport {
     }
 
     /**
-     * 运营平台确认启动充电[下行], 0x32
+     * 运营平台确认启动充电应答[下行], 0x32
      * <li>应答</li>
      * <li>启动充电鉴权结果</li>
      */
     private static DefaultStructDeclaration buildPileSwitchOnChargingRequestReplyStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("运营平台确认启动充电[下行]", "CMD:0x32");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("运营平台确认启动充电应答[下行]", "CMD:0x32");
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.ServiceId("PileSwitchOnChargingRequestReply"));
@@ -2452,7 +2467,8 @@ public class YKCV1ProtocolSupport {
      */
     private static DefaultFieldDeclaration buildMsgNoFieldDcl() {
         return new DefaultFieldDeclaration("报文序号", CODE_OF_MSG_NO_FIELD, BaseDataType.UINT16, (short) 2)
-                .setDefaultValue(1);
+                    .addMeta(ThingAnnotation.MsgIdUint16())
+                    .setDefaultValue(0);
     }
 
     /**
@@ -2495,6 +2511,10 @@ public class YKCV1ProtocolSupport {
 
     private static CRCCalculator buildCRCCalculator() {
         return new CRC180DCRCCalculator(2, -2);
+    }
+
+    private static CRCCalculator buildCRCCalculatorForEncode() {
+        return new CRC180DCRCCalculator(2, 0);
     }
 
     private static class YKCV1FeatureCodeExtractor implements FeatureCodeExtractor {
