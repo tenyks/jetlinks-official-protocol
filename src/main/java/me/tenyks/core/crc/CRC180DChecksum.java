@@ -46,7 +46,8 @@ public class CRC180DChecksum implements Checksum {
         byte crcHi = (byte) (0x00FF & (val >> 8));
         byte crcLw = (byte) (0x00FF & val);
 
-        for (int i = offset; i < len; i++) {
+        int end = offset + len;
+        for (int i = offset; i < end; i++) {
             int idx = (crcHi ^ buf[i]) & 0xFF;
             crcHi = (byte) (crcLw ^ gabyCRCHi[idx]);
             crcLw = gabyCRCLo[idx];

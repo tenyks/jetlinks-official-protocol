@@ -1,6 +1,7 @@
 package me.tenyks.qiyun.protocol;
 
 import io.netty.buffer.ByteBuf;
+import me.tenyks.core.crc.CRC180DCRCCalculator;
 import me.tenyks.core.crc.CRCCalculator;
 import me.tenyks.core.crc.XORCRCCalculator;
 import me.tenyks.qiyun.tcp.QiYunStrategyBaseTcpDeviceMessageCodec;
@@ -2493,7 +2494,7 @@ public class YKCV1ProtocolSupport {
     }
 
     private static CRCCalculator buildCRCCalculator() {
-        return new XORCRCCalculator(2, -2);
+        return new CRC180DCRCCalculator(2, -2);
     }
 
     private static class YKCV1FeatureCodeExtractor implements FeatureCodeExtractor {
