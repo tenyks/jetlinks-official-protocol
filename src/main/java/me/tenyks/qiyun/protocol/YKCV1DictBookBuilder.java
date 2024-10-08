@@ -1,5 +1,9 @@
 package me.tenyks.qiyun.protocol;
 
+import org.jetlinks.protocol.common.mapping.ThingItemMapping;
+import org.jetlinks.protocol.common.mapping.ThingItemMappings;
+import org.jetlinks.protocol.common.mapping.ThingValueNormalization;
+import org.jetlinks.protocol.common.mapping.ThingValueNormalizations;
 import org.jetlinks.protocol.official.common.BitDictBook;
 import org.jetlinks.protocol.official.common.DictBook;
 
@@ -56,27 +60,27 @@ public class YKCV1DictBookBuilder {
     /**
      * @return  充电枪状态
      */
-    public static DictBook<Byte, String>    buildGunStatusDict() {
-        DictBook<Byte, String> rst = new DictBook<>();
+    public static ThingItemMapping<String> buildGunStatusDictMapping(String itemDescKey) {
+        DictBook<Short, String> rst = new DictBook<>();
 
-        rst.add((byte) 0x00, "OK", "正常");
-        rst.add((byte) 0x00, "FAULT", "故障");
+        rst.add((short) 0x00, "OK", "正常");
+        rst.add((short) 0x01, "FAULT", "故障");
 
         rst.addOtherItemTemplate((srcCode) -> "FAULT_OTR_" + srcCode.toString(), "其他故障");
 
-        return rst;
+        return ThingItemMappings.ofDictExtend(rst, itemDescKey);
     }
 
     /**
      * 计费模型验证结果
      */
-    public static DictBook<Byte, String>    buildCheckFeeTermsRstCodeDict() {
-        DictBook<Byte, String> rst = new DictBook<>();
+    public static ThingValueNormalization<Byte> buildCheckFeeTermsRstCodeDict() {
+        DictBook<String, Byte> rst = new DictBook<>();
 
-        rst.add((byte) 0x00, "PASS", "桩计费模型与平台一致");
-        rst.add((byte) 0x01, "NOT_PASS", "桩计费模型与平台不一致");
+        rst.add("PASS", (byte) 0x00, "桩计费模型与平台一致");
+        rst.add("NOT_PASS", (byte) 0x01, "桩计费模型与平台不一致");
 
-        return rst;
+        return ThingValueNormalizations.ofToDictVal(rst, (byte)0x01);
     }
 
     /**

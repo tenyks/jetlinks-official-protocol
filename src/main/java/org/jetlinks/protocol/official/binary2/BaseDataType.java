@@ -140,7 +140,9 @@ public enum BaseDataType {
         @Override
         public short size() { return 8; }
     },
-    //0x06
+    /**
+     * 返回类型：short
+     */
     UINT8 {
         @Override
         public Object read(ByteBuf buf, short size) {
@@ -500,7 +502,17 @@ public enum BaseDataType {
         public Object read(ByteBuf buf, short size) {
             byte[] bytes = new byte[size()];
             buf.readBytes(bytes);
-            return new String(bytes, StandardCharsets.UTF_8);
+
+            int len = 0;
+            for (int i = 0; i < size(); i++) {
+                if (bytes[i] == 0) {
+                    break;
+                } else {
+                    len = i;
+                }
+            }
+
+            return new String(bytes, 0, len, StandardCharsets.UTF_8);
         }
 
         @Override

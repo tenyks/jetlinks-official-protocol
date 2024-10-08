@@ -3,7 +3,6 @@ package me.tenyks.qiyun.protocol;
 import io.netty.buffer.ByteBuf;
 import me.tenyks.core.crc.CRC180DCRCCalculator;
 import me.tenyks.core.crc.CRCCalculator;
-import me.tenyks.core.crc.XORCRCCalculator;
 import me.tenyks.qiyun.tcp.QiYunStrategyBaseTcpDeviceMessageCodec;
 import org.apache.commons.codec.binary.Hex;
 import org.jetlinks.core.message.AcknowledgeDeviceMessage;
@@ -39,11 +38,11 @@ public class YKCV1ProtocolSupport {
 
     private static final String     CODE_OF_MSG_NO_FIELD = "MSG_NO";
 
-    private static final String     CODE_OF_ENCY_FLAG_FIELD = "ENCY_NO";
+    private static final String     CODE_OF_ENCY_FLAG_FIELD = "ENCY_FLAG";
 
-    private static final ThingValueNormalization<Integer> NormToInt = ThingValueNormalizations.ofToInt(-1);
+    private static final ThingValueNormalization<Integer>   NormToInt = ThingValueNormalizations.ofToInt(-1);
 
-    public static QiYunStrategyBaseTcpDeviceMessageCodec buildDeviceMessageCodec(PluginConfig config) {
+    public static QiYunStrategyBaseTcpDeviceMessageCodec    buildDeviceMessageCodec(PluginConfig config) {
         AbstractIntercommunicateStrategy strategy = buildIntercommunicateStrategy(config);
         DeclarationBasedBinaryMessageCodec bmCodec = buildBinaryMessageCodec(config);
         strategy.setReplyResponder(new YKCV1ReplyResponderBuilder().build(bmCodec.getStructSuit()));
@@ -51,7 +50,7 @@ public class YKCV1ProtocolSupport {
         return new QiYunStrategyBaseTcpDeviceMessageCodec(bmCodec, strategy);
     }
 
-    public static DeclarationBasedBinaryMessageCodec            buildBinaryMessageCodec(PluginConfig config) {
+    public static DeclarationBasedBinaryMessageCodec        buildBinaryMessageCodec(PluginConfig config) {
         StructSuit structSuit = buildStructSuitV1();
         StructAndMessageMapper mapper = buildMapper(structSuit);
         return new DeclarationBasedBinaryMessageCodec(structSuit, mapper);
@@ -136,7 +135,7 @@ public class YKCV1ProtocolSupport {
         return suit;
     }
 
-    public static AbstractIntercommunicateStrategy      buildIntercommunicateStrategy(PluginConfig config) {
+    public static AbstractIntercommunicateStrategy          buildIntercommunicateStrategy(PluginConfig config) {
         return new AbstractIntercommunicateStrategy() {}
         .setRequestHandler(new YKCV1APIBuilder().build());
     }
@@ -163,7 +162,7 @@ public class YKCV1ProtocolSupport {
         target = (DefaultStructDeclaration) structSuit.getStructDeclaration("充电桩心跳包[上行]");
         structAndThingMapping.addMapping(target, EventMessage.class);
         target = (DefaultStructDeclaration) structSuit.getStructDeclaration("心跳包应答[下行]");
-        structAndThingMapping.addMapping(target, AcknowledgeDeviceMessage.class);
+        structAndThingMapping.addMapping(AcknowledgeDeviceMessage.class, "HeartBeatPong", target);
 
         // 计费相关
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("计费模型验证请求[上行]"), DefaultDeviceRequestMessage.class);
@@ -181,7 +180,8 @@ public class YKCV1ProtocolSupport {
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电过程BMS信息[上行]"), ReportPropertyMessage.class);
 
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("上报交易记录[上行]"), EventMessage.class);
-        structAndThingMapping.addMapping(structSuit.getStructDeclaration("交易记录确认[下行]"), AcknowledgeDeviceMessage.class);
+        target = (DefaultStructDeclaration) structSuit.getStructDeclaration("交易记录确认[下行]");
+        structAndThingMapping.addMapping(AcknowledgeDeviceMessage.class, "ReportTransOrderAck", target);
 
         // 充电事件
         structAndThingMapping.addMapping(structSuit.getStructDeclaration("充电结束[上行]"), EventMessage.class);
@@ -233,7 +233,7 @@ public class YKCV1ProtocolSupport {
     /**
      * 充电桩登录认证消息[上行], 0x01
      */
-    private static DefaultStructDeclaration buildAuthRequestStructDcl() {
+    private static DefaultStructDeclaration     buildAuthRequestStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电桩登录认证消息[上行]", "CMD:0x01");
 
         structDcl.enableDecode();
@@ -252,22 +252,22 @@ public class YKCV1ProtocolSupport {
         DefaultFieldDeclaration fieldDcl;
 
         fieldDcl = buildDataFieldDcl("充电枪数量", "gunCount", BaseDataType.UINT8, (short) (8));
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.DevReqInput()));
 
         fieldDcl = buildDataFieldDcl("通信协议版本", "protocolVersion", BaseDataType.UINT8, (short) (9));
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.DevReqInput()));
 
         fieldDcl = buildDataFieldDcl("程序版本", "firmwareVersion", BaseDataType.CHARS08, (short) (10));
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.DevReqInput()));
 
         fieldDcl = buildDataFieldDcl("网络链接类型", "networkType", BaseDataType.UINT8, (short) (18));
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.DevReqInput()));
 
         fieldDcl = buildDataFieldDcl("SIM卡", "simNo", BaseDataType.BCD10_STR, (short) (19));
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.DevReqInput()));
 
         fieldDcl = buildDataFieldDcl("运营商", "simSP", BaseDataType.UINT8, (short) (29));
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.DevReqInput()));
 
         structDcl.addField(buildCRCFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
@@ -278,7 +278,7 @@ public class YKCV1ProtocolSupport {
     /**
      * 充电桩登录认证应答[下行], 0x02
      */
-    private static DefaultStructDeclaration buildAuthResponseStructDcl() {
+    private static DefaultStructDeclaration     buildAuthResponseStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电桩登录认证应答[下行]", "CMD:0x02");
 
         structDcl.enableEncode();
@@ -311,7 +311,7 @@ public class YKCV1ProtocolSupport {
      * 充电桩心跳包[上行], 0x03
      * <li>10秒周期上送，用于链路状态判断，3次未收到心跳包视为网络异常，需要重新登陆</li>
      */
-    private static DefaultStructDeclaration buildHeartBeatPingStructDcl() {
+    private static DefaultStructDeclaration     buildHeartBeatPingStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电桩心跳包[上行]", "CMD:0x03");
 
         structDcl.enableDecode();
@@ -325,13 +325,13 @@ public class YKCV1ProtocolSupport {
 
         // 数据块
         structDcl.addField(buildDFDclOfPileNo());
-        structDcl.addField(buildDFDclOfGunNo());
+        structDcl.addField(buildDFDclOfGunNo().addMeta(ThingAnnotation.EventData()));
 
         DefaultFieldDeclaration fieldDcl;
 
         //0x00：正常 0x01：故障
         fieldDcl = buildDataFieldDcl("枪状态", "gunStatus", BaseDataType.UINT8, (short) (8));
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData(YKCV1DictBookBuilder.buildGunStatusDictMapping("gunStatusDesc"))));
 
         structDcl.addField(buildCRCFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
@@ -342,7 +342,7 @@ public class YKCV1ProtocolSupport {
     /**
      * 心跳包应答[下行], 0x04
      */
-    private static DefaultStructDeclaration buildHeartBeatPongStructDcl() {
+    private static DefaultStructDeclaration     buildHeartBeatPongStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("心跳包应答[下行]", "CMD:0x04");
 
         structDcl.enableEncode();
@@ -356,14 +356,14 @@ public class YKCV1ProtocolSupport {
 
         // 数据块
         structDcl.addField(buildDFDclOfPileNo());
-        structDcl.addField(buildDFDclOfGunNo());
+        structDcl.addField(buildDFDclOfGunNo().addMeta(ThingAnnotation.AckOutput()));
 
         DefaultFieldDeclaration fieldDcl;
 
         fieldDcl = buildDataFieldDcl("心跳应答", "pongFlag", BaseDataType.UINT8, (short) (8));
-        structDcl.addField(fieldDcl.setDefaultValue((byte) 0));
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.AckOutput()).setDefaultValue((byte) 0));
 
-        structDcl.addField(buildCRCFieldDcl());
+//        structDcl.addField(buildCRCFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
 
         return structDcl;
@@ -374,7 +374,7 @@ public class YKCV1ProtocolSupport {
      * <li>主动请求，直到成功</li>
      * <li>充电桩在登陆成功后，都需要对当前计费模型校验，如计费模型与平台当前不一致，则需要向平台请求新的计费模型</li>
      */
-    private static DefaultStructDeclaration buildCheckFeeTermsRequestStructDcl() {
+    private static DefaultStructDeclaration     buildCheckFeeTermsRequestStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("计费模型验证请求[上行]", "CMD:0x05");
 
         structDcl.enableDecode();
@@ -395,8 +395,8 @@ public class YKCV1ProtocolSupport {
         fieldDcl = buildDataFieldDcl("计费模型编号", "termsNo", BaseDataType.UINT16, (short) (7));
         structDcl.addField(fieldDcl.addMeta(ThingAnnotation.DevReqInput(NormToInt)));
 
-        structDcl.addField(buildCRCFieldDcl());
-        structDcl.setCRCCalculator(buildCRCCalculator());
+//        structDcl.addField(buildCRCFieldDcl());
+//        structDcl.setCRCCalculator(buildCRCCalculator());
 
         return structDcl;
     }
@@ -422,13 +422,14 @@ public class YKCV1ProtocolSupport {
         DefaultFieldDeclaration fieldDcl;
 
         fieldDcl = buildDataFieldDcl("计费模型编号", "termsNo", BaseDataType.UINT16, (short) (7));
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.DevReqReplyOutput()));
 
         //0x00 桩计费模型与平台一致 0x01 桩计费模型与平台不一致
         fieldDcl = buildDataFieldDcl("验证结果", "rstFlag", BaseDataType.UINT8, (short) (9));
+        fieldDcl.addMeta(ThingAnnotation.DevReqReplyOutput(YKCV1DictBookBuilder.buildCheckFeeTermsRstCodeDict()));
         structDcl.addField(fieldDcl);
 
-        structDcl.addField(buildCRCFieldDcl());
+//        structDcl.addField(buildCRCFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
 
         return structDcl;

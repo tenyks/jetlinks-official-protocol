@@ -6,6 +6,7 @@ import me.tenyks.core.utils.UuidRemapFactory;
 import me.tenyks.core.utils.UuidRemapShort;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections.CollectionUtils;
+import org.jetlinks.core.message.AcknowledgeDeviceMessage;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.DeviceMessageReply;
 import org.jetlinks.core.message.event.EventMessage;
@@ -61,7 +62,7 @@ public abstract class ThingAnnotation {
                     Short   shortMsgId = (itemVal instanceof Short ? (Short) itemVal : ((Integer)itemVal).shortValue());
                     String  msgId = UuidRemapFactory.DEF_INST.createOrGet(msg.getDeviceId()).recovery(shortMsgId);
                     if (msgId == null) {
-                        msgId = String.format("%s_%d", ShortCodeGenerator.INSTANCE.next(), shortMsgId);
+                        msgId = String.format("%s_%06d", ShortCodeGenerator.INSTANCE.next(), shortMsgId);
                     }
 
                     msg.messageId(msgId);
@@ -337,6 +338,30 @@ public abstract class ThingAnnotation {
         };
     }
 
+    public static ThingAnnotation AckOutput() {
+        return new ThingAnnotation("outputs", null) {
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                AcknowledgeDeviceMessage fiMsg = (AcknowledgeDeviceMessage)msg;
+
+                if (itemKey == null) return fiMsg.getOutputs();
+
+                return fiMsg.getOutput(itemKey);
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                AcknowledgeDeviceMessage fiMsg = (AcknowledgeDeviceMessage)msg;
+
+                JSONObject outputObj = fiMsg.getOutputs();
+                if (outputObj == null) {
+                    outputObj = new JSONObject();
+                    fiMsg.setOutputs(outputObj);
+                }
+                outputObj.put(itemKey, itemVal);
+            }
+        };
+    }
 
     public static ThingAnnotation DevReqReplyOutput() {
         return new ThingAnnotation("outputs", null) {

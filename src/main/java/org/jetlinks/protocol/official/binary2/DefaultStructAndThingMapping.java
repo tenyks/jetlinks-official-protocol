@@ -1,5 +1,6 @@
 package org.jetlinks.protocol.official.binary2;
 
+import org.jetlinks.core.message.AcknowledgeDeviceMessage;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.event.EventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
@@ -70,18 +71,20 @@ public class DefaultStructAndThingMapping implements StructAndThingMapping {
     }
 
     private String buildMappingKey(DeviceMessage message) {
-        String subKey = null;
-        if (message instanceof FunctionInvokeMessage) {
-            subKey = ((FunctionInvokeMessage) message).getFunctionId();
-        } else if (message instanceof EventMessage) {
-            subKey = ((EventMessage) message).getEvent();
-        } else if (message instanceof FunctionInvokeMessageReply) {
-            subKey = ((FunctionInvokeMessageReply) message).getFunctionId();
-        } else if (message instanceof DeviceRequestMessage<?>) {
-            subKey = ((DeviceRequestMessage<?>) message).getFunctionId();
-        } else if (message instanceof DeviceRequestMessageReply) {
-            subKey = ((DeviceRequestMessageReply) message).getFunctionId();
-        }
+        String subKey = message.getServiceId();
+//        if (message instanceof FunctionInvokeMessage) {
+//            subKey = ((FunctionInvokeMessage) message).getFunctionId();
+//        } else if (message instanceof EventMessage) {
+//            subKey = ((EventMessage) message).getEvent();
+//        } else if (message instanceof FunctionInvokeMessageReply) {
+//            subKey = ((FunctionInvokeMessageReply) message).getFunctionId();
+//        } else if (message instanceof DeviceRequestMessage<?>) {
+//            subKey = ((DeviceRequestMessage<?>) message).getFunctionId();
+//        } else if (message instanceof DeviceRequestMessageReply) {
+//            subKey = ((DeviceRequestMessageReply) message).getFunctionId();
+//        } else if (message instanceof AcknowledgeDeviceMessage) {
+//            subKey = ((AcknowledgeDeviceMessage) message).getFunctionId();
+//        }
 
         return buildMappingKey(message.getClass(), subKey);
     }
