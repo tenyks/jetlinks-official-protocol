@@ -9,18 +9,15 @@ package org.jetlinks.protocol.common;
 public interface MessageIdReverseMapping<T> {
 
     /**
-     * 提交物模型消息ID与协议消息ID的绑定关系
-     * @param thingMsgId        物模型消息ID,（必要）
-     * @param protocolMsgId     协议消息ID,（必要）
-     * @return  如果已存在绑定关系，返回false, 否则返回true
+     *
+     * @return  物模型消息ID
      */
-    boolean     submitBinding(String thingMsgId, T protocolMsgId);
+    String     mark(T protocolMsgId);
 
     /**
-     * 核销物模型消息ID与协议消息ID的绑定关系，并返回物模型消息ID
      * @param thingMsgId     协议消息ID,（必要）
-     * @return  如果存在绑定关系返回物模型消息ID，否则返回空
+     * @return  协议消息ID
      */
-    T           revokeBinding(String thingMsgId);
+    T           take(String thingMsgId);
 
 }

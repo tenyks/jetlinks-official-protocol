@@ -17,6 +17,7 @@ import org.jetlinks.core.message.function.FunctionParameter;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
 import org.jetlinks.core.message.request.DeviceRequestMessage;
 import org.jetlinks.core.message.request.DeviceRequestMessageReply;
+import org.jetlinks.protocol.common.MessageIdReverseMapping;
 import reactor.util.function.Tuple2;
 
 import java.util.HashMap;
@@ -64,6 +65,31 @@ public abstract class ThingAnnotation {
                     if (msgId == null) {
                         msgId = String.format("%s_%06d", ShortCodeGenerator.INSTANCE.next(), shortMsgId);
                     }
+
+                    msg.messageId(msgId);
+                }
+            }
+        };
+    }
+
+    /**
+     * 映射为UINT16的消息流水号
+     */
+    public static ThingAnnotation MsgIdUint16Reverse(final MessageIdReverseMapping<Short> msgIdMapping) {
+        return new ThingAnnotation("messageId", null) {
+
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                String msgId = msg.getMessageId();
+
+                return msgIdMapping.take(msgId);
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                if (itemVal != null) {
+                    Short   shortMsgId = (itemVal instanceof Short ? (Short) itemVal : ((Number)itemVal).shortValue());
+                    String msgId = msgIdMapping.mark(shortMsgId);
 
                     msg.messageId(msgId);
                 }

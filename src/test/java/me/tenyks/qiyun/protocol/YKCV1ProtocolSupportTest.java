@@ -48,7 +48,7 @@ public class YKCV1ProtocolSupportTest {
     public void encodeAuthResponse() throws DecoderException {
         DefaultDeviceRequestMessageReply reply = new DefaultDeviceRequestMessageReply();
         reply.setDeviceId("55031412782305");
-        reply.setMessageId("0000");
+        reply.setMessageId("YKCV1_1728399796355_000001_0000");
         reply.functionId("AuthResponse");
 
         reply.addOutput("rstFlag", "SUCCESS");

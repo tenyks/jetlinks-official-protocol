@@ -12,6 +12,8 @@ import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
 import org.jetlinks.core.message.request.DefaultDeviceRequestMessage;
 import org.jetlinks.core.message.request.DefaultDeviceRequestMessageReply;
+import org.jetlinks.protocol.common.MessageIdReverseMapping;
+import org.jetlinks.protocol.common.SelfEmbedMessageIdReverseMappingShort;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
 import org.jetlinks.protocol.common.mapping.ThingItemMappings;
 import org.jetlinks.protocol.common.mapping.ThingValueNormalization;
@@ -39,6 +41,8 @@ public class YKCV1ProtocolSupport {
     private static final String     CODE_OF_MSG_NO_FIELD = "MSG_NO";
 
     private static final String     CODE_OF_ENCY_FLAG_FIELD = "ENCY_FLAG";
+
+    private static final MessageIdReverseMapping<Short>     MsgIdMapping = new SelfEmbedMessageIdReverseMappingShort("YKCV1");
 
     private static final ThingValueNormalization<Integer>   NormToInt = ThingValueNormalizations.ofToInt(-1);
 
@@ -143,19 +147,19 @@ public class YKCV1ProtocolSupport {
     public static StructAndMessageMapper        buildMapper(StructSuit structSuit) {
         DefaultStructAndThingMapping structAndThingMapping = new DefaultStructAndThingMapping();
 
-        MessageIdMappingAnnotation msgIdMappingAnn = new AbstractMessageIdMappingAnnotation.OfFunction(
-                structInst -> structInst.getFieldStringValueWithDef(CODE_OF_MSG_TYPE_FIELD, "NO_CMD_FIELD")
-        );
+//        MessageIdMappingAnnotation msgIdMappingAnn = new AbstractMessageIdMappingAnnotation.OfFunction(
+//                structInst -> structInst.getFieldStringValueWithDef(CODE_OF_MSG_TYPE_FIELD, "NO_CMD_FIELD")
+//        );
 
         DefaultStructDeclaration target;
 
         // 充电桩登陆认证相关
         //TODO 临时处理，应该在TCPGateway处实现
         target = (DefaultStructDeclaration)structSuit.getStructDeclaration("充电桩登录认证消息[上行]");
-        target.addMetaAnnotation(msgIdMappingAnn);
+//        target.addMetaAnnotation(msgIdMappingAnn);
         structAndThingMapping.addMapping(target, DefaultDeviceRequestMessage.class);
         target = (DefaultStructDeclaration)structSuit.getStructDeclaration("充电桩登录认证应答[下行]");
-        target.addMetaAnnotation(msgIdMappingAnn);
+//        target.addMetaAnnotation(msgIdMappingAnn);
         structAndThingMapping.addMapping(DefaultDeviceRequestMessageReply.class, "AuthResponse", target);
 
         // 心跳包
@@ -211,18 +215,18 @@ public class YKCV1ProtocolSupport {
 
 
         //指令响应：Decode
-        for (StructDeclaration structDcl : structSuit.structDeclarations()) {
-            if (!structDcl.getName().contains("指令响应")) continue;
-
-            ((DefaultStructDeclaration) structDcl).addMetaAnnotation(msgIdMappingAnn);
-        }
+//        for (StructDeclaration structDcl : structSuit.structDeclarations()) {
+//            if (!structDcl.getName().contains("指令响应")) continue;
+//
+//            ((DefaultStructDeclaration) structDcl).addMetaAnnotation(msgIdMappingAnn);
+//        }
 
         //请求应答：Encode
-        for (StructDeclaration structDcl : structSuit.structDeclarations()) {
-            if (!structDcl.getName().contains("应答[下行]")) continue;
-
-            ((DefaultStructDeclaration) structDcl).addMetaAnnotation(msgIdMappingAnn);
-        }
+//        for (StructDeclaration structDcl : structSuit.structDeclarations()) {
+//            if (!structDcl.getName().contains("应答[下行]")) continue;
+//
+//            ((DefaultStructDeclaration) structDcl).addMetaAnnotation(msgIdMappingAnn);
+//        }
 
         DefaultFieldAndPropertyMapping fieldAndPropertyMapping = new DefaultFieldAndPropertyMapping();
         DefaultFieldValueAndPropertyMapping fieldValueAndPropertyMapping = new DefaultFieldValueAndPropertyMapping();
@@ -2468,7 +2472,7 @@ public class YKCV1ProtocolSupport {
      */
     private static DefaultFieldDeclaration buildMsgNoFieldDcl() {
         return new DefaultFieldDeclaration("报文序号", CODE_OF_MSG_NO_FIELD, BaseDataType.UINT16, (short) 2)
-                    .addMeta(ThingAnnotation.MsgIdUint16())
+                    .addMeta(ThingAnnotation.MsgIdUint16Reverse(MsgIdMapping))
                     .setDefaultValue(0);
     }
 

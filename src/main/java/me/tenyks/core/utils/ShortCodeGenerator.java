@@ -13,7 +13,7 @@ public class ShortCodeGenerator {
     private static final AtomicLong SeqNo = new AtomicLong(1);
 
     public String   next() {
-        return String.format("%d_%06d", System.currentTimeMillis(), SeqNo.getAndIncrement());
+        return String.format("%x_%06x", System.currentTimeMillis(), SeqNo.getAndIncrement());
     }
 
 }
