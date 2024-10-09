@@ -7,6 +7,7 @@ import org.jetlinks.core.message.AcknowledgeDeviceMessage;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.codec.MessageDecodeContext;
 import org.jetlinks.core.message.codec.MessageEncodeContext;
+import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.request.DefaultDeviceRequestMessageReply;
 import org.jetlinks.core.utils.BytesUtils;
 import org.jetlinks.protocol.official.PluginConfig;
@@ -121,4 +122,100 @@ public class YKCV1ProtocolSupportTest {
         System.out.println(real);
         Assert.assertEquals(expect, real);
     }
+
+    @Test
+    public void decodeBillingTermsRequest() throws DecoderException {
+        String payload = "68 0B 02 00 00 09 55031412782305 DD25";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void encodeBillingTermsRequestReply() throws DecoderException {
+        DefaultDeviceRequestMessageReply reply = new DefaultDeviceRequestMessageReply();
+        reply.setDeviceId("55031412782305");
+        reply.setMessageId("YKCV1_19271117778_000001_0200");
+        reply.functionId("BillingTermsRequestReply");
+
+        reply.addOutput("termsNo", (short) 0x0100);
+        reply.addOutput("sharpEUP", 0x400D0300);
+        reply.addOutput("sharpSUP", 0x9C400000);
+        reply.addOutput("peakEUP", 0xE0930400);
+        reply.addOutput("peakSUP", 0x9C400000);
+        reply.addOutput("shoulderEUP", 0x801A0600);
+        reply.addOutput("shoulderSUP", 0x9C400000);
+        reply.addOutput("offPeakEUP", 0x20A10700);
+        reply.addOutput("offPeakSUP", 0x9C400000);
+        reply.addOutput("withLostRate", (byte) 0x00);
+
+        reply.addOutput("rateNoOf00000030", (byte) 0x0);
+        reply.addOutput("rateNoOf00300100", (byte) 0x1);
+        reply.addOutput("rateNoOf01000130", (byte) 0x2);
+        reply.addOutput("rateNoOf01300200", (byte) 0x3);
+
+        reply.addOutput("rateNoOf02000230", (byte) 0x0);
+        reply.addOutput("rateNoOf02300300", (byte) 0x1);
+        reply.addOutput("rateNoOf03000330", (byte) 0x2);
+        reply.addOutput("rateNoOf03300400", (byte) 0x3);
+
+
+        String expect = "68 0E CE 04 00 06 55 03 14 12 78 23 05 00 01 00 8E 2F";
+
+        ByteBuf rst = codec.encode(encodeCtx, reply);
+        String real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+        Assert.assertEquals(expect, real);
+    }
+
+    @Test
+    public void encodeCallOfRealTimeMonitorData() throws DecoderException {
+        FunctionInvokeMessage msg = new FunctionInvokeMessage();
+        msg.setDeviceId("32010200000001");
+        msg.setMessageId("YKCV1_19271117778_000001_0000");
+        msg.functionId("CallOfRealTimeMonitorData");
+
+        msg.addInput("gunNo", (byte) 0x01);
+
+        String expect = "68 0E CE 04 00 06 55 03 14 12 78 23 05 00 01 00 8E 2F";
+
+        ByteBuf rst = codec.encode(encodeCtx, msg);
+        String real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+        Assert.assertEquals(expect, real);
+    }
+
+    @Test
+    public void decodeReportRealTimeMonitorData() throws DecoderException {
+        String payload = "68 40 1A03 00 13 01020304050607080908070605040302 55031412782305 " +
+                "01 00 01 01 0200 0000 00 1020304050607080 00 00 1234 4567 11223344 55667788 12345678 0000 9DAC";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void decodeReportChargingHandshakeData() throws DecoderException {
+        String payload = "68 4D 0015 00 15 3201020000000011151116155535026 32010200000001 " +
+                "01 000000 00 0000 0000 00000000 00000000 00 00 00 000000 00 00 WDCDF7BE1GA801178 0000000000000000 FED2";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
 }

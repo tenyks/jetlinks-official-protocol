@@ -12,7 +12,7 @@ public interface MessageIdReverseMapping<T> {
      *
      * @return  物模型消息ID
      */
-    String     mark(T protocolMsgId);
+    String      mark(T protocolMsgId);
 
     /**
      * @param thingMsgId     协议消息ID,（必要）

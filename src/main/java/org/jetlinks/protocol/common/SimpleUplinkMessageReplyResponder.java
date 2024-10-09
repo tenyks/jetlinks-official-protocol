@@ -36,7 +36,7 @@ public class SimpleUplinkMessageReplyResponder implements UplinkMessageReplyResp
 
     @Override
     public AcknowledgeDeviceMessage buildAckMessage(@NotNull DeviceOperator device, @NotNull DeviceMessage uplinkMsg) {
-        String svcId = uplinkMsg.getIdentity();
+        String svcId = uplinkMsg.getServiceId();
 
         if (svcId == null) return null;
 
@@ -46,7 +46,7 @@ public class SimpleUplinkMessageReplyResponder implements UplinkMessageReplyResp
         AcknowledgeDeviceMessage ackMsg = new AcknowledgeDeviceMessage().from(uplinkMsg);
 
         JSONObject payload = callable.apply(uplinkMsg);
-        ackMsg.setOutput(payload);
+        ackMsg.setOutputs(payload);
 
         return ackMsg;
     }
