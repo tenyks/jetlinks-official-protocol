@@ -740,7 +740,7 @@ public enum BaseDataType {
         @Override
         public short size() { return 16; }
     },
-
+    
     //0x0C
     BINARY {
         @Override
@@ -921,6 +921,65 @@ public enum BaseDataType {
 
         @Override
         public short size() { return 0; }
+    },
+
+    /**
+     * 分多段数字：01 01 01，不支持写，编码输入或解码输出类型：String
+     */
+    Num010101_Str {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte b1 = buf.readByte();
+            byte b2 = buf.readByte();
+            byte b3 = buf.readByte();
+
+            return String.format("%d.%d.%d", b1, b2, b3);
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            buf.writeByte(0);
+            buf.writeByte(0);
+            buf.writeByte(0);
+
+            return 3;
+        }
+
+        @Override
+        public short size() { return 3; }
+    },
+
+    /**
+     * 分多段数字：01 02 03 0102 010101，不支持写，编码输入或解码输出类型：String
+     */
+    Num0101010203_Str {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte b1 = buf.readByte();
+            byte b2 = buf.readByte();
+            byte b3 = buf.readByte();
+            short b4 = buf.readShort();
+
+            byte b6 = buf.readByte();
+            byte b7 = buf.readByte();
+            byte b8 = buf.readByte();
+
+            int bp4 = (0x00ff & (int)b6 << 16) | (0x00ff & (int)b7 << 8) | b8;
+
+            return String.format("%d-%d-%d-%d-%d", b1, b2, b3, b4, bp4);
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            buf.writeByte(0);
+            buf.writeByte(0);
+            buf.writeByte(0);
+
+            return 3;
+        }
+
+        @Override
+        public short size() { return 3; }
     },
 
     /**

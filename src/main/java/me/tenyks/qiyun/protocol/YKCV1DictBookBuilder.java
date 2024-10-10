@@ -238,7 +238,7 @@ public class YKCV1DictBookBuilder {
     /**
      * BMS电池类型
      */
-    public static DictBook<Byte, String>    buildBMSBatteryTypeDict() {
+    public static ThingValueNormalization<String>    buildBMSBatteryTypeDict() {
         DictBook<Byte, String> rst = new DictBook<>();
 
         rst.add((byte) 0x01, "铅酸电池", "铅酸电池");
@@ -250,29 +250,25 @@ public class YKCV1DictBookBuilder {
         rst.add((byte) 0x07, "聚合物锂离子电池", "聚合物锂离子电池");
         rst.add((byte) 0x08, "钛酸锂电池", "钛酸锂电池");
 
-        rst.addOtherItemTemplate((srcCode) -> "OTH_" + srcCode.toString(), "其他");
-
-        return rst;
+        return ThingValueNormalizations.ofToDictVal(rst, "其他类型电池");
     }
 
     /**
      * BMS 电池组产权标识
      */
-    public static DictBook<Byte, String>    buildBMSBatteryOwnershipDict() {
+    public static ThingValueNormalization<String>    buildBMSBatteryOwnershipDict() {
         DictBook<Byte, String> rst = new DictBook<>();
 
         rst.add((byte) 0x00, "租赁", "租赁");
         rst.add((byte) 0x01, "车自有", "车自有");
 
-        rst.addOtherItemTemplate((srcCode) -> "OTH_" + srcCode.toString(), "其他");
-
-        return rst;
+        return ThingValueNormalizations.ofToDictVal(rst, "其他");
     }
 
     /**
      * 错误报文错误码
      */
-    public static BitDictBook<String>       buildErrorReportErrorCodeDict() {
+    public static ThingItemMapping<String>      buildErrorReportErrorCodeDict(String itemCodeKey, String itemDescKey) {
         BitDictBook<String> rst = new BitDictBook<>();
 
         rst.add("EC_SPN2560_00",    (short)0, (byte)0b11000000, (byte)0b00000000, "接收SPN2560=0x00的充电机辨识报文[正常]");
@@ -338,7 +334,7 @@ public class YKCV1DictBookBuilder {
         rst.add("OK_BMS_CHR_STS",    (short)7, (byte)0b11000000, (byte)0b01000000, "接收BMS充电统计报文[超时]");
         rst.add("UNK_BMS_CHR_STS",   (short)7, (byte)0b11000000, (byte)0b10000000, "接收BMS充电统计报文[未知]");
 
-        return rst;
+        return ThingItemMappings.ofDictExtend2(rst, itemCodeKey, itemDescKey);
     }
 
     /**

@@ -43,6 +43,20 @@ public class ThingValueNormalizations {
         };
     }
 
+    public static ThingValueNormalization<Integer> plusOffsetAndToInt(final int offset) {
+        return new ThingValueNormalization<Integer>() {
+
+            private final Function<Object, Integer> toIntFun = BaseDataTypeConvertors.ofToInt(0);
+
+            @Override
+            public Integer apply(Object itemValue) {
+                if (itemValue == null) return offset;
+
+                return toIntFun.apply(itemValue) + offset;
+            }
+        };
+    }
+
     public static ThingValueNormalization<Float> ofToFloat(final Float defVal) {
         return new ThingValueNormalization<Float>() {
 

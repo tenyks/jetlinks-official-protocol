@@ -1,11 +1,14 @@
 package org.jetlinks.protocol.common.mapping;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.jetlinks.protocol.official.binary2.StructFieldDeclaration;
 import org.jetlinks.protocol.official.binary2.StructInstance;
+import org.jetlinks.protocol.official.common.BitDictBook;
 import org.jetlinks.protocol.official.common.DictBook;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,6 +34,36 @@ public class ThingItemMappings {
                     return Arrays.asList(
                             Tuples.of(itemKey, item.getOutputCode()),
                             Tuples.of(itemDescKey, item.getDescription())
+                    );
+                } else {
+                    return Arrays.asList(
+                            Tuples.of(itemKey, itemVal.toString()),
+                            Tuples.of(itemDescKey, "其他：" + itemVal.toString())
+                    );
+                }
+            }
+        };
+    }
+
+    public static ThingItemMapping<String> ofDictExtend2(BitDictBook<String> dictBook, final String itemCodeKey, final String itemDescKey) {
+        return new AbstractThingItemMappingBit<String>(dictBook) {
+
+            @Override
+            public List<Tuple2<String, String>> apply(String itemKey, Object itemVal) {
+                List<BitDictBook.Item<String>> items = getItem(itemVal);
+
+                if (CollectionUtils.isNotEmpty(items)) {
+                    List<String> codeList = new ArrayList<>();
+                    List<String> descList = new ArrayList<>();
+
+                    for (BitDictBook.Item<String> item : items) {
+                        codeList.add(item.getCode());
+                        descList.add(item.getDescription());
+                    }
+
+                    return Arrays.asList(
+                            Tuples.of(itemCodeKey, String.join(",", codeList)),
+                            Tuples.of(itemDescKey, String.join(",", descList))
                     );
                 } else {
                     return Arrays.asList(

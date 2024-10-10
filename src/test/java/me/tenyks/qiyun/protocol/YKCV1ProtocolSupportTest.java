@@ -1,6 +1,5 @@
 package me.tenyks.qiyun.protocol;
 
-import com.alibaba.fastjson.JSONObject;
 import io.netty.buffer.ByteBuf;
 import org.apache.commons.codec.DecoderException;
 import org.jetlinks.core.message.AcknowledgeDeviceMessage;
@@ -206,8 +205,53 @@ public class YKCV1ProtocolSupportTest {
 
     @Test
     public void decodeReportChargingHandshakeData() throws DecoderException {
-        String payload = "68 4D 0015 00 15 3201020000000011151116155535026 32010200000001 " +
-                "01 000000 00 0000 0000 00000000 00000000 00 00 00 000000 00 00 WDCDF7BE1GA801178 0000000000000000 FED2";
+        String payload = "68 4D 0015 00 15 03201020000000011151116155535026 32010200000001 " +
+                "01 010101 01 0102 0103 42594442 01020304 1E 01 02 000010 01 00 5744434446374245314741383031313738 100A0B07DF000000 FED2";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        //WDCDF7BE1GA801178=5744434446374245314741383031313738
+        //BYDB=42594442
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void decodeReportChargingSettingWithBMS() throws DecoderException {
+        String payload = "68 31 0015 00 17 03201020000000011151116155535026 32010200000001 01 " +
+                "0001 0002 0003 0004 05 0006 0007 0008 0009 000A 000B D18A";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void decodeReportChargingFinishEvent() throws DecoderException {
+        String payload = "68 2B 0016 00 19 03201020000000011151116155535026 32010200000001 01 " +
+                "01 0002 0003 04 05 0006 0007 00000008 AE36";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void decodeReportErrorEvent() throws DecoderException {
+        String payload = "68 24 0017 00 1B 03201020000000011151116155535026 32010200000001 01 " +
+                "0101010101010101 A2F3";
         ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
 
         StructInstance structInst;
