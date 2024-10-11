@@ -425,6 +425,52 @@ public enum BaseDataType {
         public short size() { return 0; }
     },
     /**
+     * 字节数值：长度为2, 编码输入或解码输出类型：byte[]
+     */
+    BYTES02 {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size()]; //TODO 优化性能
+            buf.readBytes(bytes);
+            return bytes;
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes = ((byte[]) value);
+            buf.writeBytes(bytes, 0, size());
+            return size();
+        }
+
+        @Override
+        public short size() { return 2; }
+    },
+    /**
+     * 字节数值：长度为4, 编码输入或解码输出类型：byte[]
+     */
+    BYTES04 {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size()]; //TODO 优化性能
+            buf.readBytes(bytes);
+            return bytes;
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes = ((byte[]) value);
+            buf.writeBytes(bytes, 0, size());
+            return size();
+        }
+
+        @Override
+        public short size() { return 4; }
+    },
+    /**
      * 字节数值：长度为8, 编码输入或解码输出类型：byte[]
      */
     BYTES08 {
@@ -789,6 +835,42 @@ public enum BaseDataType {
 
         @Override
         public short size() { return 0; }
+    },
+    /**
+     * 固定长度，长度2字节或4个十六进制表示字符（超过将截断），编码输入或解码输出类型：String
+     */
+    HEX02_STR {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            byte[] bytes = new byte[size()];
+            buf.readBytes(bytes);
+            return Hex.encodeHexString(bytes);
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            if (value == null) return 0;
+
+            byte[] bytes;
+            try {
+                bytes = Hex.decodeHex((String) value);
+            } catch (DecoderException e) {
+                throw new RuntimeException("解码HEX字符串失败：", e);
+            }
+            if (bytes.length > 2) {
+                buf.writeBytes(bytes, 0, size() * 2);
+            } else {
+                buf.writeBytes(bytes);
+                for (int i = bytes.length; i < 2; i++) {
+                    buf.writeByte((byte) 0);
+                }
+            }
+
+            return size();
+        }
+
+        @Override
+        public short size() { return 2; }
     },
     /**
      * 固定长度，长度4字节或8个十六进制表示字符（超过将截断），编码输入或解码输出类型：String

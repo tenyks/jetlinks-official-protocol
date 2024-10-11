@@ -119,7 +119,7 @@ public class BitDictBook<T> {
             return "Item{" +
                     "code=" + code +
                     ", offset=" + offset +
-                    ", mask=" + Integer.toBinaryString(mask) +
+                    ", mask=" + Integer.toBinaryString(0x000000ff & (int)mask) +
                     ", description='" + description + '\'' +
                     '}';
         }

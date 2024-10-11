@@ -13,10 +13,7 @@ import org.jetlinks.core.message.request.DefaultDeviceRequestMessage;
 import org.jetlinks.core.message.request.DefaultDeviceRequestMessageReply;
 import org.jetlinks.protocol.common.MessageIdReverseMapping;
 import org.jetlinks.protocol.common.SelfEmbedMessageIdReverseMappingShort;
-import org.jetlinks.protocol.common.mapping.ThingAnnotation;
-import org.jetlinks.protocol.common.mapping.ThingItemMappings;
-import org.jetlinks.protocol.common.mapping.ThingValueNormalization;
-import org.jetlinks.protocol.common.mapping.ThingValueNormalizations;
+import org.jetlinks.protocol.common.mapping.*;
 import org.jetlinks.protocol.official.PluginConfig;
 import org.jetlinks.protocol.official.binary2.*;
 import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
@@ -909,32 +906,25 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x1D));
 
         // 数据块
-        DefaultFieldDeclaration fieldDcl;
-
-        structDcl.addField(buildDFDclOfTransNo());
+        structDcl.addField(buildDFDclOfTransNo().addMeta(ThingAnnotation.EventData()));
         structDcl.addField(buildDFDclOfPileNo((short) 16));
-        structDcl.addField(buildDFDclOfGunNo((short) 23));
+        structDcl.addField(buildDFDclOfGunNo((short) 23).addMeta(ThingAnnotation.EventData()));
 
-        //1-2 位——所需求的 SOC 目标值3-4 位——达到总电压的设定值5-6 位——达到单体电压设定值7-8 位——充电机主动中止
-        fieldDcl = buildDataFieldDcl("BMS中止充电原因", "BMSStopReasonCodes", BaseDataType.UINT8, (short) 24);
-        structDcl.addField(fieldDcl);
+        DefaultFieldDeclaration fieldDcl;
+        ThingItemMapping<String> itemMapping;
 
-        //1-2位——绝缘故障
-        //3-4位——输出连接器过温故障5-6 位——BMS 元件、输出连接器过温
-        //7-8位——充电连接器故障
-        //9-10位——电池组温度过高故障
-        //11-12位——高压继电器故障
-        //13-14位——检测点2电压检测故障
-        //15-16位——其他故障
-        fieldDcl = buildDataFieldDcl("BMS中止充电故障原因", "BMSStopFaultCodes", BaseDataType.UINT16, (short) 25);
-        structDcl.addField(fieldDcl);
+        fieldDcl = buildDataFieldDcl("BMS中止充电原因/故障原因/错误原因", "reason", BaseDataType.BYTES04, (short) 24);
+        itemMapping = YKCV1DictBookBuilder.buildBMSStopChargingReasonCodeDict("BMSStopReasonCodes", "BMSStopReasonDescs");
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData(itemMapping)));
 
-        //1-2位——电流过大  3-4位——电压异常  5-8位——预留位
-        fieldDcl = buildDataFieldDcl("BMS中止充电错误原因", "BMSStopErrorCodes", BaseDataType.UINT8, (short) 27);
-        structDcl.addField(fieldDcl);
+//        fieldDcl = buildDataFieldDcl("BMS中止充电故障原因", "BMSStopFault", BaseDataType.UINT16, (short) 25);
+//        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData(YKCV1DictBookBuilder.buildErrorReportErrorCodeDict("BMSStopFaultCodes", "BMSStopFaultDescs"))));
+//
+//        fieldDcl = buildDataFieldDcl("BMS中止充电错误原因", "BMSStopError", BaseDataType.UINT8, (short) 27);
+//        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData(YKCV1DictBookBuilder.buildErrorReportErrorCodeDict("BMSStopErrorCodes", "BMSStopErrorDescs"))));
 
-        structDcl.addField(buildCRCFieldDcl());
-        structDcl.setCRCCalculator(buildCRCCalculator());
+//        structDcl.addField(buildCRCFieldDcl());
+//        structDcl.setCRCCalculator(buildCRCCalculator());
 
         return structDcl;
     }
@@ -944,7 +934,7 @@ public class YKCV1ProtocolSupport {
      * <li>主动上送</li>
      * <li>GBT-27930 充电桩与 BMS 充电阶段充电机中止报文</li>
      */
-    private static DefaultStructDeclaration buildReportChargerStopEventStructDcl() {
+    private static DefaultStructDeclaration     buildReportChargerStopEventStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电阶段充电机中止[上行]", "CMD:0x21");
 
         structDcl.enableDecode();
@@ -957,35 +947,26 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(buildMsgTypeFieldDcl((byte) 0x21));
 
         // 数据块
-        DefaultFieldDeclaration fieldDcl;
 
-        structDcl.addField(buildDFDclOfTransNo());
+        structDcl.addField(buildDFDclOfTransNo().addMeta(ThingAnnotation.EventData()));
         structDcl.addField(buildDFDclOfPileNo((short) 16));
-        structDcl.addField(buildDFDclOfGunNo((short) 23));
+        structDcl.addField(buildDFDclOfGunNo((short) 23).addMeta(ThingAnnotation.EventData()));
 
-        //1-2 位——达到充电机设定的条件中止
-        //3-4 位——人工中止
-        //5-6 位——异常中止
-        //7-8 位——BMS 主动中止
-        fieldDcl = buildDataFieldDcl("充电机中止充电原因", "chargerStopReasonCodes", BaseDataType.UINT8, (short) 24);
-        structDcl.addField(fieldDcl);
+        DefaultFieldDeclaration fieldDcl;
+        ThingItemMapping<String> itemMapping;
 
-        //1-2 位——充电机过温故障
-        //3-4 位——充电连接器故障
-        //5-6 位——充电机内部过温故障
-        //7-8 位——所需电量不能传送
-        //9-10 位——充电机急停故障
-        //11-12 位——其他故障
-        //13-16 位——预留位
-        fieldDcl = buildDataFieldDcl("充电机中止充电故障原因", "chargerStopFaultCodes", BaseDataType.UINT16, (short) 25);
-        structDcl.addField(fieldDcl);
+        fieldDcl = buildDataFieldDcl("充电机中止充电原因/故障原因/错误原因", "reason", BaseDataType.BYTES04, (short) 24);
+        itemMapping = YKCV1DictBookBuilder.buildChargerStopChargingReasonCodeDict("reasonCodes", "reasonDescs");
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData(itemMapping)));
 
-        //1-2位——电流不匹配 3-4位——电压异常 5-8位——预留位
-        fieldDcl = buildDataFieldDcl("充电机中止充电错误原因", "chargerStopErrorCodes", BaseDataType.UINT8, (short) 27);
-        structDcl.addField(fieldDcl);
+//        fieldDcl = buildDataFieldDcl("充电机中止充电故障原因", "chargerStopFaultCodes", BaseDataType.UINT16, (short) 25);
+//        structDcl.addField(fieldDcl);
+//
+//        fieldDcl = buildDataFieldDcl("充电机中止充电错误原因", "chargerStopErrorCodes", BaseDataType.UINT8, (short) 27);
+//        structDcl.addField(fieldDcl);
 
-        structDcl.addField(buildCRCFieldDcl());
-        structDcl.setCRCCalculator(buildCRCCalculator());
+//        structDcl.addField(buildCRCFieldDcl());
+//        structDcl.setCRCCalculator(buildCRCCalculator());
 
         return structDcl;
     }
@@ -995,7 +976,7 @@ public class YKCV1ProtocolSupport {
      * <li>周期上送（15 秒）</li>
      * <li>GBT-27930 充电桩与BMS充电过程BMS需求、充电机输出</li>
      */
-    private static DefaultStructDeclaration buildReportBMSRequirementAndChargerOutputDataStructDcl() {
+    private static DefaultStructDeclaration     buildReportBMSRequirementAndChargerOutputDataStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电过程BMS需求与充电机输出[上行]", "CMD:0x23");
 
         structDcl.enableDecode();
@@ -1010,58 +991,57 @@ public class YKCV1ProtocolSupport {
         // 数据块
         DefaultFieldDeclaration fieldDcl;
 
-        structDcl.addField(buildDFDclOfTransNo());
+        structDcl.addField(buildDFDclOfTransNo().addMeta(ThingAnnotation.EventData()));
         structDcl.addField(buildDFDclOfPileNo((short) 16));
-        structDcl.addField(buildDFDclOfGunNo((short) 23));
+        structDcl.addField(buildDFDclOfGunNo((short) 23).addMeta(ThingAnnotation.EventData()));
 
         // 0.1 V/位，0 V 偏移量
-        fieldDcl = buildDataFieldDcl("BMS 电压需求", "BMSReqVoltage", BaseDataType.UINT16, (short) 24);
-        structDcl.addField(fieldDcl);
+        fieldDcl = buildDataFieldDcl("BMS 电压需求", "BMSReqVoltage", BaseDataType.INT16, (short) 24);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
 
         // 0.1 A/位，-400 A 偏移量
-        fieldDcl = buildDataFieldDcl("BMS 电流需求", "BMSReqCurrent", BaseDataType.UINT16, (short) 26);
-        structDcl.addField(fieldDcl);
+        fieldDcl = buildDataFieldDcl("BMS 电流需求", "BMSReqCurrent", BaseDataType.INT16, (short) 26);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData(ThingValueNormalizations.plusOffsetAndToInt(-4000))));
 
         // 0x01：恒压充电；0x02：恒流充电
-        fieldDcl = buildDataFieldDcl("BMS 充电模式", "BMSChargingMode", BaseDataType.UINT8, (short) 28);
-        structDcl.addField(fieldDcl);
+        fieldDcl = buildDataFieldDcl("BMS 充电模式", "BMSChargingMode", BaseDataType.INT8, (short) 28);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData(YKCV1DictBookBuilder.buildBMSChargingModeDict())));
 
         // 0.1 V/位，0 V 偏移量
-        fieldDcl = buildDataFieldDcl("BMS 充电电压测量值", "BMSChargingVoltage", BaseDataType.UINT16, (short) 29);
-        structDcl.addField(fieldDcl);
+        fieldDcl = buildDataFieldDcl("BMS 充电电压测量值", "BMSChargingVoltage", BaseDataType.INT16, (short) 29);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
 
         // 0.1 A/位，-400 A 偏移量
-        fieldDcl = buildDataFieldDcl("BMS 充电电流测量值", "BMSChargingCurrent", BaseDataType.UINT16, (short) 31);
-        structDcl.addField(fieldDcl);
+        fieldDcl = buildDataFieldDcl("BMS 充电电流测量值", "BMSChargingCurrent", BaseDataType.INT16, (short) 31);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData(ThingValueNormalizations.plusOffsetAndToInt(-4000))));
 
         //1-12 位：最高单体动力蓄电池电压，数据分辨率：0.01 V/位，0 V 偏移量；数据范围：0~24 V；
         //13-16 位：最高单体动力蓄电池电压所在组号，数据分辨率：1/位，0 偏移量；数据范围：0~15
-        fieldDcl = buildDataFieldDcl("BMS 最高单体动力蓄电池电压及组号", "BMSBatterySingleMaxVoltage", BaseDataType.UINT16, (short) 33);
-        structDcl.addField(fieldDcl);
+        fieldDcl = buildDataFieldDcl("BMS 最高单体动力蓄电池电压及组号", "BMSBatterySingleMaxVoltage", BaseDataType.HEX02_STR, (short) 33);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
 
         //1%/位，0%偏移量；数据范围：0~100%
         fieldDcl = buildDataFieldDcl("BMS 当前荷电状态 SOC", "SOC", BaseDataType.UINT8, (short) 35);
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
 
         //1 min/位，0 min 偏移量；数据范围：0~600 min
         fieldDcl = buildDataFieldDcl("BMS 估算剩余充电时间", "BMSChargingRemainDuration", BaseDataType.UINT16, (short) 36);
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
 
         //0.1 V/位，0 V 偏移量
         fieldDcl = buildDataFieldDcl("电桩电压输出值", "pileOutputVoltage", BaseDataType.UINT16, (short) 38);
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
 
         //0.1 A/位，-400 A 偏移量
         fieldDcl = buildDataFieldDcl("电桩电流输出值", "pileOutputCurrent", BaseDataType.UINT16, (short) 40);
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData(ThingValueNormalizations.plusOffsetAndToInt(-4000))));
 
         //1 min/位，0 min 偏移量；数据范围：0 ~ 600 min
         fieldDcl = buildDataFieldDcl("累计充电时间", "accChargingDuration", BaseDataType.UINT16, (short) 42);
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
 
-
-        structDcl.addField(buildCRCFieldDcl());
-        structDcl.setCRCCalculator(buildCRCCalculator());
+//        structDcl.addField(buildCRCFieldDcl());
+//        structDcl.setCRCCalculator(buildCRCCalculator());
 
         return structDcl;
     }
@@ -1071,7 +1051,7 @@ public class YKCV1ProtocolSupport {
      * <li>周期上送（15 秒）</li>
      * <li>GBT-27930 充电桩与BMS充电过程BMS信息</li>
      */
-    private static DefaultStructDeclaration buildReportBMSChargingDataStructDcl() {
+    private static DefaultStructDeclaration     buildReportBMSChargingDataStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("充电过程BMS信息[上行]", "CMD:0x25");
 
         structDcl.enableDecode();
@@ -1086,40 +1066,37 @@ public class YKCV1ProtocolSupport {
         // 数据块
         DefaultFieldDeclaration fieldDcl;
 
-        structDcl.addField(buildDFDclOfTransNo());
+        structDcl.addField(buildDFDclOfTransNo().addMeta(ThingAnnotation.EventData()));
         structDcl.addField(buildDFDclOfPileNo((short) 16));
-        structDcl.addField(buildDFDclOfGunNo((short) 23));
+        structDcl.addField(buildDFDclOfGunNo((short) 23).addMeta(ThingAnnotation.EventData()));
 
         // 1/位，1 偏移量；数据范围：1~256
         fieldDcl = buildDataFieldDcl("BMS 最高单体动力蓄电池电压所在编号", "BMSBatteryNoOfMaxSingleVoltage", BaseDataType.UINT8, (short) 24);
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
 
         // 1ºC/位，-50 ºC 偏移量；数据范围：-50 ºC ~ +200 ºC
         fieldDcl = buildDataFieldDcl("BMS 最高动力蓄电池温度", "BMSBatteryMaxTemperature", BaseDataType.UINT8, (short) 25);
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData(ThingValueNormalizations.plusOffsetAndToInt(-50))));
 
         // 1/位，1 偏移量；数据范围：1~128
         fieldDcl = buildDataFieldDcl("最高温度检测点编号", "BMSCheckPointNoOfMaxTemperature", BaseDataType.UINT8, (short) 26);
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
 
         // 1ºC/位，-50 ºC 偏移量；数据范围：-50 ºC ~+200 ºC
         fieldDcl = buildDataFieldDcl("最低动力蓄电池温度", "BMSBatteryMinTemperature", BaseDataType.UINT8, (short) 27);
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData(ThingValueNormalizations.plusOffsetAndToInt(-50))));
 
         // 1/位，1 偏移量；数据范围：1~128
         fieldDcl = buildDataFieldDcl("最低动力蓄电池温度检测点编号", "BMSCheckPointNoOfMinTemperature", BaseDataType.UINT8, (short) 28);
-        structDcl.addField(fieldDcl);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
 
         //
-        fieldDcl = buildDataFieldDcl("BMS动力蓄电池状态码", "BMSBatteryStatusCodes", BaseDataType.UINT16, (short) 29);
-        structDcl.addField(fieldDcl);
+        fieldDcl = buildDataFieldDcl("BMS动力蓄电池状态码", "BMSBatteryStatus", BaseDataType.BYTES02, (short) 29);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData(YKCV1DictBookBuilder.buildBMSOnChargingStatusDict("BMSBatteryStatusCodes", "BMSBatteryStatusDescs"))));
 
-        //
-        fieldDcl = buildDataFieldDcl("充电禁止", "chargingDisabled", BaseDataType.UINT16, (short) 29);
-        structDcl.addField(fieldDcl);
 
-        structDcl.addField(buildCRCFieldDcl());
-        structDcl.setCRCCalculator(buildCRCCalculator());
+//        structDcl.addField(buildCRCFieldDcl());
+//        structDcl.setCRCCalculator(buildCRCCalculator());
 
         return structDcl;
     }
@@ -2404,13 +2381,11 @@ public class YKCV1ProtocolSupport {
         return structDcl;
     }
 
-
-
     /**
      * 数据字段：交易流水号
      */
     private static DefaultFieldDeclaration buildDFDclOfTransNo() {
-        return buildDataFieldDcl("交易流水号", "transNo", BaseDataType.BCD16_STR, DATA_BEGIN_IDX);
+        return buildDataFieldDcl("交易流水号", "transNo", BaseDataType.BCD16_STR, (short) 0);
     }
 
     /**

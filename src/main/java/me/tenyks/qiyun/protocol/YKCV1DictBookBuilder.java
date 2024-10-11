@@ -340,7 +340,7 @@ public class YKCV1DictBookBuilder {
     /**
      * BMS中止充电原因
      */
-    public static BitDictBook<String>       buildBMSStopChargingReasonCodeDict() {
+    public static ThingItemMapping<String>       buildBMSStopChargingReasonCodeDict(String itemCodeKey, String itemDescKey) {
         BitDictBook<String> rst = new BitDictBook<>();
 
         rst.add("RC_FF_SOC",        (short)0, (byte)0b00000011, "达到SOC的目标值");
@@ -361,13 +361,13 @@ public class YKCV1DictBookBuilder {
         rst.add("EC_OVER_CUR",      (short)3, (byte)0b00000011, "电流过大");
         rst.add("EC_ABN_VOL",       (short)3, (byte)0b00001100, "电压异常");
 
-        return rst;
+        return ThingItemMappings.ofDictExtend2(rst, itemCodeKey, itemDescKey);
     }
 
     /**
      * 充电机中止充电原因
      */
-    public static BitDictBook<String>       buildChargerStopChargingReasonCodeDict() {
+    public static ThingItemMapping<String>       buildChargerStopChargingReasonCodeDict(String itemCodeKey, String itemDescKey) {
         BitDictBook<String> rst = new BitDictBook<>();
 
         rst.add("RC_FF_SETTING",    (short)0, (byte)0b11000000, "达到充电机设定的条件中止");
@@ -386,13 +386,27 @@ public class YKCV1DictBookBuilder {
         rst.add("EC_CUR_NOT_FIT",   (short)3, (byte)0b00000011, "电流不匹配");
         rst.add("EC_ABN_VOL",       (short)3, (byte)0b00001100, "电压异常");
 
-        return rst;
+        return ThingItemMappings.ofDictExtend2(rst, itemCodeKey, itemDescKey);
+    }
+
+    /**
+     * BMS 充电模式
+     */
+    public static ThingValueNormalization<String>    buildBMSChargingModeDict() {
+        DictBook<Byte, String> rst = new DictBook<>();
+
+        rst.add((byte) 0x01, "ST_VOL", "恒压充电");
+        rst.add((byte) 0x02, "ST_CUR", "恒流充电");
+
+        rst.addOtherItemTemplate((srcCode) -> "OTH_" + srcCode.toString(), "其他");
+
+        return ThingValueNormalizations.ofToDictVal(rst, "OTHER");
     }
 
     /**
      * 充电过程BMS状态码
      */
-    public static BitDictBook<String>       buildBMSOnChargingStatusCodeDict() {
+    public static ThingItemMapping<String>          buildBMSOnChargingStatusDict(String itemCodeKey, String itemDescKey) {
         BitDictBook<String> rst = new BitDictBook<>();
 
         rst.add("OK_BMS_S_BAT_VOL",     (short)0, (byte)0b11000000, (byte)0b00000000, "BMS单体动力蓄电池电压[正常]");
@@ -423,7 +437,7 @@ public class YKCV1DictBookBuilder {
         rst.add("Y_CHG_FRB",            (short)1, (byte)0b00001100, (byte)0b00000000, "充电禁止[是]");
         rst.add("N_CHG_FRB",            (short)1, (byte)0b00001100, (byte)0b00000100, "充电禁止[否]");
 
-        return rst;
+        return ThingItemMappings.ofDictExtend2(rst, itemCodeKey, itemDescKey);
     }
 
     /**

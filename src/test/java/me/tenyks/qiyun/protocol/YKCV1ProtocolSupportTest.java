@@ -262,4 +262,60 @@ public class YKCV1ProtocolSupportTest {
         System.out.println(msg);
     }
 
+    @Test
+    public void decodeReportBMSStopEvent() throws DecoderException {
+        String payload = "68 20 0018 00 1D 03201020000000011151116155535026 32010200000001 01 " +
+                "03 0003 03 8445";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void decodeReportChargerStopEvent() throws DecoderException {
+        String payload = "68 20 0018 00 21 32010200000000111511161555350260 32010200000001 01 " +
+                "03 0003 03 8445";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void decodeReportBMSRequirementAndChargerOutputData() throws DecoderException {
+        String payload = "68 30 0019 00 23 32010200000000111511161555350260 32010200000001 01 " +
+                "0001 0002 01 0004 0005 0006 0A 0007 0008 0009 0010 1D57";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void decodeReportBMSChargingData() throws DecoderException {
+        String payload = "68 23 0021 00 25 32010200000000111511161555350260 32010200000001 01 " +
+                "01 30 31 01 0101 72B9";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
 }

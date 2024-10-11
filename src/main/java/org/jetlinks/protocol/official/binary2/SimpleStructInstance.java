@@ -1,5 +1,7 @@
 package org.jetlinks.protocol.official.binary2;
 
+import org.apache.commons.codec.binary.Hex;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,7 +75,11 @@ public class SimpleStructInstance implements StructInstance {
 
             buf.append(fInst.getCode()).append('=');
             Object fVal = fInst.getValue();
-            buf.append(fVal);
+            if (fVal instanceof byte[]) {
+                buf.append(Hex.encodeHexString((byte[]) fVal));
+            } else {
+                buf.append(fVal);
+            }
 
             if (fVal instanceof Byte) {
                 buf.append("|0x");
