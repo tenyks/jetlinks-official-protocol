@@ -45,6 +45,7 @@ public class CRC180DSignerTest {
 
         long value = crc.getValue();
         System.out.printf("%04X%n", value);
+        //75 C3
     }
 
     @Test
