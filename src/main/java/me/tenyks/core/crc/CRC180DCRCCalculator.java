@@ -36,7 +36,7 @@ public class CRC180DCRCCalculator implements CRCCalculator {
 
         checksum.update(wholeBuf, beginIdx, len);
 
-        return (int)checksum.getValue();
+        return (int)(checksum.getValue());
     }
 
 }

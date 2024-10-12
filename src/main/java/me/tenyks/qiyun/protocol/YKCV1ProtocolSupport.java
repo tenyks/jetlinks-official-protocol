@@ -130,7 +130,7 @@ public class YKCV1ProtocolSupport {
         suit.addStructDeclaration(buildCallOfOTAFunInvStructDcl());
         suit.addStructDeclaration(buildCallOfOTAFunInvReplyStructDcl());
 
-        suit.setSigner(new YKCV1EncodeSigner());
+//        suit.setSigner(new YKCV1EncodeSigner());
 
         return suit;
     }
@@ -393,7 +393,7 @@ public class YKCV1ProtocolSupport {
 
         //首次连接到平台时置零
         fieldDcl = buildDataFieldDcl("计费模型编号", "termsNo", BaseDataType.UINT16, (short) (7));
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.DevReqInput(NormToInt)));
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.DevReqInput()));
 
 //        structDcl.addField(buildCRCFieldDcl());
 //        structDcl.setCRCCalculator(buildCRCCalculator());
@@ -554,7 +554,7 @@ public class YKCV1ProtocolSupport {
         structDcl.addField(buildDFDclOfGunNo().addMeta(ThingAnnotation.FuncInput()));
 
 //        structDcl.addField(buildCRCFieldDcl());
-        structDcl.setCRCCalculator(buildCRCCalculator());
+        structDcl.setCRCCalculator(buildCRCCalculatorForEncode());
 
         return structDcl;
     }
@@ -2527,7 +2527,7 @@ public class YKCV1ProtocolSupport {
 
     private static class YKCV1EncodeSigner implements EncodeSigner {
 
-        private final CRCCalculator crcCalculator = buildCRCCalculator();
+        private final CRCCalculator crcCalculator = buildCRCCalculatorForEncode();
 
         @Override
         public ByteBuf apply(ByteBuf buf) {

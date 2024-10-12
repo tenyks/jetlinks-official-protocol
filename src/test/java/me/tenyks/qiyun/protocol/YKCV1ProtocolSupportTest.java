@@ -47,8 +47,8 @@ public class YKCV1ProtocolSupportTest {
     @Test
     public void encodeAuthResponse() throws DecoderException {
         DefaultDeviceRequestMessageReply reply = new DefaultDeviceRequestMessageReply();
-        reply.setDeviceId("55031412782305");
-        reply.setMessageId("YKCV1_1728399796355_000001_0000");
+        reply.setDeviceId("10001001000001");
+        reply.setMessageId("YKCV1_1728399796355_000001_0225");
         reply.functionId("AuthResponse");
 
         reply.addOutput("rstFlag", "SUCCESS");
@@ -107,8 +107,8 @@ public class YKCV1ProtocolSupportTest {
     @Test
     public void encodeCheckFeeTermsRequestReply() throws DecoderException {
         DefaultDeviceRequestMessageReply reply = new DefaultDeviceRequestMessageReply();
-        reply.setDeviceId("55031412782305");
-        reply.setMessageId("0000");
+        reply.setDeviceId("10001001000001");
+        reply.setMessageId("YKCV1_1728399796355_000001_0225");
         reply.functionId("CheckFeeTermsRequestReply");
 
         reply.addOutput("termsNo", (short) 0x0001);
@@ -142,6 +142,27 @@ public class YKCV1ProtocolSupportTest {
         reply.setMessageId("YKCV1_19271117778_000001_0200");
         reply.functionId("BillingTermsRequestReply");
 
+//        reply.addOutput("termsNo", (short) 0x0100);
+//        reply.addOutput("sharpEUP", 0x400D0300);
+//        reply.addOutput("sharpSUP", 0x9C400000);
+//        reply.addOutput("peakEUP", 0xE0930400);
+//        reply.addOutput("peakSUP", 0x9C400000);
+//        reply.addOutput("shoulderEUP", 0x801A0600);
+//        reply.addOutput("shoulderSUP", 0x9C400000);
+//        reply.addOutput("offPeakEUP", 0x20A10700);
+//        reply.addOutput("offPeakSUP", 0x9C400000);
+//        reply.addOutput("withLostRate", (byte) 0x00);
+//
+//        reply.addOutput("rateNoOf00000030", (byte) 0x0);
+//        reply.addOutput("rateNoOf00300100", (byte) 0x1);
+//        reply.addOutput("rateNoOf01000130", (byte) 0x2);
+//        reply.addOutput("rateNoOf01300200", (byte) 0x3);
+//
+//        reply.addOutput("rateNoOf02000230", (byte) 0x0);
+//        reply.addOutput("rateNoOf02300300", (byte) 0x1);
+//        reply.addOutput("rateNoOf03000330", (byte) 0x2);
+//        reply.addOutput("rateNoOf03300400", (byte) 0x3);
+
         reply.addOutput("termsNo", (short) 0x0100);
         reply.addOutput("sharpEUP", 0x400D0300);
         reply.addOutput("sharpSUP", 0x9C400000);
@@ -154,22 +175,32 @@ public class YKCV1ProtocolSupportTest {
         reply.addOutput("withLostRate", (byte) 0x00);
 
         reply.addOutput("rateNoOf00000030", (byte) 0x0);
-        reply.addOutput("rateNoOf00300100", (byte) 0x1);
-        reply.addOutput("rateNoOf01000130", (byte) 0x2);
-        reply.addOutput("rateNoOf01300200", (byte) 0x3);
+        reply.addOutput("rateNoOf00300100", (byte) 0x0);
+        reply.addOutput("rateNoOf01000130", (byte) 0x0);
+        reply.addOutput("rateNoOf01300200", (byte) 0x0);
 
         reply.addOutput("rateNoOf02000230", (byte) 0x0);
-        reply.addOutput("rateNoOf02300300", (byte) 0x1);
-        reply.addOutput("rateNoOf03000330", (byte) 0x2);
-        reply.addOutput("rateNoOf03300400", (byte) 0x3);
+        reply.addOutput("rateNoOf02300300", (byte) 0x0);
+        reply.addOutput("rateNoOf03000330", (byte) 0x0);
+        reply.addOutput("rateNoOf03300400", (byte) 0x0);
 
 
-        String expect = "68 0E CE 04 00 06 55 03 14 12 78 23 05 00 01 00 8E 2F";
+        String expect = "68 5E 02 00 00 0A 55 03 14 12 78 23 05 01 00 400D0300 9C400000 E0930400 9C400000 801A0600 9C400000 20A10700 9C400000 " +
+                "00 " +
+                "00 00 00 00 00 00 00 00" +
+                "00 00 00 00 00 00 00 00" +
+                "00 00 00 00 00 00 00 00" +
+                "00 00 00 00 00 00 00 00" +
+                "00 00 00 00 00 00 00 00" +
+                "00 00 00 00 00 00 00 00" +
+                "5E 60"
+                ;
+
 
         ByteBuf rst = codec.encode(encodeCtx, reply);
         String real = ByteUtils.toHexStrPretty(rst);
         System.out.println(real);
-        Assert.assertEquals(expect, real);
+        Assert.assertEquals(expect.replace(" ", ""), real.replace(" ", ""));
     }
 
     @Test
@@ -181,11 +212,12 @@ public class YKCV1ProtocolSupportTest {
 
         msg.addInput("gunNo", (byte) 0x01);
 
-        String expect = "68 0E CE 04 00 06 55 03 14 12 78 23 05 00 01 00 8E 2F";
+        String expect = "68 0C 00 00 00 12 32 01 02 00 00 00 01 01 00 69";
 
         ByteBuf rst = codec.encode(encodeCtx, msg);
         String real = ByteUtils.toHexStrPretty(rst);
         System.out.println(real);
+        // 68 0C 00 00 00 12 32 01 02 00 00 00 01 01 E3 1D
         Assert.assertEquals(expect, real);
     }
 
@@ -317,5 +349,19 @@ public class YKCV1ProtocolSupportTest {
         DeviceMessage msg = codec.decode(decodeCtx, input);
         System.out.println(msg);
     }
+
+    @Test
+    public void decodeAny() throws DecoderException {
+        String payload = "68 0B 02 D8 00 09 10 00 10 01 00 00 01 58 4B";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
 
 }
