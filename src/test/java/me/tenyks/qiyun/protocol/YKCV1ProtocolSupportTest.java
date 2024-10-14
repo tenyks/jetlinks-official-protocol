@@ -48,7 +48,7 @@ public class YKCV1ProtocolSupportTest {
     public void encodeAuthResponse() throws DecoderException {
         DefaultDeviceRequestMessageReply reply = new DefaultDeviceRequestMessageReply();
         reply.setDeviceId("10001001000001");
-        reply.setMessageId("YKCV1_1728399796355_000001_0225");
+        reply.setMessageId("YKCV1_1728399796355_000001_0100");
         reply.functionId("AuthResponse");
 
         reply.addOutput("rstFlag", "SUCCESS");
@@ -77,8 +77,8 @@ public class YKCV1ProtocolSupportTest {
     @Test
     public void encodeHeartBeatPong() throws DecoderException {
         AcknowledgeDeviceMessage ack = new AcknowledgeDeviceMessage();
-        ack.setDeviceId("55031412782305");
-        ack.setMessageId("0000");
+        ack.setDeviceId("10001001000001");
+        ack.setMessageId("YKCV1_1728399796355_000001_0270");
         ack.setFunctionId("HeartBeatPong");
 
         ack.addOutput("pongFlag", (byte) 0x01);
@@ -138,8 +138,8 @@ public class YKCV1ProtocolSupportTest {
     @Test
     public void encodeBillingTermsRequestReply() throws DecoderException {
         DefaultDeviceRequestMessageReply reply = new DefaultDeviceRequestMessageReply();
-        reply.setDeviceId("55031412782305");
-        reply.setMessageId("YKCV1_19271117778_000001_0200");
+        reply.setDeviceId("10001001000001");
+        reply.setMessageId("YKCV1_19271117778_000001_0155");
         reply.functionId("BillingTermsRequestReply");
 
 //        reply.addOutput("termsNo", (short) 0x0100);
@@ -164,14 +164,14 @@ public class YKCV1ProtocolSupportTest {
 //        reply.addOutput("rateNoOf03300400", (byte) 0x3);
 
         reply.addOutput("termsNo", (short) 0x0100);
-        reply.addOutput("sharpEUP", 0x400D0300);
-        reply.addOutput("sharpSUP", 0x9C400000);
-        reply.addOutput("peakEUP", 0xE0930400);
-        reply.addOutput("peakSUP", 0x9C400000);
-        reply.addOutput("shoulderEUP", 0x801A0600);
-        reply.addOutput("shoulderSUP", 0x9C400000);
-        reply.addOutput("offPeakEUP", 0x20A10700);
-        reply.addOutput("offPeakSUP", 0x9C400000);
+        reply.addOutput("sharpEUP", 0x000186a0);
+        reply.addOutput("sharpSUP", 0x000186a0);
+        reply.addOutput("peakEUP", 0x000186a0);
+        reply.addOutput("peakSUP", 0x000186a0);
+        reply.addOutput("shoulderEUP", 0x000186a0);
+        reply.addOutput("shoulderSUP", 0x000186a0);
+        reply.addOutput("offPeakEUP", 0x000186a0);
+        reply.addOutput("offPeakSUP", 0x000186a0);
         reply.addOutput("withLostRate", (byte) 0x00);
 
         reply.addOutput("rateNoOf00000030", (byte) 0x0);
@@ -352,7 +352,7 @@ public class YKCV1ProtocolSupportTest {
 
     @Test
     public void decodeAny() throws DecoderException {
-        String payload = "68 0B 02 D8 00 09 10 00 10 01 00 00 01 58 4B";
+        String payload = "68 22 00 E8 00 01 10 00 10 01 00 00 01 01 01 0F 31 2E 31 30 2E 32 33 00 01 00 00 00 00 00 00 00 00 00 00 04 31 89 ";
         ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
 
         StructInstance structInst;
@@ -363,5 +363,157 @@ public class YKCV1ProtocolSupportTest {
         System.out.println(msg);
     }
 
+    @Test
+    public void decodePileSwitchOnChargingRequest() throws DecoderException {
+        String payload = "68 23 0021 00 31 32010200000001 01 " +
+                "01 00 00000000D14B0A54 00000000000000000000000000000000 5744434446374245314741383031313738 0000";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
 
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void encodePileSwitchOnChargingRequestReply() {
+        DefaultDeviceRequestMessageReply reply = new DefaultDeviceRequestMessageReply();
+        reply.setDeviceId("32010200000001");
+        reply.setMessageId("YKCV1_19271117778_000001_0004");
+        reply.functionId("PileSwitchOnChargingRequestReply");
+
+        reply.addOutput("transNo", "32010200000001012018061219595785");
+        reply.addOutput("gunNo", (byte) 0x01);
+        reply.addOutput("cardDisplayNo", "0000000000012345");
+        reply.addOutput("accountAmount", (byte) 0x01);
+        reply.addOutput("rstFlag", (byte) 0x01);
+
+        String expect = "68 2A 00 04 00 32 32 01 02 00 00 00 01 01 20 18 06 12 19 59 57 85 32 01 02 00 00 00 01 01 00 00 00 00 00 01 23 45 00 00 00 01 01 00 22 E0";
+
+        ByteBuf rst = codec.encode(encodeCtx, reply);
+        String real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+
+        Assert.assertEquals(expect, real);
+    }
+
+    @Test
+    public void encodeSwitchOnChargingFunInv() {
+        FunctionInvokeMessage reply = new FunctionInvokeMessage();
+        reply.setDeviceId("55031412782305");
+        reply.setMessageId("YKCV1_19271117778_000001_007C");
+        reply.functionId("SwitchOnChargingFunInv");
+
+        reply.addInput("transNo", "55031412782305012018061914444680");
+        reply.addInput("gunNo", (byte) 0x01);
+        reply.addInput("cardDisplayNo", "0000001000000573");
+        reply.addInput("cardNo", "00000000D14B0A54");
+        reply.addInput("accountAmount", 0xA0860100);
+
+
+        String expect = "68 30 00 7C 00 34 55 03 14 12 78 23 05 01 20 18 06 19 14 44 46 80 55 03 14 12 78 23 05 01 00 00 00 10 00 00 05 73 00 00 00 00 D1 4B 0A 54 A0 86 01 00 13 F6";
+
+        ByteBuf rst = codec.encode(encodeCtx, reply);
+        String real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+
+        Assert.assertEquals(expect, real);
+    }
+
+    @Test
+    public void decodeSwitchOnChargingFunInvReply() throws DecoderException {
+        String payload = "68 1E 0002 00 33 32010200000000111511161555350260 32010200000001 01 01 00 0FE2";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+
+        payload = "68 1E 0002 00 33 32010200000000111511161555350260 32010200000001 01 00 05 0FE2";
+        input = BytesUtils.fromHexStrWithTrim(payload);
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void decodeSwitchOffChargingFunInv() throws DecoderException {
+        FunctionInvokeMessage reply = new FunctionInvokeMessage();
+        reply.setDeviceId("32010200000001");
+        reply.setMessageId("YKCV1_19271117778_000001_0003");
+        reply.functionId("SwitchOffChargingFunInv");
+
+        reply.addInput("gunNo", (byte) 0x01);
+
+        String expect = "68 0C 00 03 00 36 32 01 02 00 00 00 01 01 C1 A9";
+
+        ByteBuf rst = codec.encode(encodeCtx, reply);
+        String real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+
+        Assert.assertEquals(expect, real);
+    }
+
+    @Test
+    public void decodePileSwitchOffFunInvReply() throws DecoderException {
+        String payload = "68 1E 0003 00 35 32010200000001 01 01 00 907E";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+
+        payload = "68 1E 0003 00 35 32010200000001 01 00 02 907E";
+        input = BytesUtils.fromHexStrWithTrim(payload);
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void decodeReportTransOrder() throws DecoderException {
+        String payload = "68 A2 8001 00 3B 55031412782305012018061910262392 55031412782305 01 " +
+                "98B70E11100314 98B70E11100314 " +
+                "D0FB0100 00000000 00000000 00000000 " +
+                "D0FB0100 00000000 00000000 00000000 " +
+                "D0FB0100 00000000 00000000 00000000 " +
+                "D0FB0100 00000000 00000000 00000000 " +
+                "0000000001 0000000009 00000008 00000008 80DE0F00 5744434446374245314741383031313738 02 98B70E11100314 40 00000000D14B0A54 388C"
+                ;
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+
+        payload = "68 A2 8001 00 3B 55031412782305012018061910262392 55031412782305 01 " +
+                "98B70E11100314 98B70E11100314 " +
+                "D0FB0100 00000000 00000000 00000000 " +
+                "D0FB0100 00000000 00000000 00000000 " +
+                "D0FB0100 00000000 00000000 00000000 " +
+                "D0FB0100 00000000 00000000 00000000 " +
+                "0000000001 0000000009 00000008 00000008 80DE0F00 5744434446374245314741383031313738 02 98B70E11100314 64 00000000D14B0A54 388C"
+        ;
+        input = BytesUtils.fromHexStrWithTrim(payload);
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
 }

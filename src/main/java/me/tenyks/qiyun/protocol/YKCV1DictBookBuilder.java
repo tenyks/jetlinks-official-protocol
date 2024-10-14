@@ -102,7 +102,7 @@ public class YKCV1DictBookBuilder {
     /**
      * 充电停止原因代码表
      */
-    public static DictBook<Byte, String>    buildChargingEndDict() {
+    public static ThingItemMapping<String>    buildChargingEndDict(String itemDescKey) {
         DictBook<Byte, String> rst = new DictBook<>();
 
         // 充电完成
@@ -195,7 +195,7 @@ public class YKCV1DictBookBuilder {
 
         rst.addOtherItemTemplate((srcCode) -> "FAIL_OTHER_" + srcCode.toString(), "其他原因停止");
 
-        return rst;
+        return ThingItemMappings.ofDictExtend(rst, itemDescKey);
     }
 
     /**
@@ -464,7 +464,7 @@ public class YKCV1DictBookBuilder {
     /**
      * 成功或失败
      */
-    public static DictBook<Byte, String>    buildSuccessOrFailDict() {
+    public static ThingValueNormalization<String>    buildSuccessOrFailDict() {
         DictBook<Byte, String> rst = new DictBook<>();
 
         rst.add((byte) 0x01, "SUCCESS", "成功", true);
@@ -472,31 +472,31 @@ public class YKCV1DictBookBuilder {
 
         rst.addOtherItemTemplate((srcCode) -> "FAIL_OTH_" + srcCode.toString(), "其他原因失败");
 
-        return rst;
+        return ThingValueNormalizations.ofToDictVal(rst, "FAIL_OTH");
     }
 
     /**
      * 远程启动充电命令回复失败原因
      */
-    public static DictBook<Byte, String>    buildRemoteSwitchOnFailReasonCodeDict() {
+    public static ThingItemMapping<String>    buildRemoteSwitchOnFailReasonCodeDict(String itemDescKey) {
         DictBook<Byte, String> rst = new DictBook<>();
 
         rst.add((byte) 0x00, "FC_VOID", "无");
         rst.add((byte) 0x01, "FC_WRONG_NO", "设备编号不匹配");
-        rst.add((byte) 0x01, "FC_GUN_IN_CHG", "枪已在充电");
-        rst.add((byte) 0x01, "FC_DEVICE_FAULT", "设备故障");
-        rst.add((byte) 0x01, "FC_DEVICE_OFFLINE", "设备离线");
-        rst.add((byte) 0x01, "FC_GUN_NOT_PLUGIN", "未插枪");
+        rst.add((byte) 0x02, "FC_GUN_IN_CHG", "枪已在充电");
+        rst.add((byte) 0x03, "FC_DEVICE_FAULT", "设备故障");
+        rst.add((byte) 0x04, "FC_DEVICE_OFFLINE", "设备离线");
+        rst.add((byte) 0x05, "FC_GUN_NOT_PLUGIN", "未插枪");
 
         rst.addOtherItemTemplate((srcCode) -> "FC_OTH_" + srcCode.toString(), "其他");
 
-        return rst;
+        return ThingItemMappings.ofDictExtend(rst, itemDescKey);
     }
 
     /**
      * 远程启动充电命令回复失败原因
      */
-    public static DictBook<Byte, String>    buildRemoteSwitchOffFailReasonCodeDict() {
+    public static ThingItemMapping<String>    buildRemoteSwitchOffFailReasonCodeDict(String itemDescKey) {
         DictBook<Byte, String> rst = new DictBook<>();
 
         rst.add((byte) 0x00, "FC_VOID", "无");
@@ -505,7 +505,7 @@ public class YKCV1DictBookBuilder {
 
         rst.addOtherItemTemplate((srcCode) -> "FC_OTH_" + srcCode.toString(), "其他");
 
-        return rst;
+        return ThingItemMappings.ofDictExtend(rst, itemDescKey);
     }
 
     /**

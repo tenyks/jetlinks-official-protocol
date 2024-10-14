@@ -29,6 +29,20 @@ public class ThingValueNormalizations {
         };
     }
 
+    public static ThingValueNormalization<Short> ofToShort(final Short defVal) {
+        return new ThingValueNormalization<Short>() {
+
+            private final Function<Object, Short> toIntFun = BaseDataTypeConvertors.ofToShort(defVal);
+
+            @Override
+            public Short apply(Object itemValue) {
+                if (itemValue == null) return defVal;
+
+                return toIntFun.apply(itemValue);
+            }
+        };
+    }
+
     public static ThingValueNormalization<Integer> ofToInt(final Integer defVal) {
         return new ThingValueNormalization<Integer>() {
 

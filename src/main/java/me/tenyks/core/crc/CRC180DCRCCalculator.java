@@ -33,6 +33,7 @@ public class CRC180DCRCCalculator implements CRCCalculator {
 
         int eIdx = (endIdx > 0 ? endIdx : buf.writerIndex() + endIdx);
         int len = eIdx - beginIdx;
+        checksum.reset();
 
         checksum.update(wholeBuf, beginIdx, len);
 

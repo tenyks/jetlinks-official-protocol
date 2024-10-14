@@ -1,7 +1,6 @@
 package org.jetlinks.protocol.official.binary2;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -11,7 +10,6 @@ import org.jetlinks.protocol.official.core.ByteUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 public class BaseDataTypeTest {
@@ -83,5 +81,39 @@ public class BaseDataTypeTest {
 
         String expected = "A7232E0FB80217";
         Assert.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testInt32LE() throws DecoderException {
+        String payload = "D0 FB 01 00".replace(" ", "");
+        ByteBuf input = Unpooled.wrappedBuffer(Hex.decodeHex(payload));
+
+        Object val;
+        val = BaseDataType.INT32LE.read(input, (short)4);
+        System.out.println(val);
+        Assert.assertEquals(130000, val);
+
+        ByteBuf output = Unpooled.buffer(100);
+        BaseDataType.INT32LE.write(output, 130000);
+        String outputStr = ByteUtils.toHexStr(output);
+        System.out.println(outputStr);
+        Assert.assertEquals("D0FB0100", outputStr);
+    }
+
+    @Test
+    public void testInt40LE() throws DecoderException {
+        String payload = "D0 FB 01 00 00".replace(" ", "");
+        ByteBuf input = Unpooled.wrappedBuffer(Hex.decodeHex(payload));
+
+        Object val;
+        val = BaseDataType.INT40LE.read(input, (short)4);
+        System.out.println(val);
+        Assert.assertEquals(130000L, val);
+
+        ByteBuf output = Unpooled.buffer(100);
+        BaseDataType.INT40LE.write(output, 130000);
+        String outputStr = ByteUtils.toHexStr(output);
+        System.out.println(outputStr);
+        Assert.assertEquals("D0FB010000", outputStr);
     }
 }

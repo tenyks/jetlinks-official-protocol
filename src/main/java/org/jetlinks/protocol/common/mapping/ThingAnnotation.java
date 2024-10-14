@@ -186,7 +186,7 @@ public abstract class ThingAnnotation {
         };
     }
 
-    public static ThingAnnotation FuncInput(final ThingValueNormalization<Byte> norm) {
+    public static <T> ThingAnnotation FuncInput(final ThingValueNormalization<T> norm) {
         return new ThingAnnotation("inputs", null) {
             @Override
             public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
