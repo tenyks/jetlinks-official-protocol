@@ -1499,7 +1499,7 @@ public class YKCV1ProtocolSupport {
      * 上送一次交易记录，此情况下无论平台是否成功回复都停止上送。
      * 这一帧仅是报文交互使用，意指平台成功接收到交易记录报文，并不代表交易订单成功结算</li>
      */
-    private static DefaultStructDeclaration buildReportTransOrderAckStructDcl() {
+    private static DefaultStructDeclaration     buildReportTransOrderAckStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("交易记录确认[下行]", "CMD:0x40");
 
         structDcl.enableDecode();
@@ -1514,13 +1514,13 @@ public class YKCV1ProtocolSupport {
         // 数据块
         DefaultFieldDeclaration fieldDcl;
 
-        structDcl.addField(buildDFDclOfTransNo());
+        structDcl.addField(buildDFDclOfTransNo().addMeta(ThingAnnotation.AckOutput()));
 
         //0x00 上传成功 0x01 非法账单
-        fieldDcl = buildDataFieldDcl("确认结果", "rstFlag", BaseDataType.UINT8, (short) 16);
-        structDcl.addField(fieldDcl);
+        fieldDcl = buildDataFieldDcl("确认结果", "rstFlag", BaseDataType.INT8, (short) 16);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.AckOutput()));
 
-        structDcl.addField(buildCRCFieldDcl());
+//        structDcl.addField(buildCRCFieldDcl());
         structDcl.setCRCCalculator(buildCRCCalculator());
 
         return structDcl;

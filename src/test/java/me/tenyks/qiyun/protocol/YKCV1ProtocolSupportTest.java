@@ -516,4 +516,24 @@ public class YKCV1ProtocolSupportTest {
         msg = codec.decode(decodeCtx, input);
         System.out.println(msg);
     }
+
+    @Test
+    public void encodeReportTransOrderAck() {
+        AcknowledgeDeviceMessage reply = new AcknowledgeDeviceMessage();
+        reply.setDeviceId("55031412782305");
+        reply.setMessageId("YKCV1_19271117778_000001_0002");
+        reply.setFunctionId("ReportTransOrderAck");
+
+        reply.addOutput("transNo", "55031412782305012018061910262392");
+        reply.addOutput("rstFlag", (byte) 0x00);
+
+        String expect = "68 15 00 02 00 40 55 03 14 12 78 23 05 01 20 18 06 19 10 26 23 92 00 52 1E";
+
+        ByteBuf rst = codec.encode(encodeCtx, reply);
+        String real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+
+        Assert.assertEquals(expect, real);
+    }
+
 }
