@@ -6,6 +6,7 @@ import me.tenyks.core.crc.CRCCalculator;
 import me.tenyks.qiyun.tcp.QiYunStrategyBaseTcpDeviceMessageCodec;
 import org.apache.commons.codec.binary.Hex;
 import org.jetlinks.core.message.AcknowledgeDeviceMessage;
+import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.event.EventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
@@ -44,9 +45,11 @@ public class YKCV1ProtocolSupport {
     private static final ThingValueNormalization<Short>     NormToShort = ThingValueNormalizations.ofToShort((short) 0);
 
     public static QiYunStrategyBaseTcpDeviceMessageCodec    buildDeviceMessageCodec(PluginConfig config) {
-        AbstractIntercommunicateStrategy strategy = buildIntercommunicateStrategy(config);
         DeclarationBasedBinaryMessageCodec bmCodec = buildBinaryMessageCodec(config);
+
+        AbstractIntercommunicateStrategy strategy = buildIntercommunicateStrategy(config);
         strategy.setReplyResponder(new YKCV1ReplyResponderBuilder().build(bmCodec.getStructSuit()));
+        strategy.setRequestHandler(new YKCV1APIBuilder().build());
 
         return new QiYunStrategyBaseTcpDeviceMessageCodec(bmCodec, strategy);
     }
@@ -137,8 +140,17 @@ public class YKCV1ProtocolSupport {
     }
 
     public static AbstractIntercommunicateStrategy          buildIntercommunicateStrategy(PluginConfig config) {
-        return new AbstractIntercommunicateStrategy() {}
-        .setRequestHandler(new YKCV1APIBuilder().build());
+        return new AbstractIntercommunicateStrategy() {
+            @Override
+            public boolean needAckWhileLoginSuccess() {
+                return true;
+            }
+
+            @Override
+            public boolean canFireLogin(DeviceMessage msg) {
+                return (msg instanceof DefaultDeviceRequestMessage) && "AuthRequest".equals(msg.getServiceId());
+            }
+        };
     }
 
     public static StructAndMessageMapper        buildMapper(StructSuit structSuit) {
@@ -157,7 +169,7 @@ public class YKCV1ProtocolSupport {
         structAndThingMapping.addMapping(target, DefaultDeviceRequestMessage.class);
         target = (DefaultStructDeclaration)structSuit.getStructDeclaration("充电桩登录认证应答[下行]");
 //        target.addMetaAnnotation(msgIdMappingAnn);
-        structAndThingMapping.addMapping(DefaultDeviceRequestMessageReply.class, "AuthResponse", target);
+        structAndThingMapping.addMapping(AcknowledgeDeviceMessage.class, "AuthResponse", target);
 
         // 心跳包
         target = (DefaultStructDeclaration) structSuit.getStructDeclaration("充电桩心跳包[上行]");
@@ -248,7 +260,7 @@ public class YKCV1ProtocolSupport {
 
         // 数据块
         structDcl.addField(buildDFDclOfPileNo());
-        structDcl.addField(buildDFDclOfPileType());
+        structDcl.addField(buildDFDclOfPileType().addMeta(ThingAnnotation.DevReqInput()));
 
         DefaultFieldDeclaration fieldDcl;
 
@@ -297,7 +309,7 @@ public class YKCV1ProtocolSupport {
         DefaultFieldDeclaration fieldDcl;
 
         fieldDcl = buildDataFieldDcl("登陆结果", "rstFlag", BaseDataType.UINT8, (short)(7));
-        fieldDcl.addMeta(ThingAnnotation.DevReqReplyOutput(
+        fieldDcl.addMeta(ThingAnnotation.AckOutput(
                 ThingValueNormalizations.ofToDictVal(YKCV1DictBookBuilder.buildLoginAuthRstFlagDict(), (byte) 0x01)
         ));
         structDcl.addField(fieldDcl);

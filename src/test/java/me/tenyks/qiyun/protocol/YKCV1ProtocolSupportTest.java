@@ -47,10 +47,10 @@ public class YKCV1ProtocolSupportTest {
 
     @Test
     public void encodeAuthResponse() throws DecoderException {
-        DefaultDeviceRequestMessageReply reply = new DefaultDeviceRequestMessageReply();
+        AcknowledgeDeviceMessage reply = new AcknowledgeDeviceMessage();
         reply.setDeviceId("10001001000001");
         reply.setMessageId("YKCV1_1728399796355_000001_0100");
-        reply.functionId("AuthResponse");
+        reply.setFunctionId("AuthResponse");
 
         reply.addOutput("rstFlag", "SUCCESS");
 
@@ -353,7 +353,7 @@ public class YKCV1ProtocolSupportTest {
 
     @Test
     public void decodeAny() throws DecoderException {
-        String payload = "68 22 00 E8 00 01 10 00 10 01 00 00 01 01 01 0F 31 2E 31 30 2E 32 33 00 01 00 00 00 00 00 00 00 00 00 00 04 31 89 ";
+        String payload = "68 22 00 00 00 01 10 00 10 01 00 00 01 01 01 0F 31 2E 31 30 2E 32 33 00 01 00 00 00 00 00 00 00 00 00 00 04 D1 AA ";
         ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
 
         StructInstance structInst;

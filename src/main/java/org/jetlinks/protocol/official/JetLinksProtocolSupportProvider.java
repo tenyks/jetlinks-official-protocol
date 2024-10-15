@@ -112,7 +112,7 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
                 support.addMessageCodecSupport(XueBaoWaWaProtocolSupport.buildDeviceMessageCodec(pluginConfig));
             } else if (YKCV1ProtocolSupport.NAME_AND_VER.equals(pluginConfig.getTcpCodec())) {
                 support.addMessageCodecSupport(YKCV1ProtocolSupport.buildDeviceMessageCodec(pluginConfig));
-                support.addAuthenticator(DefaultTransport.TCP, new QiYunTcpStaticCodeAuthenticator());
+//                support.addAuthenticator(DefaultTransport.TCP, new QiYunTcpStaticCodeAuthenticator());
                 support.addConfigMetadata(DefaultTransport.TCP, QiYunTcpStaticCodeAuthenticator.CONFIG);
             } else {
                 support.addMessageCodecSupport(new TcpDeviceMessageCodec());

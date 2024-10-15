@@ -6,15 +6,14 @@ import me.tenyks.core.utils.UuidRemapFactory;
 import me.tenyks.core.utils.UuidRemapShort;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections.CollectionUtils;
-import org.jetlinks.core.message.AcknowledgeDeviceMessage;
-import org.jetlinks.core.message.DeviceMessage;
-import org.jetlinks.core.message.DeviceMessageReply;
+import org.jetlinks.core.message.*;
 import org.jetlinks.core.message.event.EventMessage;
 import org.jetlinks.core.message.event.ThingEventMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.function.FunctionParameter;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
+import org.jetlinks.core.message.request.DefaultDeviceRequestMessage;
 import org.jetlinks.core.message.request.DeviceRequestMessage;
 import org.jetlinks.core.message.request.DeviceRequestMessageReply;
 import org.jetlinks.protocol.common.MessageIdReverseMapping;
@@ -150,6 +149,8 @@ public abstract class ThingAnnotation {
                     ((EventMessage) msg).setDeviceId(itemVal.toString());
                 } else if (msg instanceof ReportPropertyMessage) {
                     ((ReportPropertyMessage) msg).setDeviceId(itemVal.toString());
+                } else if (msg instanceof CommonDeviceMessage<?>) {
+                    ((CommonDeviceMessage<?>)msg).setDeviceId(itemVal.toString());
                 }
             }
         };

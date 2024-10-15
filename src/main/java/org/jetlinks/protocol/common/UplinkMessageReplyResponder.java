@@ -24,10 +24,9 @@ public interface UplinkMessageReplyResponder {
 
     /**
      * 根据输入的上行消息构造应答消息
-     * @param device            关联的设备，（必要）
      * @param uplinkMsg         上行消息，（必要）
      * @return  如果需要响应返回匹配的应答消息，否则返回空
      */
-    AcknowledgeDeviceMessage    buildAckMessage(@NotNull DeviceOperator device, @NotNull DeviceMessage uplinkMsg);
+    AcknowledgeDeviceMessage    buildAckMessage(@NotNull DeviceMessage uplinkMsg);
 
 }

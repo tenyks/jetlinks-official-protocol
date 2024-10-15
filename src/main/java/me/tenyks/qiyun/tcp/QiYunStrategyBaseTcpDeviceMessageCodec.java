@@ -3,6 +3,7 @@ package me.tenyks.qiyun.tcp;
 import io.netty.buffer.ByteBuf;
 import lombok.NonNull;
 import org.jetlinks.core.device.AuthenticationRequest;
+import org.jetlinks.core.device.DeviceOperator;
 import org.jetlinks.core.message.*;
 import org.jetlinks.core.message.codec.*;
 import org.jetlinks.core.message.event.ThingEventMessage;
@@ -81,7 +82,7 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
             }
 
             DeviceOnlineMessage onlineMsg = itcmncStrategy.buildLoginMessage(devMsg);
-            return handleAutoLogin(context, onlineMsg);
+            return handleAutoLogin(context, devMsg, onlineMsg);
         }
 
         return Mono.defer(() -> {
@@ -96,7 +97,7 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
             }
 
             if (replyResponder != null && replyResponder.hasAckForMessage(devMsg)) {
-                AcknowledgeDeviceMessage ackMsg = replyResponder.buildAckMessage(context.getDevice(), devMsg);
+                AcknowledgeDeviceMessage ackMsg = replyResponder.buildAckMessage(devMsg);
 
                 return sendAckAndReturn(context, ackMsg, devMsg);
             }
@@ -120,30 +121,32 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
         });
     }
 
-    private Mono<DeviceMessage> handleAutoLogin(MessageDecodeContext context, DeviceOnlineMessage message) {
+    private Mono<DeviceMessage>     handleAutoLogin(MessageDecodeContext context,
+                                                    final DeviceMessage srcMsg,
+                                                    final DeviceOnlineMessage onlineMsg) {
         if (log.isInfoEnabled()) {
-            log.info("[TCPCodec]发现设备上线消息：msg={}", message.toJson());
+            log.info("[TCPCodec]发现设备上线消息：msg={}", onlineMsg.toJson());
         }
 
-        String deviceId = message.getDeviceId();
+        final String deviceId = srcMsg.getDeviceId();
         return context
                 .getDevice(deviceId)
                 .flatMap(device -> {
                     log.info("[TCPCodec]设备上线OK：deviceId={}", deviceId);
 
-                    if (itcmncStrategy.needAckWhileLoginSuccess()) {
-                        return doAck(context, AckCode.ok, message)
-                                .thenReturn((DeviceMessage)message);
+                    if (replyResponder != null && itcmncStrategy.needAckWhileLoginSuccess()) {
+                        return doAck(context, AckCode.ok, srcMsg)
+                                .thenReturn((DeviceMessage)onlineMsg);
                     } else {
-                        return Mono.justOrEmpty(message);
+                        return Mono.justOrEmpty(onlineMsg);
                     }
                 })
                 .switchIfEmpty(Mono.defer(() -> {
-                    log.warn("[TCPCodec]设备上线Fail：deviceId={}", deviceId);
-
                     if (itcmncStrategy.needAckWhileLoginFail()) {
-                        return doAck(context, AckCode.noAuth, message);
+                        log.warn("[TCPCodec]设备上线Fail，发送ACK：deviceId={}", deviceId);
+                        return doAck(context, AckCode.noAuth, srcMsg);
                     } else {
+                        log.warn("[TCPCodec]设备上线Fail，不发ACK：deviceId={}", deviceId);
                         return Mono.empty();
                     }
                 }));
@@ -179,17 +182,9 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
     }
 
     private AcknowledgeDeviceMessage buildAckMessage(DeviceMessage source, AckCode code) {
-        AcknowledgeDeviceMessage message = new AcknowledgeDeviceMessage();
-        message.addHeader(BinaryAcknowledgeDeviceMessage.codeHeader, code.name());
-        message.setDeviceId(source.getDeviceId());
-        message.setMessageId(source.getMessageId());
-        message.setCode(code.name());
-        message.setSuccess(code == AckCode.ok);
+        source.addHeader("ACK", code);
 
-        source.getHeader(BinaryMessageType.HEADER_MSG_SEQ)
-                .ifPresent(seq -> message.addHeader(BinaryMessageType.HEADER_MSG_SEQ, seq));
-
-        return message;
+        return replyResponder.buildAckMessage(source);
     }
 
     @NonNull

@@ -1,10 +1,14 @@
 package org.jetlinks.protocol.official.common;
 
+import com.alibaba.fastjson.JSONObject;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.DeviceOnlineMessage;
 import org.jetlinks.core.message.event.EventMessage;
+import org.jetlinks.core.message.request.DefaultDeviceRequestMessage;
 import org.jetlinks.protocol.common.DeviceRequestHandler;
 import org.jetlinks.protocol.common.UplinkMessageReplyResponder;
+
+import java.util.HashMap;
 
 public abstract class AbstractIntercommunicateStrategy implements IntercommunicateStrategy {
 
@@ -48,14 +52,35 @@ public abstract class AbstractIntercommunicateStrategy implements Intercommunica
 
     @Override
     public DeviceOnlineMessage buildLoginMessage(DeviceMessage sourceMsg) {
-        EventMessage eSrcMsg = (EventMessage) sourceMsg;
+        if (sourceMsg instanceof DefaultDeviceRequestMessage) {
+            DefaultDeviceRequestMessage reqMsg = (DefaultDeviceRequestMessage) sourceMsg;
 
-        DeviceOnlineMessage dstMsg = new DeviceOnlineMessage();
-        dstMsg.setDeviceId(eSrcMsg.getDeviceId());
-        dstMsg.setMessageId(eSrcMsg.getMessageId());
-        dstMsg.setTimestamp(eSrcMsg.getTimestamp());
+            DeviceOnlineMessage dstMsg = new DeviceOnlineMessage();
+            dstMsg.setDeviceId(reqMsg.getDeviceId());
+            dstMsg.setMessageId(reqMsg.getMessageId());
+            dstMsg.setTimestamp(reqMsg.getTimestamp());
+            dstMsg.setCode("SUCCESS");
+            if (reqMsg.getInputs() != null) {
+                if (dstMsg.getHeaders() == null) dstMsg.setHeaders(new HashMap<>());
+                dstMsg.getHeaders().putAll(reqMsg.getInputs());
+            }
 
-        return dstMsg;
+            return dstMsg;
+        } else {
+            EventMessage eSrcMsg = (EventMessage) sourceMsg;
+
+            DeviceOnlineMessage dstMsg = new DeviceOnlineMessage();
+            dstMsg.setDeviceId(eSrcMsg.getDeviceId());
+            dstMsg.setMessageId(eSrcMsg.getMessageId());
+            dstMsg.setTimestamp(eSrcMsg.getTimestamp());
+
+            if (eSrcMsg.getData() != null && eSrcMsg.getData() instanceof JSONObject) {
+                if (dstMsg.getHeaders() == null) dstMsg.setHeaders(new HashMap<>());
+                dstMsg.getHeaders().putAll((JSONObject)eSrcMsg.getData());
+            }
+
+            return dstMsg;
+        }
     }
 
     @Override

@@ -159,6 +159,10 @@ public class DefaultStructDeclaration implements StructDeclaration {
                 _serviceIdOrFunctionId = ta.getThingValue();
                 return _serviceIdOrFunctionId;
             }
+            if ("serviceId".equals(ta.getThingKey())) {
+                _serviceIdOrFunctionId = ta.getThingValue();
+                return _serviceIdOrFunctionId;
+            }
         }
 
         return null;

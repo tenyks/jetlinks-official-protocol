@@ -3,9 +3,14 @@ package me.tenyks.qiyun.protocol;
 import com.alibaba.fastjson.JSONObject;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.event.EventMessage;
+import org.jetlinks.core.message.request.DefaultDeviceRequestMessage;
 import org.jetlinks.protocol.common.SimpleUplinkMessageReplyResponder;
 import org.jetlinks.protocol.common.UplinkMessageReplyResponder;
+import org.jetlinks.protocol.official.binary.AckCode;
 import org.jetlinks.protocol.official.binary2.StructSuit;
+
+import javax.swing.text.html.Option;
+import java.util.Optional;
 
 /**
  * @author v-lizy81
@@ -18,24 +23,22 @@ public class YKCV1ReplyResponderBuilder {
     public UplinkMessageReplyResponder  build(StructSuit suit) {
         SimpleUplinkMessageReplyResponder rst = new SimpleUplinkMessageReplyResponder();
 
-        rst.addMappingAndReply(suit.getStructDeclaration("充电桩登录认证消息[上行]"), this::buildAckForHeartBeatPing);
-        rst.addMappingAndReply(suit.getStructDeclaration("充电桩心跳包[上行]"), this::buildAckForHeartBeatPing);
-        rst.addMappingAndReply(suit.getStructDeclaration("上报交易记录[上行]"), this::buildAckForReportTransOrderAck);
+        rst.addMappingAndReply(suit.getStructDeclaration("充电桩登录认证消息[上行]"), "AuthResponse", this::buildAckForLogin);
+        rst.addMappingAndReply(suit.getStructDeclaration("充电桩心跳包[上行]"), "HeartBeatPong", this::buildAckForHeartBeatPing);
+        rst.addMappingAndReply(suit.getStructDeclaration("上报交易记录[上行]"), "ReportTransOrderAck", this::buildAckForReportTransOrderAck);
 
         return rst;
     }
 
     private JSONObject buildAckForLogin(DeviceMessage devMsg) {
-        EventMessage event = (EventMessage) devMsg;
+        DefaultDeviceRequestMessage reqMsg = (DefaultDeviceRequestMessage) devMsg;
 
-        JSONObject data = (JSONObject)event.getData();
-        String  pileNo = data.getString("pileNo");
-        Byte gunNo = data.getByte("gunNo");
+        String  pileNo = reqMsg.getInputStr("pileNo");
+        AckCode ackCode = (AckCode) reqMsg.getHeaderOrElse("ACK", () -> AckCode.noAuth);
 
         JSONObject ackPayload = new JSONObject();
         ackPayload.put("pileNo", pileNo);
-        ackPayload.put("gunNo", gunNo);
-        ackPayload.put("pongFlag", (byte) 0);
+        ackPayload.put("rstFlag", (ackCode != null && ackCode.equals(AckCode.ok) ? (byte) 0x00 : (byte) 0x01));
 
         return ackPayload;
     }
