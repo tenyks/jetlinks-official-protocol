@@ -96,4 +96,16 @@ public class ThingValueNormalizations {
         };
     }
 
+    public static ThingValueNormalization<Integer> ofRange(final Number min, final Number max) {
+        return itemValue -> {
+            if (itemValue == null) return min.intValue();
+
+            int intVal = ((Number) itemValue).intValue();
+            if (intVal < min.intValue()) return min.intValue();
+            if (intVal > max.intValue()) return max.intValue();
+
+            return intVal;
+        };
+    }
+
 }

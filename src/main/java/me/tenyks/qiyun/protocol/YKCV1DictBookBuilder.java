@@ -199,6 +199,27 @@ public class YKCV1DictBookBuilder {
     }
 
     /**
+     * @return  启用/禁用
+     */
+    public static DictBook<String, Byte>    buildEnableOrDisableDict() {
+        DictBook<String, Byte> rst = new DictBook<>();
+
+        rst.add("ENABLE", (byte) 0x00, "否");
+        rst.add("DISABLE", (byte) 0x01, "是");
+
+        return rst;
+    }
+
+    public static ThingValueNormalization<Byte>   buildEnableOrDisableNorm() {
+        DictBook<String, Byte> rst = new DictBook<>();
+
+        rst.add("ENABLE", (byte) 0x00, "启用");
+        rst.add("DISABLE", (byte) 0x01, "禁用");
+
+        return ThingValueNormalizations.ofToDictVal(rst, (byte) 0x00);
+    }
+
+    /**
      * @return  是/否/未知
      */
     public static DictBook<Byte, String>    buildYesOrNoDict() {
@@ -443,7 +464,7 @@ public class YKCV1DictBookBuilder {
     /**
      * 运营平台确认启动充电失败原因
      */
-    public static DictBook<String, Byte>    buildConfirmChargingFailReasonCodeDict() {
+    public static DictBook<String, Byte>            buildConfirmChargingFailReasonCodeDict() {
         DictBook<String, Byte> rst = new DictBook<>();
 
         rst.add("FC_ACC_NOT_EXIST", (byte) 0x01, "账户不存在");
@@ -464,7 +485,7 @@ public class YKCV1DictBookBuilder {
     /**
      * 成功或失败
      */
-    public static ThingValueNormalization<String>    buildSuccessOrFailDict() {
+    public static ThingValueNormalization<String>   buildSuccessOrFailNorm() {
         DictBook<Byte, String> rst = new DictBook<>();
 
         rst.add((byte) 0x01, "SUCCESS", "成功", true);
@@ -598,13 +619,13 @@ public class YKCV1DictBookBuilder {
     /**
      * 执行控制
      */
-    public static DictBook<Byte, String>    buildCmdImmediateDict() {
-        DictBook<Byte, String> rst = new DictBook<>();
+    public static ThingValueNormalization<Byte>    buildCmdImmediateDict() {
+        DictBook<String, Byte> rst = new DictBook<>();
 
-        rst.add((byte) 0x01, "RUN_AT_ONCE", "立即执行");
-        rst.add((byte) 0x02, "RUN_IN_IDLE", "空闲执行");
+        rst.add("RUN_AT_ONCE", (byte) 0x01, "立即执行");
+        rst.add("RUN_IN_IDLE", (byte) 0x02, "空闲执行");
 
-        return rst;
+        return ThingValueNormalizations.ofToDictVal(rst, (byte) 0x02);
     }
 
     /**

@@ -9,6 +9,7 @@ import org.jetlinks.core.message.codec.MessageEncodeContext;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.request.DefaultDeviceRequestMessageReply;
 import org.jetlinks.core.utils.BytesUtils;
+import org.jetlinks.core.utils.DateUtils;
 import org.jetlinks.protocol.official.PluginConfig;
 import org.jetlinks.protocol.official.TestMessageDecodeContext;
 import org.jetlinks.protocol.official.TestMessageEncodeContext;
@@ -534,6 +535,166 @@ public class YKCV1ProtocolSupportTest {
         System.out.println(real);
 
         Assert.assertEquals(expect, real);
+    }
+
+    @Test
+    public void encodeWritePileSettingFunInv() {
+        FunctionInvokeMessage reply = new FunctionInvokeMessage();
+        reply.setDeviceId("32010200000001");
+        reply.setMessageId("YKCV1_19271117778_000001_0008");
+        reply.functionId("WritePileSettingFunInv");
+
+        reply.addInput("enableFlag", "ENABLE");
+        reply.addInput("maxOutputRate", 1);
+
+        String expect = "68 0D 00 08 00 52 32 01 02 00 00 00 01 00 1E 3E 1A";
+
+        ByteBuf rst = codec.encode(encodeCtx, reply);
+        String real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+
+        Assert.assertEquals(expect, real);
+    }
+
+    @Test
+    public void decodeWritePileSettingFunInvReply() throws DecoderException {
+        String payload = "68 0C 0008 00 51 32010200000001 01 C1A9";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+
+        payload = "68 0C 0008 00 51 32010200000001 00 C1A9";
+        input = BytesUtils.fromHexStrWithTrim(payload);
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void encodeWriteTimestampFunInv() {
+        FunctionInvokeMessage reply = new FunctionInvokeMessage();
+        reply.setDeviceId("55031412782305");
+        reply.setMessageId("YKCV1_19271117778_000001_00DF");
+        reply.functionId("WriteTimestampFunInv");
+
+        reply.addInput("timestamp", DateUtils.fromYYYYMMDDHHmmss19("2020-03-16 17:14:47"));
+
+        String expect = "68 12 00 DF 00 56 55 03 14 12 78 23 05 98 B7 0E 11 10 03 14 8A 13";
+
+        ByteBuf rst = codec.encode(encodeCtx, reply);
+        String real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+
+        Assert.assertEquals(expect, real);
+    }
+
+    @Test
+    public void decodeWriteTimestampFunInvReply() throws DecoderException {
+        String payload = "68 12 A101 00 55 55031412782305 98B70E11100314 0E9B";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void encodeWriteBillingTermsFunInv() {
+        FunctionInvokeMessage reply = new FunctionInvokeMessage();
+        reply.setDeviceId("55031412782305");
+        reply.setMessageId("YKCV1_19271117778_000001_0025");
+        reply.functionId("WriteBillingTermsFunInv");
+
+        reply.addInput("timestamp", DateUtils.fromYYYYMMDDHHmmss19("2020-03-16 17:14:47"));
+
+        reply.addInput("termsNo", "0100");
+        reply.addInput("sharpEUP", 200000);
+        reply.addInput("sharpSUP", 40000);
+        reply.addInput("peakEUP", 200000);
+        reply.addInput("peakSUP", 40000);
+        reply.addInput("shoulderEUP", 200000);
+        reply.addInput("shoulderSUP", 40000);
+        reply.addInput("offPeakEUP", 200000);
+        reply.addInput("offPeakSUP", 40000);
+        reply.addInput("withLostRate", (byte) 0x00);
+
+        String expect = "68 5E 00 25 00 58 55 03 14 12 78 23 05 01 00 40 0D 03 00 40 9C 00 00 40 0D 03 00 40 9C 00 00 40 0D 03 00 40 9C 00 00 40 0D 03 00 40 9C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FB 3B";
+
+        ByteBuf rst = codec.encode(encodeCtx, reply);
+        String real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+
+        Assert.assertEquals(expect, real);
+    }
+
+    @Test
+    public void decodeWriteBillingTermsFunInvReply() throws DecoderException {
+        String payload = "68 0C 0009 00 57 32010200000001 01 C1A9";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+
+        payload = "68 0C 0009 00 57 32010200000001 00 C1A9";
+        input = BytesUtils.fromHexStrWithTrim(payload);
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void encodeRebootFunInv() {
+        FunctionInvokeMessage reply = new FunctionInvokeMessage();
+        reply.setDeviceId("32010200000001");
+        reply.setMessageId("YKCV1_19271117778_000001_0011");
+        reply.functionId("RebootFunInv");
+
+        reply.addInput("option", "RUN_AT_ONCE");
+
+        String expect = "68 0C 00 11 00 92 32 01 02 00 00 00 01 01 D2 E7";
+
+        ByteBuf rst = codec.encode(encodeCtx, reply);
+        String real = ByteUtils.toHexStrPretty(rst);
+        System.out.println(real);
+
+        Assert.assertEquals(expect, real);
+    }
+
+    @Test
+    public void decodeRebootFunInvReply() throws DecoderException {
+        String payload = "68 0C 0011 00 91 32010200000001 01 C1A9";
+        ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
+
+        StructInstance structInst;
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
+
+        payload = "68 0C 0011 00 91 32010200000001 00 C1A9";
+        input = BytesUtils.fromHexStrWithTrim(payload);
+        structInst = suit.deserialize(input);
+        System.out.println(structInst);
+
+        msg = codec.decode(decodeCtx, input);
+        System.out.println(msg);
     }
 
 }
