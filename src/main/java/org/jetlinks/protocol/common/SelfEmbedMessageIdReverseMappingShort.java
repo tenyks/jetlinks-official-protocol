@@ -1,5 +1,6 @@
 package org.jetlinks.protocol.common;
 
+
 import me.tenyks.core.utils.ShortCodeGenerator;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -14,7 +15,7 @@ public class SelfEmbedMessageIdReverseMappingShort implements MessageIdReverseMa
 
     private final String              tpl;
 
-    private final ShortCodeGenerator  shortCodeGen;
+    private final ShortCodeGenerator shortCodeGen;
 
     public SelfEmbedMessageIdReverseMappingShort(String prefix) {
         this.shortCodeGen = new ShortCodeGenerator();

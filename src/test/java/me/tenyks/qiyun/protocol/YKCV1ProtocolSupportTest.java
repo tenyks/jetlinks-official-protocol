@@ -353,7 +353,7 @@ public class YKCV1ProtocolSupportTest {
 
     @Test
     public void decodeAny() throws DecoderException {
-        String payload = "68 22 00 00 00 01 10 00 10 01 00 00 01 01 01 0F 31 2E 31 30 2E 32 33 00 01 00 00 00 00 00 00 00 00 00 00 04 D1 AA ";
+        String payload = "68 0C 01 24 00 02 10 00 10 01 00 00 01 01 C0 5D";
         ByteBuf input = BytesUtils.fromHexStrWithTrim(payload);
 
         StructInstance structInst;

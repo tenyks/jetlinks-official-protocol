@@ -22,6 +22,7 @@ import java.util.function.BiFunction;
 public class SimpleDeviceRequestHandler implements DeviceRequestHandler {
 
     private final Map<String, BiFunction<DeviceOperator, DeviceRequestMessage<?> , DeviceRequestMessageReply>> idxToCallable;
+
     private final Map<String, BiFunction<DeviceOperator, DeviceRequestMessage<?> , Tuple2<DeviceRequestMessageReply, ThingEventMessage>>> idxToCallable2;
 
     public SimpleDeviceRequestHandler() {
@@ -29,13 +30,15 @@ public class SimpleDeviceRequestHandler implements DeviceRequestHandler {
         this.idxToCallable2 = new HashMap<>();
     }
 
-    public SimpleDeviceRequestHandler addCallableSilent(String serviceId, BiFunction<DeviceOperator, DeviceRequestMessage<?> , DeviceRequestMessageReply> callable) {
+    public SimpleDeviceRequestHandler addCallableSilent(String serviceId,
+                                                        BiFunction<DeviceOperator, DeviceRequestMessage<?> , DeviceRequestMessageReply> callable) {
         this.idxToCallable.put(serviceId, callable);
 
         return this;
     }
 
-    public SimpleDeviceRequestHandler addCallable(String serviceId, BiFunction<DeviceOperator, DeviceRequestMessage<?> , Tuple2<DeviceRequestMessageReply, ThingEventMessage>> callable) {
+    public SimpleDeviceRequestHandler addCallable(String serviceId,
+                                                  BiFunction<DeviceOperator, DeviceRequestMessage<?> , Tuple2<DeviceRequestMessageReply, ThingEventMessage>> callable) {
         this.idxToCallable2.put(serviceId, callable);
 
         return this;

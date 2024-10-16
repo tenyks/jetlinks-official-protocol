@@ -390,6 +390,33 @@ public abstract class ThingAnnotation {
         };
     }
 
+    public static <T> ThingAnnotation AckOutput(ThingValueNormalization<T> norm) {
+        return new ThingAnnotation("outputs", null) {
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                AcknowledgeDeviceMessage fiMsg = (AcknowledgeDeviceMessage)msg;
+
+                if (itemKey == null) return fiMsg.getOutputs();
+
+                Object itemVal = fiMsg.getOutput(itemKey);
+
+                return norm.apply(itemVal);
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                AcknowledgeDeviceMessage fiMsg = (AcknowledgeDeviceMessage)msg;
+
+                JSONObject outputObj = fiMsg.getOutputs();
+                if (outputObj == null) {
+                    outputObj = new JSONObject();
+                    fiMsg.setOutputs(outputObj);
+                }
+                outputObj.put(itemKey, norm.apply(itemVal));
+            }
+        };
+    }
+
     public static ThingAnnotation DevReqReplyOutput() {
         return new ThingAnnotation("outputs", null) {
             @Override

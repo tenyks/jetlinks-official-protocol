@@ -171,14 +171,18 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
         return ((FromDeviceMessageContext) context)
                 .getSession()
                 .send(encMsg)
-                .then(Mono.fromRunnable(() -> {
-                    if (itcmncStrategy.needCloseConnectionWhileSendAckFail()) {
-                        log.warn("[TCPCodec]发送ACK消息失败，关闭TCP会话。");
-                        ((FromDeviceMessageContext) context).getSession().close();
-                    } else {
-                        log.warn("[TCPCodec]发送ACK消息失败。");
+                .map((flag) -> {
+                    if (flag == null || !flag) {
+                        if (itcmncStrategy.needCloseConnectionWhileSendAckFail()) {
+                            log.warn("[TCPCodec]发送ACK消息失败，关闭TCP会话。");
+                            ((FromDeviceMessageContext) context).getSession().close();
+                        } else {
+                            log.warn("[TCPCodec]发送ACK消息失败。");
+                        }
                     }
-                }));
+
+                    return source;
+                });
     }
 
     private AcknowledgeDeviceMessage buildAckMessage(DeviceMessage source, AckCode code) {

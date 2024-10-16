@@ -54,6 +54,7 @@ public class YKCV1APIBuilder {
         Number termsNo = reqMsg.getInputNum("termsNo");
 
         DefaultDeviceRequestMessageReply reply = new DefaultDeviceRequestMessageReply().from(reqMsg);
+        reply.functionId("CheckFeeTermsRequestReply");
         JSONObject output = new JSONObject();
         if (termsNo != null && termsNo.shortValue() == CUR_TERMS_NO) {
             // 匹配
@@ -72,6 +73,7 @@ public class YKCV1APIBuilder {
     public DeviceRequestMessageReply    ofBillingTermsRequest(@Nonnull DeviceOperator device,
                                                                @Nonnull DeviceRequestMessage<?> reqMsg) {
         DefaultDeviceRequestMessageReply reply = new DefaultDeviceRequestMessageReply().from(reqMsg);
+        reply.functionId("BillingTermsRequestReply");
         JSONObject output = new JSONObject(BILLING_TERMS);
         reply.setOutputs(output);
 
@@ -90,6 +92,7 @@ public class YKCV1APIBuilder {
         Number gunNo = reqMsg.getInputNum("gunNo");
 
         DefaultDeviceRequestMessageReply reply = new DefaultDeviceRequestMessageReply().from(reqMsg);
+        reply.functionId("PileSwitchOnChargingRequestReply");
         JSONObject output = new JSONObject();
         String transNo = buildTransNo(pileNo, gunNo);
         output.put("transNo", transNo);
