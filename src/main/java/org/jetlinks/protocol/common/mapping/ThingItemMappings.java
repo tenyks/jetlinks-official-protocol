@@ -45,7 +45,37 @@ public class ThingItemMappings {
         };
     }
 
-    public static ThingItemMapping<String> ofDictExtend2(BitDictBook<String> dictBook, final String itemCodeKey, final String itemDescKey) {
+    public static ThingItemMapping<String> ofBitDictExtend(BitDictBook<String> dictBook, final String itemDescKey) {
+        return new AbstractThingItemMappingBit<String>(dictBook) {
+
+            @Override
+            public List<Tuple2<String, String>> apply(String itemKey, Object itemVal) {
+                List<BitDictBook.Item<String>> items = getItem(itemVal);
+
+                if (CollectionUtils.isNotEmpty(items)) {
+                    List<String> codeList = new ArrayList<>();
+                    List<String> descList = new ArrayList<>();
+
+                    for (BitDictBook.Item<String> item : items) {
+                        codeList.add(item.getCode());
+                        descList.add(item.getDescription());
+                    }
+
+                    return Arrays.asList(
+                            Tuples.of(itemKey, String.join(",", codeList)),
+                            Tuples.of(itemDescKey, String.join(",", descList))
+                    );
+                } else {
+                    return Arrays.asList(
+                            Tuples.of(itemKey, itemVal.toString()),
+                            Tuples.of(itemDescKey, "其他：" + itemVal.toString())
+                    );
+                }
+            }
+        };
+    }
+
+    public static ThingItemMapping<String> ofBitDictExtend2(BitDictBook<String> dictBook, final String itemCodeKey, final String itemDescKey) {
         return new AbstractThingItemMappingBit<String>(dictBook) {
 
             @Override
@@ -67,7 +97,7 @@ public class ThingItemMappings {
                     );
                 } else {
                     return Arrays.asList(
-                            Tuples.of(itemKey, itemVal.toString()),
+                            Tuples.of(itemCodeKey, itemVal.toString()),
                             Tuples.of(itemDescKey, "其他：" + itemVal.toString())
                     );
                 }
@@ -75,7 +105,7 @@ public class ThingItemMappings {
         };
     }
 
-    public static ThingItemMapping<String> ofDictExtend2(DictBook<?, String> dictBook, final String itemCodeKey, final String itemDescKey) {
+    public static ThingItemMapping<String> ofBitDictExtend2(DictBook<?, String> dictBook, final String itemCodeKey, final String itemDescKey) {
         return new AbstractThingItemMapping<String>(dictBook) {
 
             @Override

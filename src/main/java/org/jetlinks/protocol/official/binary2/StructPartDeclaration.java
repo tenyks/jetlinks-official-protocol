@@ -33,6 +33,11 @@ public interface StructPartDeclaration {
      */
     short           getOffset();
 
+    /**
+     * 对于解释型消息，该字段的引用路径，如：JSON字段的引用路径
+     */
+    String          getPathInStruct();
+
     Iterable<ThingAnnotation> thingAnnotations();
 
 }

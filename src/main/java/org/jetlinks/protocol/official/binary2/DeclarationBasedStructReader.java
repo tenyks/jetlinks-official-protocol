@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeclarationBasedStructReader implements StructReader {
+public class DeclarationBasedStructReader implements BinaryStructReader {
 
     private static final Logger log = LoggerFactory.getLogger(DeclarationBasedStructReader.class);
 
@@ -47,7 +47,7 @@ public class DeclarationBasedStructReader implements StructReader {
 
                 sInst.addFieldInstance(fInstList);
             } else {
-                FieldReader fReader = (FieldReader) partReader;
+                BinaryFieldReader fReader = (BinaryFieldReader) partReader;
                 StructFieldDeclaration fDcl = fReader.getDeclaration();
 
                 DynamicAnchor dynamicAnchor = fDcl.getDynamicAnchor();

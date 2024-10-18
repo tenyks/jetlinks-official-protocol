@@ -5,10 +5,12 @@ import io.netty.buffer.ByteBuf;
 import javax.annotation.Nullable;
 
 /**
+ * 基于二进制无格式的结构Reader
+ *
  * @author v-lizy81
  * @date 2023/6/12 23:14
  */
-public interface StructReader {
+public interface BinaryStructReader {
 
     /**
      * 读取字节流以StructLike方式反序列化

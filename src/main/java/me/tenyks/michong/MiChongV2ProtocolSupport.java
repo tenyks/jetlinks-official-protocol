@@ -670,7 +670,7 @@ public class MiChongV2ProtocolSupport {
 
     private static DefaultFieldDeclaration buildRESULTOfReplyFieldDcl() {
         DefaultFieldDeclaration field = new DefaultFieldDeclaration("结果", "RESULT", BaseDataType.UINT8, (short) 3);
-        field.addMeta(ThingAnnotation.FuncOutput(ThingItemMappings.ofDictExtend2(CMD_REPLY_RESULT_DICT, "rstCode", "rstDesc")));
+        field.addMeta(ThingAnnotation.FuncOutput(ThingItemMappings.ofBitDictExtend2(CMD_REPLY_RESULT_DICT, "rstCode", "rstDesc")));
 
         return field;
     }

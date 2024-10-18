@@ -4,11 +4,11 @@ public interface FieldInstance {
 
     StructFieldDeclaration  getDeclaration();
 
-    Object getValue();
+    Object  getValue();
 
-    int  getIntValue();
+    int     getIntValue();
 
-    short  getShortValue();
+    short   getShortValue();
 
     default String getStringValue() {
         return getStringValue(null);
@@ -19,10 +19,10 @@ public interface FieldInstance {
         return (val instanceof String ? (String) val : (val != null ? val.toString() : defVal));
     }
 
-    String getCode();
+    String  getCode();
 
-    Short getOffset();
+    Short   getOffset();
 
-    Short getSize();
+    Short   getSize();
 
 }

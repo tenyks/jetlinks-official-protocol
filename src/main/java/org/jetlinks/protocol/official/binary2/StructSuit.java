@@ -110,7 +110,7 @@ public class StructSuit {
             }
         }
 
-        StructReader reader = idxByFcReaderMap.get(fc);
+        BinaryStructReader reader = idxByFcReaderMap.get(fc);
         if (reader == null) {
             if (defaultReader == null) {
                 log.warn("[StructSuit]缺少支持的Reader：featureCode={}", fc);
@@ -134,7 +134,7 @@ public class StructSuit {
             throw new IllegalArgumentException("StructInst参数不完整：缺少结构声明数据");
         }
 
-        StructWriter writer = idxByFcWriterMap.get(structDcl.getFeatureCode());
+        BinaryStructWriter writer = idxByFcWriterMap.get(structDcl.getFeatureCode());
         if (writer == null) {
             DeclarationBasedStructWriter writerImpl = new DeclarationBasedStructWriter(structDcl);
             idxByFcWriterMap.put(structDcl.getFeatureCode(), writerImpl);

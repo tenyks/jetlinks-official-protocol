@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DeclarationBasedFieldReader implements FieldReader {
+public class DeclarationBasedFieldReader implements BinaryFieldReader {
 
     private static final Logger log = LoggerFactory.getLogger(DeclarationBasedFieldReader.class);
 

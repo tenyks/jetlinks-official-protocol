@@ -18,8 +18,8 @@ public interface StructPartReader {
         }
     }
 
-    static FieldReader create(StructFieldDeclaration dcl) {
-        return new DeclarationBasedFieldReader((StructFieldDeclaration) dcl);
+    static BinaryFieldReader create(StructFieldDeclaration dcl) {
+        return new DeclarationBasedFieldReader(dcl);
     }
 
 }

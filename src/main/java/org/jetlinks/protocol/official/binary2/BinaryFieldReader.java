@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 
 import javax.annotation.Nullable;
 
-public interface FieldReader extends StructPartReader {
+public interface BinaryFieldReader extends StructPartReader {
 
     @Override
     StructFieldDeclaration getDeclaration();

@@ -592,11 +592,10 @@ public class YKCV1ProtocolSupport {
         // 数据块
         DefaultFieldDeclaration fieldDcl;
 
-        structDcl.addField(buildDFDclOfTransNo());
+        structDcl.addField(buildDFDclOfTransNo().addMeta(ThingAnnotation.EventData()));
         structDcl.addField(buildDFDclOfPileNo((short) (16)));
-        structDcl.addField(buildDFDclOfGunNo());
+        structDcl.addField(buildDFDclOfGunNo().addMeta(ThingAnnotation.EventData()));
 
-        // buildPileStatusDict()
         fieldDcl = buildDataFieldDcl("状态", "pileStatus", BaseDataType.UINT8, (short) (24));
         structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
 
@@ -611,13 +610,15 @@ public class YKCV1ProtocolSupport {
         //精确到小数点后一位；待机置零
         fieldDcl = buildDataFieldDcl("输出电压", "outputVoltage", BaseDataType.UINT16, (short) (27));
         structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
+
         //精确到小数点后一位；待机置零
         fieldDcl = buildDataFieldDcl("输出电流", "outputCurrent", BaseDataType.UINT16, (short) (28));
         structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
 
         //整形，偏移量-50；待机置零
         fieldDcl = buildDataFieldDcl("枪线温度", "temperatureOfGunWire", BaseDataType.UINT8, (short) (31));
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData(ThingValueNormalizations.plusOffsetAndToInt(-50))));
+
         //没有置零
         fieldDcl = buildDataFieldDcl("枪线编码", "gunWireCode", BaseDataType.HEX08_STR, (short) (32));
         structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
@@ -628,32 +629,33 @@ public class YKCV1ProtocolSupport {
 
         //整形，偏移量-50 ºC；待机置零； 交流桩置零
         fieldDcl = buildDataFieldDcl("电池组最高温度", "maxTemperatureOfBattery", BaseDataType.UINT8, (short) (41));
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData(ThingValueNormalizations.plusOffsetAndToInt(-50))));
+
         //单位：min；待机置零
         fieldDcl = buildDataFieldDcl("累计充电时间", "chargingAccDuration", BaseDataType.UINT16, (short) (42));
         structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
+
         //单位：min；待机置零、交流桩置零
         fieldDcl = buildDataFieldDcl("剩余时间", "chargingRemainDuration", BaseDataType.UINT16, (short) (44));
         structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
+
         //精确到小数点后四位；待机置零
         fieldDcl = buildDataFieldDcl("充电度数", "chargingEC", BaseDataType.UINT32, (short) (46));
         structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
+
         //精确到小数点后四位；待机置零  未设置计损比例时等于充电度数
         fieldDcl = buildDataFieldDcl("计损充电度数", "chargingECWithLose", BaseDataType.UINT32, (short) (50));
         structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
+
         //精确到小数点后四位；待机置零 （电费+服务费）* 计损充电度数
         fieldDcl = buildDataFieldDcl("已充金额", "chargeAmount", BaseDataType.UINT32, (short) (54));
         structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
-        //Bit 位表示（0 否 1 是），低位到高位顺序
-        //Bit1：急停按钮动作故障；Bit2：无可用整流模块； Bit3：出风口温度过高；Bit4：交流防雷故障；
-        //Bit5：交直流模块 DC20 通信中断； Bit6：绝缘检测模块 FC08 通信中断；
-        //Bit7：电度表通信中断；Bit8：读卡器通信中断； Bit9：RC10 通信中断；Bit10：风扇调速板故障；
-        //Bit11：直流熔断器故障；Bit12：高压接触器故障；Bit13：门打开；
-        fieldDcl = buildDataFieldDcl("硬件故障", "faultCode", BaseDataType.UINT16, (short) (58));
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData()));
 
-        structDcl.addField(buildCRCFieldDcl());
-        structDcl.setCRCCalculator(buildCRCCalculator());
+        fieldDcl = buildDataFieldDcl("硬件故障", "faultCode", BaseDataType.UINT16, (short) (58));
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.EventData(YKCV1DictBookBuilder.buildFaultCodeDict("faultDesc"))));
+
+//        structDcl.addField(buildCRCFieldDcl());
+//        structDcl.setCRCCalculator(buildCRCCalculator());
 
         return structDcl;
     }
@@ -678,9 +680,9 @@ public class YKCV1ProtocolSupport {
         // 数据块
         DefaultFieldDeclaration fieldDcl;
 
-        structDcl.addField(buildDFDclOfTransNo());
+        structDcl.addField(buildDFDclOfTransNo().addMeta(ThingAnnotation.EventData()));
         structDcl.addField(buildDFDclOfPileNo((short) 16));
-        structDcl.addField(buildDFDclOfGunNo((short) 23));
+        structDcl.addField(buildDFDclOfGunNo((short) 23).addMeta(ThingAnnotation.EventData()));
 
         //当前版本为 V1.1，表示为：byte3，byte2—0001H；byte1—01H
         fieldDcl = buildDataFieldDcl("BMS 通信协议版本号", "BMSProtocolVersion", BaseDataType.Num010101_Str, (short) 24);
@@ -2212,7 +2214,7 @@ public class YKCV1ProtocolSupport {
      * <li>按需发送</li>
      * <li>重启充电桩，应对部分问题，如卡死</li>
      */
-    private static DefaultStructDeclaration buildRebootFunInvStructDcl() {
+    private static DefaultStructDeclaration     buildRebootFunInvStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("远程重启[指令]", "CMD:0x92");
 
         structDcl.enableEncode();

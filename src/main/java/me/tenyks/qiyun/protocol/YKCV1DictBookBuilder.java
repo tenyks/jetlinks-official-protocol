@@ -86,17 +86,17 @@ public class YKCV1DictBookBuilder {
     /**
      * 充电桩状态：0x00：离线 0x01：故障 0x02：空闲 0x03：充电
      */
-    public static DictBook<Byte, String>    buildPileStatusDict() {
+    public static ThingValueNormalization<String>    buildPileStatusDict() {
         DictBook<Byte, String> rst = new DictBook<>();
 
         rst.add((byte) 0x00, "OFFLINE", "离线");
         rst.add((byte) 0x01, "FAULT", "故障");
         rst.add((byte) 0x02, "IDLE", "空闲");
-        rst.add((byte) 0x02, "CHARGING", "充电");
+        rst.add((byte) 0x03, "CHARGING", "充电");
 
         rst.addOtherItemTemplate((srcCode) -> "OTH_" + srcCode.toString(), "其他状态");
 
-        return rst;
+        return ThingValueNormalizations.ofToDictVal(rst, "OTHER");
     }
 
     /**
@@ -236,7 +236,7 @@ public class YKCV1DictBookBuilder {
     /**
      * 硬件故障字典表
      */
-    public static BitDictBook<String>       buildFaultCodeDict() {
+    public static ThingItemMapping<String>       buildFaultCodeDict(String itemDescKey) {
         BitDictBook<String> rst = new BitDictBook<>();
 
         rst.add("FC_EMG_STOP",      (short)1, (byte)0b00000001, "急停按钮动作故障");
@@ -253,7 +253,7 @@ public class YKCV1DictBookBuilder {
         rst.add("FC_HV_CT",         (short)0, (byte)0b00001000, "高压接触器故障");
         rst.add("FC_DOOR_OPEN",     (short)0, (byte)0b00010000, "门打开");
 
-        return rst;
+        return ThingItemMappings.ofBitDictExtend(rst, itemDescKey);
     }
 
     /**
@@ -355,7 +355,7 @@ public class YKCV1DictBookBuilder {
         rst.add("OK_BMS_CHR_STS",    (short)7, (byte)0b11000000, (byte)0b01000000, "接收BMS充电统计报文[超时]");
         rst.add("UNK_BMS_CHR_STS",   (short)7, (byte)0b11000000, (byte)0b10000000, "接收BMS充电统计报文[未知]");
 
-        return ThingItemMappings.ofDictExtend2(rst, itemCodeKey, itemDescKey);
+        return ThingItemMappings.ofBitDictExtend2(rst, itemCodeKey, itemDescKey);
     }
 
     /**
@@ -382,7 +382,7 @@ public class YKCV1DictBookBuilder {
         rst.add("EC_OVER_CUR",      (short)3, (byte)0b00000011, "电流过大");
         rst.add("EC_ABN_VOL",       (short)3, (byte)0b00001100, "电压异常");
 
-        return ThingItemMappings.ofDictExtend2(rst, itemCodeKey, itemDescKey);
+        return ThingItemMappings.ofBitDictExtend2(rst, itemCodeKey, itemDescKey);
     }
 
     /**
@@ -407,7 +407,7 @@ public class YKCV1DictBookBuilder {
         rst.add("EC_CUR_NOT_FIT",   (short)3, (byte)0b00000011, "电流不匹配");
         rst.add("EC_ABN_VOL",       (short)3, (byte)0b00001100, "电压异常");
 
-        return ThingItemMappings.ofDictExtend2(rst, itemCodeKey, itemDescKey);
+        return ThingItemMappings.ofBitDictExtend2(rst, itemCodeKey, itemDescKey);
     }
 
     /**
@@ -458,7 +458,7 @@ public class YKCV1DictBookBuilder {
         rst.add("Y_CHG_FRB",            (short)1, (byte)0b00001100, (byte)0b00000000, "充电禁止[是]");
         rst.add("N_CHG_FRB",            (short)1, (byte)0b00001100, (byte)0b00000100, "充电禁止[否]");
 
-        return ThingItemMappings.ofDictExtend2(rst, itemCodeKey, itemDescKey);
+        return ThingItemMappings.ofBitDictExtend2(rst, itemCodeKey, itemDescKey);
     }
 
     /**

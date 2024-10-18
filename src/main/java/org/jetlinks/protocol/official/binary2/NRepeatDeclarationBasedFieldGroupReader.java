@@ -19,7 +19,7 @@ public class NRepeatDeclarationBasedFieldGroupReader implements NRepeatGroupRead
 
     private final NRepeatGroupDeclaration declaration;
 
-    private final List<FieldReader>             fieldReaders;
+    private final List<BinaryFieldReader>             fieldReaders;
 
     private transient StructInstance            boundInstance;
 
@@ -51,7 +51,7 @@ public class NRepeatDeclarationBasedFieldGroupReader implements NRepeatGroupRead
 
         for (short i = 0; i < n; i++) {
             List<FieldInstance> grpRst = new ArrayList<>();
-            for (FieldReader fReader : fieldReaders) {
+            for (BinaryFieldReader fReader : fieldReaders) {
                 StructFieldDeclaration fDcl = fReader.getDeclaration();
 
                 DynamicAnchor dynamicAnchor = fDcl.getDynamicAnchor();

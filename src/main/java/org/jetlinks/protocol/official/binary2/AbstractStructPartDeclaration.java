@@ -33,6 +33,8 @@ public abstract class AbstractStructPartDeclaration implements StructPartDeclara
 
     private short                       sizeMask;
 
+    private String                      pathInStruct;
+
     private final List<ThingAnnotation> thingAnnotations;
 
     /**
@@ -45,6 +47,15 @@ public abstract class AbstractStructPartDeclaration implements StructPartDeclara
         this.code = code;
         this.absOffset = absOffset;
         this.size = size;
+        this.thingAnnotations = new ArrayList<>();
+    }
+
+    protected AbstractStructPartDeclaration(String name, String code, String pathInStruct) {
+        this.name = name;
+        this.code = code;
+        this.absOffset = 0;
+        this.size = 0;
+        this.pathInStruct = pathInStruct;
         this.thingAnnotations = new ArrayList<>();
     }
 
@@ -82,6 +93,11 @@ public abstract class AbstractStructPartDeclaration implements StructPartDeclara
         }
 
         return refAnchor.getAbsoluteOffset(offsetToAnchor);
+    }
+
+    @Override
+    public String getPathInStruct() {
+        return pathInStruct;
     }
 
     public Iterable<ThingAnnotation> thingAnnotations() {
