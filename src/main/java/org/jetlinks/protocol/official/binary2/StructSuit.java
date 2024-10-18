@@ -76,7 +76,7 @@ public class StructSuit {
         return (reader != null ? reader.getStructDeclaration() : null);
     }
 
-    public StructDeclaration getStructDeclaration(String name) {
+    public StructDeclaration            getStructDeclaration(String name) {
         return idxByNameMap.get(name);
     }
 
