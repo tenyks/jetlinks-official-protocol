@@ -4,8 +4,6 @@ import io.netty.buffer.ByteBuf;
 import lombok.NonNull;
 import org.jetlinks.core.message.*;
 import org.jetlinks.core.message.codec.*;
-import org.jetlinks.core.metadata.DefaultConfigMetadata;
-import org.jetlinks.core.metadata.types.PasswordType;
 import org.jetlinks.protocol.official.binary.AckCode;
 import org.jetlinks.protocol.official.binary.BinaryAcknowledgeDeviceMessage;
 import org.jetlinks.protocol.official.binary.BinaryMessageType;
@@ -26,7 +24,7 @@ public class StrategyTcpDeviceMessageCodec implements DeviceMessageCodec {
 
     private static final Logger log = LoggerFactory.getLogger(StrategyTcpDeviceMessageCodec.class);
 
-    private final BinaryMessageCodec  codec;
+    private final BinaryMessageCodec codec;
 
     private final IntercommunicateStrategy itcmncStrategy;
 

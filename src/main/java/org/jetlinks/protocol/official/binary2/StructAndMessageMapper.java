@@ -19,6 +19,5 @@ public interface StructAndMessageMapper {
     StructInstance  toStructInstance(@Nullable MapperContext context, DeviceMessage message);
 
     DeviceMessage   toDeviceMessage(@Nullable MapperContext context, StructInstance structInst);
-
     
 }

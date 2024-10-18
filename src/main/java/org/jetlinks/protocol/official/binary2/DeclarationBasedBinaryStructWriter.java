@@ -8,13 +8,13 @@ import me.tenyks.core.crc.CRCCalculator;
  * @author v-lizy81
  * @date 2023/6/18 22:28
  */
-public class DeclarationBasedStructWriter implements BinaryStructWriter {
+public class DeclarationBasedBinaryStructWriter implements BinaryStructWriter {
 
     private final StructDeclaration   structDcl;
 
     //private final List<FieldWriter>   fieldWriters;
 
-    public DeclarationBasedStructWriter(StructDeclaration structDcl) {
+    public DeclarationBasedBinaryStructWriter(StructDeclaration structDcl) {
         this.structDcl = structDcl;
 
 //        this.fieldWriters = new ArrayList<>();

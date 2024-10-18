@@ -15,7 +15,7 @@ import org.jetlinks.protocol.official.TestMessageDecodeContext;
 import org.jetlinks.protocol.official.TestMessageEncodeContext;
 import org.jetlinks.protocol.official.binary2.BinaryMessageCodec;
 import org.jetlinks.protocol.official.binary2.StructInstance;
-import org.jetlinks.protocol.official.binary2.StructSuit;
+import org.jetlinks.protocol.official.binary2.BinaryStructSuit;
 import org.jetlinks.protocol.official.core.ByteUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,7 +29,7 @@ import java.util.Properties;
  */
 public class E53IAxStructSuitBuilderTest {
 
-    private StructSuit suit = E53IAxProtocolSupport.buildStructSuitV1();
+    private BinaryStructSuit suit = E53IAxProtocolSupport.buildStructSuitV1();
 
     private DeviceMessageDecoder decoder = E53IAxProtocolSupport.buildDeviceMessageCodec(new PluginConfig(new Properties()));
 

@@ -13,9 +13,9 @@ import java.util.*;
  * @author v-lizy81
  * @date 2023/6/18 21:55
  */
-public class StructSuit {
+public class BinaryStructSuit {
 
-    private static final Logger log = LoggerFactory.getLogger(StructSuit.class);
+    private static final Logger log = LoggerFactory.getLogger(BinaryStructSuit.class);
 
     private final String  name;
 
@@ -27,16 +27,16 @@ public class StructSuit {
 
     private EncodeSigner            signer;
 
-    private final Map<String, DeclarationBasedStructReader> idxByFcReaderMap;
+    private final Map<String, DeclarationBasedBinaryStructReader> idxByFcReaderMap;
 
-    private final Map<String, DeclarationBasedStructWriter>  idxByFcWriterMap;
+    private final Map<String, DeclarationBasedBinaryStructWriter>  idxByFcWriterMap;
 
     private final Map<String, StructDeclaration> idxByNameMap;
 
-    private DeclarationBasedStructReader    defaultReader;
+    private DeclarationBasedBinaryStructReader defaultReader;
 
-    public StructSuit(String name, String version, String description,
-                      FeatureCodeExtractor featureCodeExtractor) {
+    public BinaryStructSuit(String name, String version, String description,
+                            FeatureCodeExtractor featureCodeExtractor) {
         this.name = name;
         this.version = version;
         this.description = description;
@@ -51,10 +51,10 @@ public class StructSuit {
         idxByNameMap.put(structDcl.getName(), structDcl);
 
         if (structDcl.isEnableDecode()) {
-            idxByFcReaderMap.put(structDcl.getFeatureCode(), new DeclarationBasedStructReader(structDcl));
+            idxByFcReaderMap.put(structDcl.getFeatureCode(), new DeclarationBasedBinaryStructReader(structDcl));
         }
         if (structDcl.isEnableEncode()) {
-            idxByFcWriterMap.put(structDcl.getFeatureCode(), new DeclarationBasedStructWriter(structDcl));
+            idxByFcWriterMap.put(structDcl.getFeatureCode(), new DeclarationBasedBinaryStructWriter(structDcl));
         }
     }
 
@@ -62,17 +62,17 @@ public class StructSuit {
         idxByNameMap.put(structDcl.getName(), structDcl);
 
         if (structDcl.isEnableDecode()) {
-            this.defaultReader = new DeclarationBasedStructReader(structDcl);
+            this.defaultReader = new DeclarationBasedBinaryStructReader(structDcl);
         }
     }
 
     public StructDeclaration    getStructDeclarationOfEncode(String featureCode) {
-        DeclarationBasedStructWriter writer = idxByFcWriterMap.get(featureCode);
+        DeclarationBasedBinaryStructWriter writer = idxByFcWriterMap.get(featureCode);
         return (writer != null ? writer.getStructDeclaration() : null);
     }
 
     public StructDeclaration    getStructDeclarationOfDecode(String featureCode) {
-        DeclarationBasedStructReader reader = idxByFcReaderMap.get(featureCode);
+        DeclarationBasedBinaryStructReader reader = idxByFcReaderMap.get(featureCode);
         return (reader != null ? reader.getStructDeclaration() : null);
     }
 
@@ -85,7 +85,7 @@ public class StructSuit {
     }
 
     public StructInstance createStructInstance(String featureCode) {
-        DeclarationBasedStructWriter dcl = idxByFcWriterMap.get(featureCode);
+        DeclarationBasedBinaryStructWriter dcl = idxByFcWriterMap.get(featureCode);
         return (dcl != null ? new SimpleStructInstance(dcl.getStructDeclaration()) : null);
     }
 
@@ -136,7 +136,7 @@ public class StructSuit {
 
         BinaryStructWriter writer = idxByFcWriterMap.get(structDcl.getFeatureCode());
         if (writer == null) {
-            DeclarationBasedStructWriter writerImpl = new DeclarationBasedStructWriter(structDcl);
+            DeclarationBasedBinaryStructWriter writerImpl = new DeclarationBasedBinaryStructWriter(structDcl);
             idxByFcWriterMap.put(structDcl.getFeatureCode(), writerImpl);
 
             writer = writerImpl;
@@ -149,7 +149,7 @@ public class StructSuit {
         return signer;
     }
 
-    public StructSuit setSigner(EncodeSigner signer) {
+    public BinaryStructSuit setSigner(EncodeSigner signer) {
         this.signer = signer;
         return this;
     }

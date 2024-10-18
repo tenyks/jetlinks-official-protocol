@@ -13,7 +13,7 @@ import org.jetlinks.protocol.official.TestMessageDecodeContext;
 import org.jetlinks.protocol.official.TestMessageEncodeContext;
 import org.jetlinks.protocol.official.binary2.BinaryMessageCodec;
 import org.jetlinks.protocol.official.binary2.StructInstance;
-import org.jetlinks.protocol.official.binary2.StructSuit;
+import org.jetlinks.protocol.official.binary2.BinaryStructSuit;
 import org.jetlinks.protocol.official.core.ByteUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,7 +28,7 @@ import java.util.Properties;
  */
 public class MiChongProtocolTest {
 
-    private StructSuit suit = MiChongV2ProtocolSupport.buildStructSuitV2();
+    private BinaryStructSuit suit = MiChongV2ProtocolSupport.buildStructSuitV2();
 
     private BinaryMessageCodec codec = MiChongV2ProtocolSupport.buildBinaryMessageCodec(new PluginConfig(new Properties()));
 

@@ -55,13 +55,13 @@ public class YKCV1ProtocolSupport {
     }
 
     public static DeclarationBasedBinaryMessageCodec        buildBinaryMessageCodec(PluginConfig config) {
-        StructSuit structSuit = buildStructSuitV1();
+        BinaryStructSuit structSuit = buildStructSuitV1();
         StructAndMessageMapper mapper = buildMapper(structSuit);
         return new DeclarationBasedBinaryMessageCodec(structSuit, mapper);
     }
 
-    public static StructSuit buildStructSuitV1() {
-        StructSuit suit = new StructSuit(
+    public static BinaryStructSuit buildStructSuitV1() {
+        BinaryStructSuit suit = new BinaryStructSuit(
                 "云快充新能源汽车充电桩协议",
                 "V1.6",
                 "document-mqtt-YKCV1.md",
@@ -153,7 +153,7 @@ public class YKCV1ProtocolSupport {
         };
     }
 
-    public static StructAndMessageMapper        buildMapper(StructSuit structSuit) {
+    public static StructAndMessageMapper        buildMapper(BinaryStructSuit structSuit) {
         DefaultStructAndThingMapping structAndThingMapping = new DefaultStructAndThingMapping();
 
 //        MessageIdMappingAnnotation msgIdMappingAnn = new AbstractMessageIdMappingAnnotation.OfFunction(

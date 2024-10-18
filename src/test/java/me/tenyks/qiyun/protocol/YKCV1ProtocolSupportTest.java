@@ -15,7 +15,7 @@ import org.jetlinks.protocol.official.TestMessageDecodeContext;
 import org.jetlinks.protocol.official.TestMessageEncodeContext;
 import org.jetlinks.protocol.official.binary2.BinaryMessageCodec;
 import org.jetlinks.protocol.official.binary2.StructInstance;
-import org.jetlinks.protocol.official.binary2.StructSuit;
+import org.jetlinks.protocol.official.binary2.BinaryStructSuit;
 import org.jetlinks.protocol.official.core.ByteUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,7 +24,7 @@ import java.util.Properties;
 
 public class YKCV1ProtocolSupportTest {
 
-    private StructSuit suit = YKCV1ProtocolSupport.buildStructSuitV1();
+    private BinaryStructSuit suit = YKCV1ProtocolSupport.buildStructSuitV1();
 
     private BinaryMessageCodec codec = YKCV1ProtocolSupport.buildBinaryMessageCodec(new PluginConfig(new Properties()));
 

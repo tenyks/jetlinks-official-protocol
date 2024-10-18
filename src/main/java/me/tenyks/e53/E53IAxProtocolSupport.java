@@ -39,7 +39,7 @@ public class E53IAxProtocolSupport {
     }
 
     public static BinaryMessageCodec buildBinaryMessageCodec(PluginConfig config) {
-        StructSuit structSuit = buildStructSuitV1();
+        BinaryStructSuit structSuit = buildStructSuitV1();
         StructAndMessageMapper mapper = buildMapper(structSuit);
         return new DeclarationBasedBinaryMessageCodec(structSuit, mapper);
     }
@@ -48,8 +48,8 @@ public class E53IAxProtocolSupport {
         return new AbstractIntercommunicateStrategy() {};
     }
 
-    public static StructSuit buildStructSuitV1() {
-        StructSuit suit = new StructSuit(
+    public static BinaryStructSuit buildStructSuitV1() {
+        BinaryStructSuit suit = new BinaryStructSuit(
                 "E53版IA2协议",
                 "1.0",
                 "document-coap-e53.md",
@@ -84,7 +84,7 @@ public class E53IAxProtocolSupport {
         return suit;
     }
 
-    public static StructAndMessageMapper    buildMapper(StructSuit structSuit) {
+    public static StructAndMessageMapper    buildMapper(BinaryStructSuit structSuit) {
         DefaultStructAndThingMapping structAndThingMapping = new DefaultStructAndThingMapping();
 
         //Encode

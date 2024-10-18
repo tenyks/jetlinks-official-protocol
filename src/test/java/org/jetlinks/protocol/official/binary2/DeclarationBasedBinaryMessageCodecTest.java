@@ -15,7 +15,7 @@ import org.junit.Test;
 
 public class DeclarationBasedBinaryMessageCodecTest {
 
-    private BinaryMessageCodec  codec;
+    private BinaryMessageCodec codec;
 
     @Before
     public void setUp() {

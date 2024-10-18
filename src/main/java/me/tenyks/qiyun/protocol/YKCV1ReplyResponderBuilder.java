@@ -7,7 +7,7 @@ import org.jetlinks.core.message.request.DefaultDeviceRequestMessage;
 import org.jetlinks.protocol.common.SimpleUplinkMessageReplyResponder;
 import org.jetlinks.protocol.common.UplinkMessageReplyResponder;
 import org.jetlinks.protocol.official.binary.AckCode;
-import org.jetlinks.protocol.official.binary2.StructSuit;
+import org.jetlinks.protocol.official.binary2.BinaryStructSuit;
 
 /**
  * @author v-lizy81
@@ -17,7 +17,7 @@ import org.jetlinks.protocol.official.binary2.StructSuit;
  */
 public class YKCV1ReplyResponderBuilder {
 
-    public UplinkMessageReplyResponder  build(StructSuit suit) {
+    public UplinkMessageReplyResponder  build(BinaryStructSuit suit) {
         SimpleUplinkMessageReplyResponder rst = new SimpleUplinkMessageReplyResponder();
 
         rst.addMappingAndReply(suit.getStructDeclaration("充电桩登录认证消息[上行]"), "AuthResponse", this::buildAckOfLogin);

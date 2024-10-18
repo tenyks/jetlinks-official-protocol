@@ -3,7 +3,6 @@ package me.tenyks.qiyun.tcp;
 import io.netty.buffer.ByteBuf;
 import lombok.NonNull;
 import org.jetlinks.core.device.AuthenticationRequest;
-import org.jetlinks.core.device.DeviceOperator;
 import org.jetlinks.core.message.*;
 import org.jetlinks.core.message.codec.*;
 import org.jetlinks.core.message.event.ThingEventMessage;
@@ -13,8 +12,6 @@ import org.jetlinks.core.message.request.DeviceRequestMessageReply;
 import org.jetlinks.protocol.common.DeviceRequestHandler;
 import org.jetlinks.protocol.common.UplinkMessageReplyResponder;
 import org.jetlinks.protocol.official.binary.AckCode;
-import org.jetlinks.protocol.official.binary.BinaryAcknowledgeDeviceMessage;
-import org.jetlinks.protocol.official.binary.BinaryMessageType;
 import org.jetlinks.protocol.official.binary2.BinaryMessageCodec;
 import org.jetlinks.protocol.official.common.IntercommunicateStrategy;
 import org.jetlinks.protocol.official.core.ByteUtils;
@@ -35,7 +32,7 @@ public class QiYunStrategyBaseTcpDeviceMessageCodec implements DeviceMessageCode
 
     private static final Logger log = LoggerFactory.getLogger(QiYunStrategyBaseTcpDeviceMessageCodec.class);
 
-    private final BinaryMessageCodec            codec;
+    private final BinaryMessageCodec codec;
 
     private final IntercommunicateStrategy      itcmncStrategy;
 

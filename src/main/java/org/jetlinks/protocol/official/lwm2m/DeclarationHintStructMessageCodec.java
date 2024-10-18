@@ -26,7 +26,7 @@ public class DeclarationHintStructMessageCodec {
 
     private static final Logger log = LoggerFactory.getLogger(DeclarationHintStructMessageCodec.class);
 
-    private final BinaryMessageCodec    backendCodec;
+    private final BinaryMessageCodec backendCodec;
 
     private final List<MessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>>    dclList;
 

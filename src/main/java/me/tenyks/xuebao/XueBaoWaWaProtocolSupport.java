@@ -32,7 +32,7 @@ public class XueBaoWaWaProtocolSupport {
     }
 
     public static BinaryMessageCodec buildBinaryMessageCodec(PluginConfig config) {
-        StructSuit structSuit = buildStructSuitV26();
+        BinaryStructSuit structSuit = buildStructSuitV26();
         StructAndMessageMapper mapper = buildMapper(structSuit);
         return new DeclarationBasedBinaryMessageCodec(structSuit, mapper);
     }
@@ -54,8 +54,8 @@ public class XueBaoWaWaProtocolSupport {
         };
     }
 
-    public static StructSuit buildStructSuitV26() {
-        StructSuit suit = new StructSuit(
+    public static BinaryStructSuit buildStructSuitV26() {
+        BinaryStructSuit suit = new BinaryStructSuit(
                 "雪暴网络娃娃机协议",
                 "2.6",
                 "协议文件《网络娃娃机主板对接协议4.0》",
@@ -99,7 +99,7 @@ public class XueBaoWaWaProtocolSupport {
         return suit;
     }
 
-    public static StructAndMessageMapper    buildMapper(StructSuit structSuit) {
+    public static StructAndMessageMapper    buildMapper(BinaryStructSuit structSuit) {
         DefaultStructAndThingMapping structAndThingMapping = new DefaultStructAndThingMapping();
 
         //Encode

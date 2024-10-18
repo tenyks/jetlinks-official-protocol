@@ -8,15 +8,15 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeclarationBasedStructReader implements BinaryStructReader {
+public class DeclarationBasedBinaryStructReader implements BinaryStructReader {
 
-    private static final Logger log = LoggerFactory.getLogger(DeclarationBasedStructReader.class);
+    private static final Logger log = LoggerFactory.getLogger(DeclarationBasedBinaryStructReader.class);
 
-    private final StructDeclaration   structDcl;
+    private final StructDeclaration         structDcl;
 
-    private final List<StructPartReader> partReaders;
+    private final List<StructPartReader>    partReaders;
 
-    public DeclarationBasedStructReader(StructDeclaration structDcl) {
+    public DeclarationBasedBinaryStructReader(StructDeclaration structDcl) {
         this.structDcl = structDcl;
 
         this.partReaders = new ArrayList<>();

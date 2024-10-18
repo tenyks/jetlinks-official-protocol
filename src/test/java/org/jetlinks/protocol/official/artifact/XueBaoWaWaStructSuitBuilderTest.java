@@ -10,7 +10,7 @@ import org.junit.Test;
 
 public class XueBaoWaWaStructSuitBuilderTest {
 
-    private StructSuit structSuit = XueBaoWaWaProtocolSupport.buildStructSuitV26();
+    private BinaryStructSuit structSuit = XueBaoWaWaProtocolSupport.buildStructSuitV26();
 
     @Test
     public void testStartGame() {

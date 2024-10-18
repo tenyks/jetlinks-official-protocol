@@ -34,7 +34,7 @@ public class DeclarationHintStructMessageCodec {
 
     private static final Logger log = LoggerFactory.getLogger(DeclarationHintStructMessageCodec.class);
 
-    private final BinaryMessageCodec    backendCodec;
+    private final BinaryMessageCodec backendCodec;
 
     private final String                manufacturerCode;
 

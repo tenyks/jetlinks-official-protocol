@@ -20,13 +20,13 @@ public class DeclarationBasedFormatMessageCodec implements FormatMessageCodec {
 
     private static final Logger log = LoggerFactory.getLogger(DeclarationBasedFormatMessageCodec.class);
 
-    private final StructSuit structSuit;
+    private final BinaryStructSuit structSuit;
 
     private final StructAndMessageMapper mapper;
 
     private final Map<String, MapperContext>   contextMap; //TODO 优化：自动释放、并发控制
 
-    public DeclarationBasedFormatMessageCodec(StructSuit structSuit, StructAndMessageMapper mapper) {
+    public DeclarationBasedFormatMessageCodec(BinaryStructSuit structSuit, StructAndMessageMapper mapper) {
         this.structSuit = structSuit;
         this.mapper = mapper;
         this.contextMap = new HashMap<>();
@@ -87,7 +87,7 @@ public class DeclarationBasedFormatMessageCodec implements FormatMessageCodec {
         return ctx;
     }
 
-    public StructSuit getStructSuit() {
+    public BinaryStructSuit getStructSuit() {
         return structSuit;
     }
 }

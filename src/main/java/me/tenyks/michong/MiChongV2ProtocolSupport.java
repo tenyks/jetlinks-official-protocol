@@ -137,7 +137,7 @@ public class MiChongV2ProtocolSupport {
     }
 
     public static BinaryMessageCodec buildBinaryMessageCodec(PluginConfig config) {
-        StructSuit structSuit = buildStructSuitV2();
+        BinaryStructSuit structSuit = buildStructSuitV2();
         StructAndMessageMapper mapper = buildMapper(structSuit);
         return new DeclarationBasedBinaryMessageCodec(structSuit, mapper);
     }
@@ -146,8 +146,8 @@ public class MiChongV2ProtocolSupport {
         return new AbstractIntercommunicateStrategy() {};
     }
 
-    public static StructSuit buildStructSuitV2() {
-        StructSuit suit = new StructSuit(
+    public static BinaryStructSuit buildStructSuitV2() {
+        BinaryStructSuit suit = new BinaryStructSuit(
                 "米充充电桩协议",
                 "V2.0",
                 "document-mqtt-MiChong.md",
@@ -181,7 +181,7 @@ public class MiChongV2ProtocolSupport {
                 .addCallable("PingEvent", MiChongV2ProtocolSupport::buildPongReply);
     }
 
-    public static StructAndMessageMapper    buildMapper(StructSuit structSuit) {
+    public static StructAndMessageMapper    buildMapper(BinaryStructSuit structSuit) {
         DefaultStructAndThingMapping structAndThingMapping = new DefaultStructAndThingMapping();
 
         //上行消息：Decode

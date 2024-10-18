@@ -4,15 +4,9 @@ import io.netty.buffer.ByteBuf;
 import org.jetlinks.core.device.DeviceOperator;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.codec.MessageCodecContext;
-import org.jetlinks.core.message.codec.MessageDecodeContext;
-import org.jetlinks.core.message.codec.MessageEncodeContext;
-import org.jetlinks.protocol.official.core.ByteUtils;
-import org.jetlinks.supports.protocol.serial.PayloadParserSuit;
-import org.jetlinks.supports.protocol.serial.PayloadWriterSuit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,13 +19,13 @@ public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
 
     private static final Logger log = LoggerFactory.getLogger(DeclarationBasedBinaryMessageCodec.class);
 
-    private final StructSuit                   structSuit;
+    private final BinaryStructSuit structSuit;
 
     private final StructAndMessageMapper       mapper;
 
     private final Map<String, MapperContext>   contextMap; //TODO 优化：自动释放、并发控制
 
-    public DeclarationBasedBinaryMessageCodec(StructSuit structSuit, StructAndMessageMapper mapper) {
+    public DeclarationBasedBinaryMessageCodec(BinaryStructSuit structSuit, StructAndMessageMapper mapper) {
         this.structSuit = structSuit;
         this.mapper = mapper;
         this.contextMap = new HashMap<>();
@@ -92,7 +86,7 @@ public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
         return ctx;
     }
 
-    public StructSuit getStructSuit() {
+    public BinaryStructSuit getStructSuit() {
         return structSuit;
     }
 }
