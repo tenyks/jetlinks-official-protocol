@@ -1,6 +1,6 @@
 package org.jetlinks.protocol.official.format;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jetlinks.protocol.official.binary2.FieldInstance;
 import org.jetlinks.protocol.official.binary2.StructFieldDeclaration;
 import org.jetlinks.protocol.official.binary2.StructPartReader;
@@ -23,10 +23,10 @@ public interface FormatFieldReader extends StructPartReader {
     /**
      * 从字节流读取字段的取值；
      *
-     * @param buf 字节流，（必要）；
+     * @param root  根节点，（必要）；
      * @return 如果无越界且字节数值匹配字段类型返回字段实例，否则返回空
      */
     @Nullable
-    FieldInstance read(JSONObject buf);
+    FieldInstance read(ObjectNode root);
 
 }

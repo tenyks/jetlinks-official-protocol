@@ -8,7 +8,7 @@ import io.netty.buffer.ByteBuf;
  * @author v-lizy81
  * @date 2023/6/12 23:59
  */
-public interface FeatureCodeExtractor {
+public interface BinaryFeatureCodeExtractor {
 
     String extract(ByteBuf buf);
 

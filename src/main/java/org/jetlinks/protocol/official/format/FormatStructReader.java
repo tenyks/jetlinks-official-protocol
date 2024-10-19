@@ -1,5 +1,7 @@
 package org.jetlinks.protocol.official.format;
 
+import com.alibaba.fastjson.JSONObject;
+import org.jetlinks.protocol.official.binary2.StructDeclaration;
 import org.jetlinks.protocol.official.binary2.StructInstance;
 
 import javax.annotation.Nullable;
@@ -12,12 +14,18 @@ import javax.annotation.Nullable;
  */
 public interface FormatStructReader {
 
+    StructDeclaration getStructDeclaration();
+
     /**
      * 读取文本字符串以约定格式方式反序列化
-     * @param buf       文本字符串，（必要）；
+     * @param input       解释后的对象，（必要）；
      * @return  如果是结构兼容的格式返回反序列后的实例，否则返回空
      */
     @Nullable
-    StructInstance read(String buf);
+    StructInstance read(JSONObject input);
+
+    static FormatStructReader   createInstance(StructDeclaration structDcl) {
+        return new DeclarationBasedFormatStructReader(structDcl);
+    }
 
 }

@@ -1,5 +1,6 @@
 package org.jetlinks.protocol.official.binary2;
 
+import com.alibaba.fastjson.JSONObject;
 import io.netty.buffer.ByteBuf;
 
 import javax.annotation.Nullable;
@@ -20,6 +21,8 @@ public interface NRepeatGroupReader extends StructPartReader {
 
     @Nullable
     List<FieldInstance> read(ByteBuf buf);
+
+    List<FieldInstance> read(JSONObject input);
 
     void bind(StructInstance structInst);
 }

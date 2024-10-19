@@ -535,7 +535,7 @@ public class XueBaoWaWaProtocolSupport {
         return new SumAndModCRCCalculator(6, 0, 100);
     }
 
-    private static class V26FeatureCodeExtractor implements FeatureCodeExtractor {
+    private static class V26FeatureCodeExtractor implements BinaryFeatureCodeExtractor {
 
         private static final byte MAGIC_ID = (byte) 0xfe;
 

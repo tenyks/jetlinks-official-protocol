@@ -2,34 +2,26 @@ package org.jetlinks.protocol.official.binary2;
 
 import io.netty.buffer.ByteBuf;
 import org.apache.commons.collections.CollectionUtils;
+import org.jetlinks.protocol.official.common.AbstractDeclarationBasedStructReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeclarationBasedBinaryStructReader implements BinaryStructReader {
+public class DeclarationBasedBinaryStructReader extends AbstractDeclarationBasedStructReader implements BinaryStructReader {
 
     private static final Logger log = LoggerFactory.getLogger(DeclarationBasedBinaryStructReader.class);
 
-    private final StructDeclaration         structDcl;
-
-    private final List<StructPartReader>    partReaders;
-
     public DeclarationBasedBinaryStructReader(StructDeclaration structDcl) {
-        this.structDcl = structDcl;
-
-        this.partReaders = new ArrayList<>();
-        for (StructPartDeclaration partDcl : structDcl.parts()) {
-            this.partReaders.add(StructPartReader.create(partDcl));
-        }
+        super(structDcl);
     }
 
     @Override
     public StructInstance read(ByteBuf buf) {
-        StructInstance sInst = new SimpleStructInstance(structDcl);
+        StructInstance sInst = createNewStructInstance();
 
-        for (StructPartReader partReader : partReaders) {
+        for (StructPartReader partReader : getStructPartReaders()) {
             if (partReader instanceof NRepeatGroupReader) {
                 NRepeatGroupReader fgReader = (NRepeatGroupReader) partReader;
                 NRepeatGroupDeclaration fgDcl = fgReader.getDeclaration();
@@ -69,7 +61,4 @@ public class DeclarationBasedBinaryStructReader implements BinaryStructReader {
         return sInst;
     }
 
-    public StructDeclaration getStructDeclaration() {
-        return structDcl;
-    }
 }

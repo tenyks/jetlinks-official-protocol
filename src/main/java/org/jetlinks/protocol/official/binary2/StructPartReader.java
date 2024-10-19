@@ -14,12 +14,12 @@ public interface StructPartReader {
         if (dcl instanceof NRepeatGroupDeclaration) {
             return new NRepeatDeclarationBasedFieldGroupReader((NRepeatGroupDeclaration)dcl);
         } else {
-            return new DeclarationBasedFieldReader((StructFieldDeclaration) dcl);
+            return new DeclarationBasedBinaryFieldReader((StructFieldDeclaration) dcl);
         }
     }
 
     static BinaryFieldReader create(StructFieldDeclaration dcl) {
-        return new DeclarationBasedFieldReader(dcl);
+        return new DeclarationBasedBinaryFieldReader(dcl);
     }
 
 }

@@ -2487,7 +2487,7 @@ public class YKCV1ProtocolSupport {
         return new CRC180DCRCCalculator(2, 0);
     }
 
-    private static class YKCV1FeatureCodeExtractor implements FeatureCodeExtractor {
+    private static class YKCV1FeatureCodeExtractor implements BinaryFeatureCodeExtractor {
         public static final byte MAGIC_ID_OF_V1 = (byte) 0x68;
 
         @Override

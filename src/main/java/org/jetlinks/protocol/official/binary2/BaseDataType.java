@@ -1,17 +1,15 @@
 package org.jetlinks.protocol.official.binary2;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.*;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.buffer.UnpooledDirectByteBuf;
-import io.netty.handler.codec.base64.Base64Encoder;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.jetlinks.core.utils.DateUtils;
 import org.jetlinks.protocol.official.common.BCD8421BinaryCodec;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.math.BigInteger;
+import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Date;
@@ -30,6 +28,16 @@ public enum BaseDataType {
 
         @Override
         public short write(ByteBuf buf, Object value) { return 0; }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return null;
+        }
 
         @Override
         public short size() { return 0; }
@@ -58,8 +66,36 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Boolean) {
+                return BooleanNode.valueOf((boolean) value);
+            } else if (value instanceof Number) {
+                if (((Number) value).floatValue() != 0) {
+                    return BooleanNode.getTrue();
+                } else {
+                    return BooleanNode.getFalse();
+                }
+            } else if (value instanceof String) {
+                String str = (String) value;
+                if ("true".equalsIgnoreCase(str) || "yes".equalsIgnoreCase(str)) {
+                    return BooleanNode.getTrue();
+                } else {
+                    return BooleanNode.getFalse();
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.booleanValue();
+        }
+
+        @Override
         public short size() { return 1; }
     },
+
     //0x02
     INT8 {
         @Override
@@ -78,8 +114,27 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Byte) {
+                return IntNode.valueOf((Byte)value);
+            } else if (value instanceof Short) {
+                return IntNode.valueOf((Short)value);
+            } else if (value instanceof Integer) {
+                return IntNode.valueOf((Integer) value);
+            }
+
+            return IntNode.valueOf(((Number) value).intValue());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.shortValue();
+        }
+
+        @Override
         public short size() { return 1; }
     },
+
     //0x03
     INT16 {
         @Override
@@ -98,8 +153,27 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Byte) {
+                return IntNode.valueOf((Byte)value);
+            } else if (value instanceof Short) {
+                return IntNode.valueOf((Short)value);
+            } else if (value instanceof Integer) {
+                return IntNode.valueOf((Integer) value);
+            }
+
+            return IntNode.valueOf(((Number) value).intValue());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.shortValue();
+        }
+
+        @Override
         public short size() { return 2; }
     },
+
     //0x04
     INT32 {
         @Override
@@ -118,8 +192,27 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Byte) {
+                return IntNode.valueOf((Byte)value);
+            } else if (value instanceof Short) {
+                return IntNode.valueOf((Short)value);
+            } else if (value instanceof Integer) {
+                return IntNode.valueOf((Integer) value);
+            }
+
+            return IntNode.valueOf(((Number) value).intValue());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.intValue();
+        }
+
+        @Override
         public short size() { return 4; }
     },
+
     /**
      * 小端在前
      */
@@ -151,8 +244,27 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Byte) {
+                return IntNode.valueOf((Byte)value);
+            } else if (value instanceof Short) {
+                return IntNode.valueOf((Short)value);
+            } else if (value instanceof Integer) {
+                return IntNode.valueOf((Integer) value);
+            }
+
+            return IntNode.valueOf(((Number) value).intValue());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.shortValue();
+        }
+
+        @Override
         public short size() { return 4; }
     },
+
     //0x05
     INT64 {
         @Override
@@ -171,8 +283,29 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Byte) {
+                return LongNode.valueOf((Byte)value);
+            } else if (value instanceof Short) {
+                return LongNode.valueOf((Short)value);
+            } else if (value instanceof Integer) {
+                return LongNode.valueOf((Integer) value);
+            } else if (value instanceof Long) {
+                return LongNode.valueOf((Long) value);
+            }
+
+            return LongNode.valueOf(((Number) value).longValue());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.longValue();
+        }
+
+        @Override
         public short size() { return 8; }
     },
+
     /**
      * 返回类型：short
      */
@@ -193,8 +326,27 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Byte) {
+                return IntNode.valueOf((Byte)value);
+            } else if (value instanceof Short) {
+                return IntNode.valueOf((Short)value);
+            } else if (value instanceof Integer) {
+                return IntNode.valueOf((Integer) value);
+            }
+
+            return IntNode.valueOf(((Number) value).intValue());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.shortValue();
+        }
+
+        @Override
         public short size() { return 1; }
     },
+
     /**
      * 大端优先
      */
@@ -215,8 +367,27 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Byte) {
+                return IntNode.valueOf((Byte)value);
+            } else if (value instanceof Short) {
+                return IntNode.valueOf((Short)value);
+            } else if (value instanceof Integer) {
+                return IntNode.valueOf((Integer) value);
+            }
+
+            return IntNode.valueOf(((Number) value).intValue());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.shortValue();
+        }
+
+        @Override
         public short size() { return 2; }
     },
+
     /**
      * 小端优先
      */
@@ -242,8 +413,27 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Byte) {
+                return IntNode.valueOf((Byte)value);
+            } else if (value instanceof Short) {
+                return IntNode.valueOf((Short)value);
+            } else if (value instanceof Integer) {
+                return IntNode.valueOf((Integer) value);
+            }
+
+            return IntNode.valueOf(((Number) value).intValue());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.shortValue();
+        }
+
+        @Override
         public short size() { return 2; }
     },
+
     //0x0E
     UINT24 {
         @Override
@@ -271,8 +461,27 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Byte) {
+                return IntNode.valueOf((Byte)value);
+            } else if (value instanceof Short) {
+                return IntNode.valueOf((Short)value);
+            } else if (value instanceof Integer) {
+                return IntNode.valueOf((Integer) value);
+            }
+
+            return IntNode.valueOf(((Number) value).intValue());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.intValue();
+        }
+
+        @Override
         public short size() { return 3; }
     },
+
     /**
      * 小端优先
      */
@@ -304,8 +513,27 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Byte) {
+                return IntNode.valueOf((Byte)value);
+            } else if (value instanceof Short) {
+                return IntNode.valueOf((Short)value);
+            } else if (value instanceof Integer) {
+                return IntNode.valueOf((Integer) value);
+            }
+
+            return IntNode.valueOf(((Number) value).intValue());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.intValue();
+        }
+
+        @Override
         public short size() { return 2; }
     },
+
     //0x08
     UINT32 {
         @Override
@@ -324,8 +552,29 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Byte) {
+                return LongNode.valueOf((Byte)value);
+            } else if (value instanceof Short) {
+                return LongNode.valueOf((Short)value);
+            } else if (value instanceof Integer) {
+                return LongNode.valueOf((Integer) value);
+            } else if (value instanceof Long) {
+                return LongNode.valueOf((Long) value);
+            }
+
+            return LongNode.valueOf(((Number) value).longValue());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.longValue();
+        }
+
+        @Override
         public short size() { return 4; }
     },
+
     /**
      * 大端在前，编码输入或解码输出类型：Long
      */
@@ -366,8 +615,29 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Byte) {
+                return LongNode.valueOf((Byte)value);
+            } else if (value instanceof Short) {
+                return LongNode.valueOf((Short)value);
+            } else if (value instanceof Integer) {
+                return LongNode.valueOf((Integer) value);
+            } else if (value instanceof Long) {
+                return LongNode.valueOf((Long) value);
+            }
+
+            return LongNode.valueOf(((Number) value).longValue());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.longValue();
+        }
+
+        @Override
         public short size() { return 5; }
     },
+
     /**
      * 小端在前，编码输入或解码输出类型：Long
      */
@@ -405,6 +675,26 @@ public enum BaseDataType {
             }
 
             return 5;
+        }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Byte) {
+                return LongNode.valueOf((Byte)value);
+            } else if (value instanceof Short) {
+                return LongNode.valueOf((Short)value);
+            } else if (value instanceof Integer) {
+                return LongNode.valueOf((Integer) value);
+            } else if (value instanceof Long) {
+                return LongNode.valueOf((Long) value);
+            }
+
+            return LongNode.valueOf(((Number) value).longValue());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.longValue();
         }
 
         @Override
@@ -456,6 +746,26 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Byte) {
+                return FloatNode.valueOf((Byte)value);
+            } else if (value instanceof Short) {
+                return FloatNode.valueOf((Short)value);
+            } else if (value instanceof Integer) {
+                return FloatNode.valueOf((Integer) value);
+            } else if (value instanceof Float) {
+                return FloatNode.valueOf((Float) value);
+            }
+
+            return FloatNode.valueOf(((Number) value).floatValue());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.floatValue();
+        }
+
+        @Override
         public short size() { return 4; }
     },
     //0x0A
@@ -476,8 +786,31 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Byte) {
+                return DoubleNode.valueOf((Byte)value);
+            } else if (value instanceof Short) {
+                return DoubleNode.valueOf((Short)value);
+            } else if (value instanceof Integer) {
+                return DoubleNode.valueOf((Integer) value);
+            } else if (value instanceof Float) {
+                return DoubleNode.valueOf((Float) value);
+            } else if (value instanceof Double) {
+                return DoubleNode.valueOf((Double) value);
+            }
+
+            return FloatNode.valueOf(((Number) value).floatValue());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.floatValue();
+        }
+
+        @Override
         public short size() { return 8; }
     },
+
     //0x0B
     STRING {
         @Override
@@ -497,8 +830,23 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof String) {
+                return TextNode.valueOf((String) value);
+            }
+
+            return TextNode.valueOf(value.toString());
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return buf.textValue();
+        }
+
+        @Override
         public short size() { return 0; }
     },
+
     /**
      * 字节数值：长度为2, 编码输入或解码输出类型：byte[]
      */
@@ -520,8 +868,21 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
         public short size() { return 2; }
     },
+
     /**
      * 字节数值：长度为4, 编码输入或解码输出类型：byte[]
      */
@@ -540,6 +901,18 @@ public enum BaseDataType {
             byte[] bytes = ((byte[]) value);
             buf.writeBytes(bytes, 0, size());
             return size();
+        }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
         }
 
         @Override
@@ -563,6 +936,18 @@ public enum BaseDataType {
             byte[] bytes = ((byte[]) value);
             buf.writeBytes(bytes, 0, size());
             return size();
+        }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
         }
 
         @Override
@@ -590,6 +975,18 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
         public short size() { return 4; }
     },
     /**
@@ -610,6 +1007,18 @@ public enum BaseDataType {
             byte[] bytes = ((String) value).getBytes();
             buf.writeBytes(bytes, 0, size()); //TODO 优化\0字符
             return size();
+        }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
         }
 
         @Override
@@ -646,6 +1055,18 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
         public short size() { return 8; }
     },
     /**
@@ -666,6 +1087,18 @@ public enum BaseDataType {
             byte[] bytes = ((String) value).getBytes();
             buf.writeBytes(bytes, 0, size()); //TODO 优化\0字符
             return size();
+        }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
         }
 
         @Override
@@ -692,6 +1125,18 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
         public short size() { return 17; }
     },
     /**
@@ -712,6 +1157,18 @@ public enum BaseDataType {
             byte[] bytes = ((String) value).getBytes();
             buf.writeBytes(bytes, 0, size()); //TODO 优化\0字符
             return size();
+        }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
         }
 
         @Override
@@ -739,6 +1196,18 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
         public short size() { return 1; }
     },
     /**
@@ -760,6 +1229,18 @@ public enum BaseDataType {
             buf.writeBytes(bytes, 0, size());
 
             return size();
+        }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
         }
 
         @Override
@@ -787,6 +1268,18 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
         public short size() { return 7; }
     },
     /**
@@ -808,6 +1301,18 @@ public enum BaseDataType {
             buf.writeBytes(bytes, 0, size());
 
             return size();
+        }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
         }
 
         @Override
@@ -835,6 +1340,18 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
         public short size() { return 10; }
     },
     /**
@@ -859,6 +1376,18 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
         public short size() { return 16; }
     },
     
@@ -879,6 +1408,18 @@ public enum BaseDataType {
             buf.writeBytes(bytes);
 
             return (short) bytes.length;
+        }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
         }
 
         @Override
@@ -906,6 +1447,18 @@ public enum BaseDataType {
             buf.writeBytes(bytes);
 
             return (short)(bytes.length);
+        }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
         }
 
         @Override
@@ -945,6 +1498,18 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
         public short size() { return 2; }
     },
     /**
@@ -978,6 +1543,18 @@ public enum BaseDataType {
             }
 
             return size();
+        }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
         }
 
         @Override
@@ -1017,6 +1594,18 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
         public short size() { return 8; }
     },
     /**
@@ -1053,6 +1642,18 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
         public short size() { return 16; }
     },
     /**
@@ -1074,6 +1675,18 @@ public enum BaseDataType {
             buf.writeBytes(bytes);
 
             return (short)(bytes.length);
+        }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
         }
 
         @Override
@@ -1100,6 +1713,18 @@ public enum BaseDataType {
             buf.writeByte(0);
 
             return 3;
+        }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
         }
 
         @Override
@@ -1133,6 +1758,18 @@ public enum BaseDataType {
             buf.writeByte(0);
 
             return 3;
+        }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
         }
 
         @Override
@@ -1212,7 +1849,55 @@ public enum BaseDataType {
         }
 
         @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
         public short size() { return 7; }
+    },
+
+    /**
+     * 日期，编码输入输出类型：java.util.Date
+     */
+    Date19 {
+        @Override
+        public Object read(ByteBuf buf, short size) {
+            //TODO 待实现
+            return null;
+        }
+
+        @Override
+        public short write(ByteBuf buf, Object value) {
+            //TODO 待实现
+            return 0;
+        }
+
+        @Override
+        public JsonNode toJson(@Nonnull Object value) {
+            if (value instanceof Long) {
+                return TextNode.valueOf(DateUtils.toYYYYMMDDHHmmss19(new Date((Long) value)));
+            }
+
+            return TextNode.valueOf(DateUtils.toYYYYMMDDHHmmss19((Date) value));
+        }
+
+        @Override
+        public Object fromJson(@Nonnull JsonNode buf) {
+            return DateUtils.fromYYYYMMDDHHmmss19(buf.textValue());
+        }
+
+        @Override
+        public short size() {
+            return 0;
+        }
     };
 
     private final static BaseDataType[] VALUES = values();
@@ -1226,6 +1911,10 @@ public enum BaseDataType {
      * @return  写入的字节数
      */
     public abstract short write(ByteBuf buf, Object value);
+
+    public abstract JsonNode    toJson(@Nonnull Object value);
+
+    public abstract Object      fromJson(@Nonnull JsonNode buf);
 
     public abstract short size();
 

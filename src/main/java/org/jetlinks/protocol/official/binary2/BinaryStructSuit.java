@@ -23,7 +23,7 @@ public class BinaryStructSuit {
 
     private final String  description;
 
-    private final FeatureCodeExtractor    fcExtractor;
+    private final BinaryFeatureCodeExtractor fcExtractor;
 
     private EncodeSigner            signer;
 
@@ -36,7 +36,7 @@ public class BinaryStructSuit {
     private DeclarationBasedBinaryStructReader defaultReader;
 
     public BinaryStructSuit(String name, String version, String description,
-                            FeatureCodeExtractor featureCodeExtractor) {
+                            BinaryFeatureCodeExtractor featureCodeExtractor) {
         this.name = name;
         this.version = version;
         this.description = description;

@@ -503,7 +503,7 @@ public class E53IAxProtocolSupport {
         return new DefaultFieldDeclaration(name, code, dataType).setAnchorReference(nextToThisAnchor, (short)0);
     }
 
-    private static class E53IAxFeatureCodeExtractor implements FeatureCodeExtractor {
+    private static class E53IAxFeatureCodeExtractor implements BinaryFeatureCodeExtractor {
         private static final short  MAGIC_ID_OF_IA2_V1 = (short)0xfa11;
         private static final byte[] MAGIC_ID_OF_IA2_V1_HEX = new byte[]{(byte) 0xfa, (byte) 0x11};
         private static final byte[] MAGIC_ID_OF_IA2_V1_DOUBLE_HEX = new byte[]{

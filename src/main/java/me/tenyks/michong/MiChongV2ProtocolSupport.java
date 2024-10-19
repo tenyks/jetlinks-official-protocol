@@ -701,7 +701,7 @@ public class MiChongV2ProtocolSupport {
         return new XORCRCCalculator(1, -1);
     }
 
-    private static class MiChongFeatureCodeExtractor implements FeatureCodeExtractor {
+    private static class MiChongFeatureCodeExtractor implements BinaryFeatureCodeExtractor {
         private static final byte MAGIC_ID_OF_V2_1 = (byte) 0xAA;
         private static final byte[] MAGIC_ID_OF_V2_1_DOUBLE_HEX = new byte[]{(byte) 0x41, (byte) 0x41};
 
