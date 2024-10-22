@@ -1,6 +1,6 @@
 package org.jetlinks.protocol.official.format;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.jetlinks.protocol.official.binary2.StructDeclaration;
 import org.jetlinks.protocol.official.binary2.StructInstance;
 
@@ -13,7 +13,7 @@ public interface FormatStructWriter {
 
     StructDeclaration getStructDeclaration();
 
-    JSONObject write(StructInstance instance);
+    JsonNode write(StructInstance instance);
 
     static FormatStructWriter   createInstance(StructDeclaration structDcl) {
         return new DeclarationBasedFormatStructWriter(structDcl);

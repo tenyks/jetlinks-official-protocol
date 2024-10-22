@@ -44,7 +44,7 @@ public class DeclarationBasedFormatFieldReader extends AbstractDeclarationBasedF
             val = fDcl.getDefaultValue();
         }
 
-        return new SimpleFieldInstance(fDcl, fDcl.getDefaultValue());
+        return new SimpleFieldInstance(fDcl, val);
     }
 
     @Override

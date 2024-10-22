@@ -1,4 +1,4 @@
-package org.jetlinks.protocol.official.binary2;
+package org.jetlinks.protocol.official.common;
 
 import org.jetlinks.core.message.CommonDeviceMessage;
 import org.jetlinks.core.message.CommonDeviceMessageReply;
@@ -6,6 +6,7 @@ import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.protocol.common.mapping.DefaultThingContext;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
 import org.jetlinks.protocol.common.mapping.ThingContext;
+import org.jetlinks.protocol.official.binary2.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,11 +20,11 @@ public class SimpleStructAndMessageMapper implements StructAndMessageMapper {
 
     private static final Logger log = LoggerFactory.getLogger(SimpleStructAndMessageMapper.class);
 
-    private final StructAndThingMapping           structAndThingMapping;
+    private final StructAndThingMapping structAndThingMapping;
 
-    private final FieldAndPropertyMapping         fieldAndPropertyMapping;
+    private final FieldAndPropertyMapping fieldAndPropertyMapping;
 
-    private final FieldValueAndPropertyMapping    fieldValueAndPropertyMapping;
+    private final FieldValueAndPropertyMapping fieldValueAndPropertyMapping;
 
 
     public SimpleStructAndMessageMapper(StructAndThingMapping structAndThingMapping,

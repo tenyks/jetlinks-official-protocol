@@ -1,6 +1,6 @@
 package org.jetlinks.protocol.official.format;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.jetlinks.protocol.official.binary2.StructDeclaration;
 import org.jetlinks.protocol.official.binary2.StructInstance;
 
@@ -22,7 +22,7 @@ public interface FormatStructReader {
      * @return  如果是结构兼容的格式返回反序列后的实例，否则返回空
      */
     @Nullable
-    StructInstance read(JSONObject input);
+    StructInstance read(JsonNode input);
 
     static FormatStructReader   createInstance(StructDeclaration structDcl) {
         return new DeclarationBasedFormatStructReader(structDcl);

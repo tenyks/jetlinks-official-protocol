@@ -2,6 +2,8 @@ package org.jetlinks.protocol.official.format;
 
 import com.alibaba.fastjson.JSONObject;
 import org.jetlinks.protocol.official.binary2.FieldInstance;
+import org.jetlinks.protocol.official.binary2.StructFieldDeclaration;
+import org.jetlinks.protocol.official.common.AbstractDeclarationBasedFieldWriter;
 
 /**
  * @author v-lizy81
@@ -9,10 +11,15 @@ import org.jetlinks.protocol.official.binary2.FieldInstance;
  * @date 2024/10/19
  * @since V3.1.0
  */
-public class DeclarationBasedFormatFieldWriter implements FormatFieldWriter {
+public class DeclarationBasedFormatFieldWriter extends AbstractDeclarationBasedFieldWriter implements FormatFieldWriter {
+
+    public DeclarationBasedFormatFieldWriter(StructFieldDeclaration fieldDcl) {
+        super(fieldDcl);
+    }
 
     @Override
     public short write(FieldInstance instance, JSONObject buf) {
+        //TODO 补充实现
         return 0;
     }
 

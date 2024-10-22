@@ -6,11 +6,11 @@ import io.netty.buffer.ByteBuf;
  * @author v-lizy81
  * @date 2023/6/20 23:27
  */
-public class DeclarationBasedFieldWriter implements BinaryFieldWriter {
+public class DeclarationBasedBinaryFieldWriter implements BinaryFieldWriter {
 
     private final StructFieldDeclaration fieldDcl;
 
-    public DeclarationBasedFieldWriter(StructFieldDeclaration fieldDcl) {
+    public DeclarationBasedBinaryFieldWriter(StructFieldDeclaration fieldDcl) {
         this.fieldDcl = fieldDcl;
     }
 

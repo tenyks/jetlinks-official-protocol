@@ -2,6 +2,7 @@ package org.jetlinks.protocol.official.format;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.codec.DecoderException;
 import org.jetlinks.core.utils.BytesUtils;
 import org.jetlinks.protocol.official.binary2.*;
@@ -22,7 +23,7 @@ public class FormatStructSuit extends AbstractStructSuit {
 
     private static final Logger log = LoggerFactory.getLogger(FormatStructSuit.class);
 
-    private final FeatureCodeExtractor<JSONObject>  fcExtractor;
+    private final FeatureCodeExtractor<JsonNode>  fcExtractor;
 
     private final Map<String, FormatStructReader>   idxByFcReaderMap;
 
@@ -31,7 +32,7 @@ public class FormatStructSuit extends AbstractStructSuit {
     private FormatStructReader          defaultReader;
 
     public FormatStructSuit(String name, String version, String description,
-                            FeatureCodeExtractor<JSONObject> featureCodeExtractor) {
+                            FeatureCodeExtractor<JsonNode> featureCodeExtractor) {
         super(name, version, description);
 
         this.fcExtractor = featureCodeExtractor;
@@ -71,12 +72,12 @@ public class FormatStructSuit extends AbstractStructSuit {
         return (dcl != null ? new SimpleStructInstance(dcl.getStructDeclaration()) : null);
     }
 
-    public FeatureCodeExtractor<JSONObject> getFcExtractor() {
+    public FeatureCodeExtractor<JsonNode> getFcExtractor() {
         return fcExtractor;
     }
 
     public StructInstance deserialize(String buf) {
-        JSONObject payload = formatParse(buf);
+        JsonNode payload = formatParse(buf);
 
         String fc = fcExtractor.extract(payload);
         if (!fcExtractor.isValidFeatureCode(fc)) {
@@ -112,16 +113,16 @@ public class FormatStructSuit extends AbstractStructSuit {
             idxByFcWriterMap.put(structDcl.getFeatureCode(), writer);
         }
 
-        JSONObject output = writer.write(structInst);
+        JsonNode output = writer.write(structInst);
 
         return format(output);
     }
 
-    protected JSONObject formatParse(String buf) {
-        return JSONObject.parseObject(buf);
+    protected JsonNode formatParse(String buf) {
+        return null;
     }
 
-    protected String format(JSONObject output) {
+    protected String format(JsonNode output) {
         return JSON.toJSONString(output);
     }
 

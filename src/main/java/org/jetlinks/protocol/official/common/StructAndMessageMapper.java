@@ -1,7 +1,9 @@
-package org.jetlinks.protocol.official.binary2;
+package org.jetlinks.protocol.official.common;
 
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.DeviceMessageReply;
+import org.jetlinks.protocol.official.binary2.MapperContext;
+import org.jetlinks.protocol.official.binary2.StructInstance;
 
 import javax.annotation.Nullable;
 
@@ -16,7 +18,7 @@ import javax.annotation.Nullable;
  */
 public interface StructAndMessageMapper {
 
-    StructInstance  toStructInstance(@Nullable MapperContext context, DeviceMessage message);
+    StructInstance toStructInstance(@Nullable MapperContext context, DeviceMessage message);
 
     DeviceMessage   toDeviceMessage(@Nullable MapperContext context, StructInstance structInst);
     

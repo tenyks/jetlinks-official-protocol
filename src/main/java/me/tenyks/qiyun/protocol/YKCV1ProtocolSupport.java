@@ -18,6 +18,8 @@ import org.jetlinks.protocol.common.mapping.*;
 import org.jetlinks.protocol.official.PluginConfig;
 import org.jetlinks.protocol.official.binary2.*;
 import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
+import org.jetlinks.protocol.official.common.SimpleStructAndMessageMapper;
+import org.jetlinks.protocol.official.common.StructAndMessageMapper;
 
 /**
  * 云快充新能源汽车充电桩协议

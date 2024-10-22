@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import org.jetlinks.core.device.DeviceOperator;
 import org.jetlinks.core.message.DeviceMessage;
 import org.jetlinks.core.message.codec.MessageCodecContext;
+import org.jetlinks.protocol.official.common.StructAndMessageMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,7 @@ public class DeclarationBasedBinaryMessageCodec implements BinaryMessageCodec {
 
     private final BinaryStructSuit structSuit;
 
-    private final StructAndMessageMapper       mapper;
+    private final StructAndMessageMapper mapper;
 
     private final Map<String, MapperContext>   contextMap; //TODO 优化：自动释放、并发控制
 
