@@ -1,6 +1,6 @@
 package org.jetlinks.protocol.official.format;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.collections.CollectionUtils;
 import org.jetlinks.protocol.official.binary2.*;
 import org.jetlinks.protocol.official.common.AbstractDeclarationBasedStructReader;
@@ -25,7 +25,7 @@ public class DeclarationBasedFormatStructReader extends AbstractDeclarationBased
     }
 
     @Override @Nullable
-    public StructInstance read(JSONObject input) {
+    public StructInstance read(JsonNode input) {
         StructInstance sInst = createNewStructInstance();
 
         for (StructPartReader partReader : getStructPartReaders()) {

@@ -1,7 +1,9 @@
 package org.jetlinks.protocol.official.binary2;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.netty.buffer.ByteBuf;
 import org.jetlinks.protocol.official.core.ByteUtils;
+import org.jetlinks.protocol.official.format.FormatFieldReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,17 +19,27 @@ public class NRepeatDeclarationBasedFieldGroupReader implements NRepeatGroupRead
 
     private static final Logger log = LoggerFactory.getLogger(NRepeatDeclarationBasedFieldGroupReader.class);
 
-    private final NRepeatGroupDeclaration declaration;
+    private final NRepeatGroupDeclaration       declaration;
 
-    private final List<BinaryFieldReader>             fieldReaders;
+    private final List<BinaryFieldReader>       binaryFieldReaders;
+
+    private final List<FormatFieldReader>       formatFieldReaders;
 
     private transient StructInstance            boundInstance;
 
-    public NRepeatDeclarationBasedFieldGroupReader(NRepeatGroupDeclaration declaration) {
+    public NRepeatDeclarationBasedFieldGroupReader(StructDeclaration struct, NRepeatGroupDeclaration declaration) {
         this.declaration = declaration;
-        this.fieldReaders = new ArrayList<>();
-        for (StructFieldDeclaration fDcl : declaration.getIncludedFields()) {
-            this.fieldReaders.add(StructPartReader.create(fDcl));
+        this.binaryFieldReaders = new ArrayList<>();
+        this.formatFieldReaders = new ArrayList<>();
+
+        if (struct.isFormatStruct()) {
+            for (StructFieldDeclaration fDcl : declaration.getIncludedFields()) {
+                this.formatFieldReaders.add(StructPartReader.createFormat(fDcl));
+            }
+        }else {
+            for (StructFieldDeclaration fDcl : declaration.getIncludedFields()) {
+                this.binaryFieldReaders.add(StructPartReader.createBinary(fDcl));
+            }
         }
     }
 
@@ -51,7 +63,7 @@ public class NRepeatDeclarationBasedFieldGroupReader implements NRepeatGroupRead
 
         for (short i = 0; i < n; i++) {
             List<FieldInstance> grpRst = new ArrayList<>();
-            for (BinaryFieldReader fReader : fieldReaders) {
+            for (BinaryFieldReader fReader : binaryFieldReaders) {
                 StructFieldDeclaration fDcl = fReader.getDeclaration();
 
                 DynamicAnchor dynamicAnchor = fDcl.getDynamicAnchor();
@@ -75,6 +87,16 @@ public class NRepeatDeclarationBasedFieldGroupReader implements NRepeatGroupRead
 
             rst.addAll(grpRst);
         }
+
+        return rst;
+    }
+
+    @Nullable
+    @Override
+    public List<FieldInstance> read(JsonNode input) {
+        List<FieldInstance> rst = new ArrayList<>();
+
+        //TODO 待实现
 
         return rst;
     }

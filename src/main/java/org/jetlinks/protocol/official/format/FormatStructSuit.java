@@ -1,11 +1,10 @@
 package org.jetlinks.protocol.official.format;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.codec.DecoderException;
-import org.jetlinks.core.utils.BytesUtils;
-import org.jetlinks.protocol.official.binary2.*;
+import me.tenyks.utils.JsonUtils;
+import org.jetlinks.protocol.official.binary2.SimpleStructInstance;
+import org.jetlinks.protocol.official.binary2.StructDeclaration;
+import org.jetlinks.protocol.official.binary2.StructInstance;
 import org.jetlinks.protocol.official.common.AbstractStructSuit;
 import org.jetlinks.protocol.official.common.FeatureCodeExtractor;
 import org.slf4j.Logger;
@@ -77,7 +76,7 @@ public class FormatStructSuit extends AbstractStructSuit {
     }
 
     public StructInstance deserialize(String buf) {
-        JsonNode payload = formatParse(buf);
+        JsonNode payload = JsonUtils.parse(buf);
 
         String fc = fcExtractor.extract(payload);
         if (!fcExtractor.isValidFeatureCode(fc)) {
@@ -115,15 +114,7 @@ public class FormatStructSuit extends AbstractStructSuit {
 
         JsonNode output = writer.write(structInst);
 
-        return format(output);
-    }
-
-    protected JsonNode formatParse(String buf) {
-        return null;
-    }
-
-    protected String format(JsonNode output) {
-        return JSON.toJSONString(output);
+        return JsonUtils.toJsonStr(output);
     }
 
 }

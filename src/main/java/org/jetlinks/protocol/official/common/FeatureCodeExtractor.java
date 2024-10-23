@@ -8,7 +8,7 @@ package org.jetlinks.protocol.official.common;
  */
 public interface FeatureCodeExtractor<T> {
 
-    String extract(T buf);
+    String      extract(T buf);
 
-    boolean isValidFeatureCode(String featureCode);
+    boolean     isValidFeatureCode(String featureCode);
 }

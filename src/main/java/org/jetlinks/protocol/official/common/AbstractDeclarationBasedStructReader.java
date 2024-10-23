@@ -21,7 +21,7 @@ public abstract class AbstractDeclarationBasedStructReader {
         this.structDcl = structDcl;
         this.partReaders = new ArrayList<>();
         for (StructPartDeclaration partDcl : structDcl.parts()) {
-            this.partReaders.add(StructPartReader.create(partDcl));
+            this.partReaders.add(StructPartReader.create(structDcl, partDcl));
         }
     }
 

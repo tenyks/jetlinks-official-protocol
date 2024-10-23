@@ -27,14 +27,14 @@ public class DeclarationBasedFormatFieldReader extends AbstractDeclarationBasedF
 
     @Nullable
     @Override
-    public FieldInstance read(ObjectNode root) {
+    public FieldInstance read(JsonNode input) {
         StructFieldDeclaration fDcl = getDeclaration();
 
-        if (root == null) {
+        if (input == null) {
             return new SimpleFieldInstance(fDcl, fDcl.getDefaultValue());
         }
 
-        JsonNode valNode = root.get(fDcl.getPathInStruct());
+        JsonNode valNode = input.get(fDcl.getPathInStruct());
         if (valNode == null) {
             return new SimpleFieldInstance(fDcl, fDcl.getDefaultValue());
         }

@@ -6,12 +6,16 @@ import org.jetlinks.protocol.common.mapping.ThingAnnotation;
 import javax.validation.constraints.NotNull;
 
 /**
- * （字节流）结构体声明
+ * （字节流或格式化）结构体声明
  * @author tenyks
  * @since 3.1
  * @version 1.0
  */
 public interface StructDeclaration {
+
+    default boolean                     isFormatStruct() {
+        return false;
+    }
 
     StructFieldDeclaration              getField(String code);
 
@@ -34,7 +38,7 @@ public interface StructDeclaration {
 
     Iterable<StructFieldDeclaration>    fields();
 
-    CRCCalculator   getCRCCalculator();
+    CRCCalculator                       getCRCCalculator();
 
     boolean         isEnableEncode();
 

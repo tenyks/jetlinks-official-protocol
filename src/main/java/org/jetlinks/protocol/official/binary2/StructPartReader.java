@@ -1,5 +1,8 @@
 package org.jetlinks.protocol.official.binary2;
 
+import org.jetlinks.protocol.official.format.DeclarationBasedFormatFieldReader;
+import org.jetlinks.protocol.official.format.FormatFieldReader;
+
 /**
  * @author v-lizy81
  * @version 1.0.0
@@ -10,16 +13,24 @@ public interface StructPartReader {
 
     StructPartDeclaration   getDeclaration();
 
-    static StructPartReader create(StructPartDeclaration dcl) {
-        if (dcl instanceof NRepeatGroupDeclaration) {
-            return new NRepeatDeclarationBasedFieldGroupReader((NRepeatGroupDeclaration)dcl);
+    static StructPartReader create(StructDeclaration structDcl, StructPartDeclaration partDcl) {
+        if (partDcl instanceof NRepeatGroupDeclaration) {
+            return new NRepeatDeclarationBasedFieldGroupReader(structDcl, (NRepeatGroupDeclaration)partDcl);
         } else {
-            return new DeclarationBasedBinaryFieldReader((StructFieldDeclaration) dcl);
+            if (structDcl.isFormatStruct()) {
+                return createFormat((StructFieldDeclaration) partDcl);
+            } else {
+                return createBinary((StructFieldDeclaration) partDcl);
+            }
         }
     }
 
-    static BinaryFieldReader create(StructFieldDeclaration dcl) {
-        return new DeclarationBasedBinaryFieldReader(dcl);
+    static BinaryFieldReader createBinary(StructFieldDeclaration partDcl) {
+        return new DeclarationBasedBinaryFieldReader(partDcl);
+    }
+
+    static FormatFieldReader createFormat(StructFieldDeclaration partDcl) {
+        return new DeclarationBasedFormatFieldReader(partDcl);
     }
 
 }
