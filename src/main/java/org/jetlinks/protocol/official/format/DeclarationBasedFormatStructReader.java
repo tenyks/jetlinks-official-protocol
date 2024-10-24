@@ -37,7 +37,7 @@ public class DeclarationBasedFormatStructReader extends AbstractDeclarationBased
 
                 List<FieldInstance> fInstList = fgReader.read(input);
                 if (CollectionUtils.isEmpty(fInstList)) {
-                    log.error("[FormatStructReader]字段组读取返回空判定字节流反序列化为失败：fieldGroup={}", fgDcl);
+                    log.error("[FormatStructReader]字段组读取返回空判定字节流反序列化为失败：fGrp={}", fgDcl);
                     return null;
                 }
 
@@ -48,7 +48,7 @@ public class DeclarationBasedFormatStructReader extends AbstractDeclarationBased
 
                 FieldInstance fInst = fReader.read(input);
                 if (fInst == null) {
-                    log.error("[FormatStructReader]字段读取返回空判定字节流反序列化为失败：field={}", fDcl);
+                    log.error("[FormatStructReader]字段读取返回空判定字节流反序列化为失败：fDcl={}", fDcl);
                     return null;
                 }
 

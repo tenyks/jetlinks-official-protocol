@@ -67,8 +67,8 @@ public class FormatStructSuit extends AbstractStructSuit {
     }
 
     public StructInstance       createStructInstance(String featureCode) {
-        FormatStructWriter dcl = idxByFcWriterMap.get(featureCode);
-        return (dcl != null ? new SimpleStructInstance(dcl.getStructDeclaration()) : null);
+        FormatStructWriter writer = idxByFcWriterMap.get(featureCode);
+        return (writer != null ? new SimpleStructInstance(writer.getStructDeclaration()) : null);
     }
 
     public FeatureCodeExtractor<JsonNode> getFcExtractor() {

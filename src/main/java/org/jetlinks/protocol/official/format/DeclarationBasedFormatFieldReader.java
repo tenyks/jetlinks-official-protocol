@@ -1,7 +1,8 @@
 package org.jetlinks.protocol.official.format;
 
+import com.api.jsonata4java.Expression;
+import com.api.jsonata4java.expressions.ParseException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jetlinks.protocol.official.binary2.FieldInstance;
 import org.jetlinks.protocol.official.binary2.SimpleFieldInstance;
 import org.jetlinks.protocol.official.binary2.StructFieldDeclaration;
@@ -21,8 +22,16 @@ public class DeclarationBasedFormatFieldReader extends AbstractDeclarationBasedF
 
     private static final Logger log = LoggerFactory.getLogger(DeclarationBasedFormatFieldReader.class);
 
+    private final Expression  expr;
+
     public DeclarationBasedFormatFieldReader(StructFieldDeclaration fieldDcl) {
         super(fieldDcl);
+
+        try {
+            this.expr = Expression.jsonata(fieldDcl.getPathInStruct());
+        } catch (Exception e) {
+            throw new IllegalArgumentException(String.format("字段的引用表达式不合规：%s", fieldDcl.getPathInStruct()));
+        }
     }
 
     @Nullable
@@ -34,15 +43,17 @@ public class DeclarationBasedFormatFieldReader extends AbstractDeclarationBasedF
             return new SimpleFieldInstance(fDcl, fDcl.getDefaultValue());
         }
 
-        JsonNode valNode = input.get(fDcl.getPathInStruct());
+        JsonNode valNode;
+        try {
+            valNode = expr.evaluate(input);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException();
+        }
         if (valNode == null) {
             return new SimpleFieldInstance(fDcl, fDcl.getDefaultValue());
         }
 
         Object val = fDcl.getDataType().fromJson(valNode);
-        if (val == null) {
-            val = fDcl.getDefaultValue();
-        }
 
         return new SimpleFieldInstance(fDcl, val);
     }
