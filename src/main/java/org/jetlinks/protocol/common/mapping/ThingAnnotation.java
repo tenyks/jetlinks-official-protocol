@@ -187,6 +187,35 @@ public abstract class ThingAnnotation {
         };
     }
 
+    public static ThingAnnotation FuncInput(final String alias) {
+        return new ThingAnnotation("inputs", null) {
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                //TODO 优化性能
+
+                if (itemKey == null) return null;
+
+                FunctionInvokeMessage fiMsg = (FunctionInvokeMessage)msg;
+                List<FunctionParameter> inputParams = fiMsg.getInputs();
+                if (CollectionUtils.isEmpty(inputParams)) return null;
+
+                for (FunctionParameter fParam : inputParams) {
+                    if (alias.equals(fParam.getName())) {
+                        return fParam.getValue();
+                    }
+                }
+
+                return null;
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                FunctionInvokeMessage fiMsg = (FunctionInvokeMessage)msg;
+                fiMsg.addInput(alias, itemVal);
+            }
+        };
+    }
+
     public static <T> ThingAnnotation FuncInput(final ThingValueNormalization<T> norm) {
         return new ThingAnnotation("inputs", null) {
             @Override
@@ -214,6 +243,33 @@ public abstract class ThingAnnotation {
 
                 FunctionInvokeMessage fiMsg = (FunctionInvokeMessage)msg;
                 fiMsg.addInput(itemKey, itemVal);
+            }
+        };
+    }
+
+    public static <T> ThingAnnotation FuncInput(final String alias, final ThingValueNormalization<T> norm) {
+        return new ThingAnnotation("inputs", null) {
+            @Override
+            public Object invokeGetter(ThingContext context, DeviceMessage msg, String itemKey) {
+                //TODO 优化性能
+
+                FunctionInvokeMessage fiMsg = (FunctionInvokeMessage)msg;
+                List<FunctionParameter> inputParams = fiMsg.getInputs();
+                if (CollectionUtils.isEmpty(inputParams)) return null;
+
+                for (FunctionParameter fParam : inputParams) {
+                    if (alias.equals(fParam.getName())) {
+                        return norm.apply(fParam.getValue());
+                    }
+                }
+
+                return null;
+            }
+
+            @Override
+            public void invokeSetter(ThingContext context, DeviceMessage msg, String itemKey, Object itemVal) {
+                FunctionInvokeMessage fiMsg = (FunctionInvokeMessage)msg;
+                fiMsg.addInput(alias, itemVal);
             }
         };
     }
