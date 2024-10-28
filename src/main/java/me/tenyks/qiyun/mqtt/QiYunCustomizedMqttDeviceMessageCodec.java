@@ -24,13 +24,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 祺云标准协议之OverMQTT传输，用于MQTT边缘网关或DTU对接
+ * 祺云定制协议之MQTT设备直连协议，支持设备和边缘网关通过MQTT协议直连接入
  * <pre>
  *      下行Topic:
- *      tt_v1/{厂家编码}/{产品标识}/{设备标识}/downlink
+ *      {厂家编码}/{产品标识}/{设备标识}/多个定制的主题
  *
  *      上行Topic:
- *      tt_v1/{厂家编码}/{产品标识}/{设备标识}/downlink
+ *      {厂家编码}/{产品标识}/{设备标识}/多个定制的主题
  * </pre>
  *
  * @author v-lizy81
@@ -38,9 +38,9 @@ import java.util.stream.Collectors;
  * @date 2024/6/24
  * @since V3.1.0
  */
-public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
+public class QiYunCustomizedMqttDeviceMessageCodec implements DeviceMessageCodec {
 
-    private static final Logger     log = LoggerFactory.getLogger(QiYunOverMqttDeviceMessageCodec.class);
+    private static final Logger     log = LoggerFactory.getLogger(QiYunCustomizedMqttDeviceMessageCodec.class);
 
     private final Transport         transport;
 
@@ -48,10 +48,10 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
 
     private final List<MqttRoute>   routes;
 
-    public QiYunOverMqttDeviceMessageCodec(@Nonnull Transport transport,
-                                           @Nonnull String manufacturerCode,
-                                           @Nonnull BinaryMessageCodec backendCodec,
-                                           @Nonnull FunctionHandler funHandler) {
+    public QiYunCustomizedMqttDeviceMessageCodec(@Nonnull Transport transport,
+                                                 @Nonnull String manufacturerCode,
+                                                 @Nonnull BinaryMessageCodec backendCodec,
+                                                 @Nonnull FunctionHandler funHandler) {
         this.transport = transport;
 
         List<MessageCodecDeclaration<MqttRoute, MqttMessage>> dclList = new ArrayList<>();
@@ -59,8 +59,8 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
         dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
                 .route(MqttRoute.builder("tt_v1/+/+/+/uplink")
                         .upstream(true)
-                        .group("OverMQTT上行的消息")
-                        .description("通过MQTT协议封装上行传输的消息，消息负载HEX编码")
+                        .group("定制的直连MQTT上行的消息")
+                        .description("通过MQTT协议通信，消息负载JSON编码")
                         .build())
                 .upstreamRoutePredict((route, message, payload) -> {
                     String topic = message.getTopic();
@@ -71,9 +71,8 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
         dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
                 .route(MqttRoute.builder("tt_v1/+/+/+/downlink")
                         .downstreamForFunctionHandleResponse(true)
-                        .group("OverMQTT下行的消息")
-                        .description("通过MQTT协议封装下行行传输的消息，消息负载HEX编码")
-
+                        .group("定制的直连MQTT下行的消息")
+                        .description("通过MQTT协议通信，消息负载JSON编码")
                         .build())
                 .thingMessageType(FunctionInvokeMessage.class)
                 .payloadContentType(MessageContentType.STRUCT)

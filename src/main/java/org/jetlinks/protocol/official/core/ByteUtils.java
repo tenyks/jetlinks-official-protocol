@@ -3,6 +3,8 @@ package org.jetlinks.protocol.official.core;
 import io.netty.buffer.ByteBuf;
 import org.apache.commons.codec.binary.Hex;
 
+import java.nio.charset.StandardCharsets;
+
 public class ByteUtils {
 
     public static String toHexStr(ByteBuf buf) {
@@ -48,6 +50,21 @@ public class ByteUtils {
         }
 
         return sb.toString().trim().toUpperCase();
+    }
+
+    public static String toUTF8Str(ByteBuf buf) {
+        //TODO 优化性能
+        if (buf == null) return null;
+
+        int originReaderIdx = buf.readerIndex();
+
+        byte[] tmp = new byte[buf.writerIndex()];
+        buf.readerIndex(0);
+        buf.readBytes(tmp);
+
+        buf.readerIndex(originReaderIdx);
+
+        return new String(tmp, StandardCharsets.UTF_8);
     }
 
     private static final byte[] sta_4 = new byte[]{

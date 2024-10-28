@@ -1,6 +1,8 @@
 package me.tenyks.qiyun.mqtt;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.buffer.UnpooledDirectByteBuf;
 import org.apache.commons.codec.DecoderException;
 import org.jetlinks.core.device.DeviceConfigKey;
 import org.jetlinks.core.device.DeviceProductOperator;
@@ -13,6 +15,7 @@ import org.jetlinks.core.route.MqttRoute;
 import org.jetlinks.protocol.common.FunctionHandler;
 import org.jetlinks.protocol.official.binary2.BinaryMessageCodec;
 import org.jetlinks.protocol.official.core.ByteUtils;
+import org.jetlinks.protocol.official.format.FormatMessageCodec;
 import org.jetlinks.supports.protocol.codec.MessageCodecDeclaration;
 import org.jetlinks.supports.protocol.codec.MessageContentType;
 import org.slf4j.Logger;
@@ -22,6 +25,7 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +38,9 @@ public class DeclarationHintStructMessageCodec {
 
     private static final Logger log = LoggerFactory.getLogger(DeclarationHintStructMessageCodec.class);
 
-    private final BinaryMessageCodec backendCodec;
+    private final BinaryMessageCodec    backendCodec;
+
+    private final FormatMessageCodec    formatBackendCodec;
 
     private final String                manufacturerCode;
 
@@ -52,6 +58,27 @@ public class DeclarationHintStructMessageCodec {
         this.manufacturerCode = manufacturerCode;
         this.dclList = dclList;
         this.backendCodec = backendCodec;
+        this.formatBackendCodec = null;
+        this.funHandler = funHandler;
+
+        this.dclIdx = new HashMap<>();
+        for (MessageCodecDeclaration<MqttRoute, MqttMessage> dcl : dclList) {
+            dclIdx.put(dcl.getThingMessageType(), dcl);
+            if (dcl.getRoute().isDownstreamForFunctionHandleResponse()) {
+                routeForFunctionHandleResponse = dcl.getRoute();
+            }
+        }
+
+        dclList.forEach(item -> dclIdx.put(item.getThingMessageType(), item));
+    }
+
+    public DeclarationHintStructMessageCodec(String manufacturerCode,
+                                             List<MessageCodecDeclaration<MqttRoute, MqttMessage>> dclList,
+                                             FormatMessageCodec backendCodec, FunctionHandler funHandler) {
+        this.manufacturerCode = manufacturerCode;
+        this.dclList = dclList;
+        this.backendCodec = null;
+        this.formatBackendCodec = backendCodec;
         this.funHandler = funHandler;
 
         this.dclIdx = new HashMap<>();
@@ -73,15 +100,13 @@ public class DeclarationHintStructMessageCodec {
             return null;
         }
 
-//        String  hexPayload = message.payloadAsString();
-//        ByteBuf payloadBuf = BytesUtils.fromHexStrWithTrim(hexPayload);
         ByteBuf payloadBuf = message.getPayload();
-        String hexPayload = ByteUtils.toHexStrPretty(payloadBuf);
 
         if (MessageContentType.STRUCT.equals(dcl.getPayloadContentType())) {
             DeviceMessage devMsg = backendCodec.decode(context, payloadBuf);
 
             if (log.isInfoEnabled()) {
+                String hexPayload = ByteUtils.toHexStrPretty(payloadBuf);
                 log.info("[QiYunOverMQTT]协议报文解码成功解码为物模型消息：protocol={}, thingMsg={}",
                         hexPayload, devMsg.toJson());
             }
@@ -97,6 +122,26 @@ public class DeclarationHintStructMessageCodec {
                 return Tuples.of(devMsg, Mono.empty());
             }
         }
+        if (MessageContentType.JSON.equals(dcl.getPayloadContentType())) {
+            String payloadJsonStr = ByteUtils.toUTF8Str(payloadBuf);
+            DeviceMessage devMsg = formatBackendCodec.decode(context, payloadJsonStr);
+
+            if (log.isInfoEnabled()) {
+                log.info("[QiYunMQTT]协议报文解码成功解码为物模型消息：protocol={}, thingMsg={}",
+                        payloadJsonStr, devMsg.toJson());
+            }
+
+            if (routeForFunctionHandleResponse != null) {
+                ByteBuf responsePayload = funHandler.apply(message, devMsg);
+                return Tuples.of(devMsg, buildMqttMessage(
+                        routeForFunctionHandleResponse, context.getDevice().getProduct().map(DeviceProductOperator::getId),
+                        devMsg.getDeviceId(), responsePayload
+                ));
+            } else {
+                log.warn("[QiYunMQTT]缺少FunctionHandleResponse消息的路由，不发送该消息");
+                return Tuples.of(devMsg, Mono.empty());
+            }
+        }
 
         return null;
     }
@@ -108,19 +153,39 @@ public class DeclarationHintStructMessageCodec {
             return Mono.empty();
         }
 
-        ByteBuf buf;
-        try {
-            buf = backendCodec.encode(context, thingMsg);
-            if (buf == null) return Mono.empty();
-        } catch (Exception e) {
-            return Mono.error(e);
+        if (MessageContentType.STRUCT.equals(dcl.getPayloadContentType())) {
+            ByteBuf buf;
+            try {
+                buf = backendCodec.encode(context, thingMsg);
+                if (buf == null) return Mono.empty();
+            } catch (Exception e) {
+                return Mono.error(e);
+            }
+
+            Mono<String> prodId = Mono.justOrEmpty(thingMsg.getHeader("productId").map(String::valueOf))
+                    .switchIfEmpty(context.getDevice(thingMsg.getDeviceId())
+                            .flatMap(device -> device.getSelfConfig(DeviceConfigKey.productId)));
+
+            return buildMqttMessage(dcl.getRoute(), prodId, thingMsg.getDeviceId(), buf);
         }
 
-        Mono<String> prodId = Mono.justOrEmpty(thingMsg.getHeader("productId").map(String::valueOf))
-                .switchIfEmpty(context.getDevice(thingMsg.getDeviceId())
-                                .flatMap(device -> device.getSelfConfig(DeviceConfigKey.productId)));
+        if (MessageContentType.JSON.equals(dcl.getPayloadContentType())) {
+            String buf;
+            try {
+                buf = formatBackendCodec.encode(context, thingMsg);
+                if (buf == null) return Mono.empty();
+            } catch (Exception e) {
+                return Mono.error(e);
+            }
 
-        return buildMqttMessage(dcl.getRoute(), prodId, thingMsg.getDeviceId(), buf);
+            Mono<String> prodId = Mono.justOrEmpty(thingMsg.getHeader("productId").map(String::valueOf))
+                    .switchIfEmpty(context.getDevice(thingMsg.getDeviceId())
+                            .flatMap(device -> device.getSelfConfig(DeviceConfigKey.productId)));
+
+            return buildMqttMessage(dcl.getRoute(), prodId, thingMsg.getDeviceId(), Unpooled.wrappedBuffer(buf.getBytes(StandardCharsets.UTF_8)));
+        }
+
+        return Mono.empty();
     }
 
     private Mono<MqttMessage> buildMqttMessage(final MqttRoute route, Mono<String> prodId, final String deviceId,
@@ -139,6 +204,7 @@ public class DeclarationHintStructMessageCodec {
     }
 
     protected MessageCodecDeclaration<MqttRoute, MqttMessage> findUpstreamRoute(MqttMessage msg) {
+        //TODO 优化性能
         for (MessageCodecDeclaration<MqttRoute, MqttMessage> dcl : dclList) {
             if (dcl.isRouteAcceptable(msg, null)) {
                 return dcl;
@@ -149,6 +215,7 @@ public class DeclarationHintStructMessageCodec {
     }
 
     protected MessageCodecDeclaration<MqttRoute, MqttMessage> findDownstreamRoute(DeviceMessage thingMsg) {
+        //TODO 优化性能
         return dclIdx.get(thingMsg.getClass());
     }
 
