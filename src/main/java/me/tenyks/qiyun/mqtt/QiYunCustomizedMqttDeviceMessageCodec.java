@@ -6,22 +6,12 @@ import org.jetlinks.core.message.DisconnectDeviceMessage;
 import org.jetlinks.core.message.Message;
 import org.jetlinks.core.message.codec.*;
 import org.jetlinks.core.message.codec.mqtt.MqttMessage;
-import org.jetlinks.core.message.function.FunctionInvokeMessage;
-import org.jetlinks.core.route.MqttRoute;
-import org.jetlinks.protocol.common.FunctionHandler;
-import org.jetlinks.protocol.official.binary2.BinaryMessageCodec;
-import org.jetlinks.supports.protocol.SimpleMessageCodecDeclaration;
-import org.jetlinks.supports.protocol.codec.MessageCodecDeclaration;
-import org.jetlinks.supports.protocol.codec.MessageContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 祺云定制协议之MQTT设备直连协议，支持设备和边缘网关通过MQTT协议直连接入
@@ -40,55 +30,24 @@ import java.util.stream.Collectors;
  */
 public class QiYunCustomizedMqttDeviceMessageCodec implements DeviceMessageCodec {
 
+    //TODO 应该与QiYunOverMqttDeviceMessageCodec合并
+
     private static final Logger     log = LoggerFactory.getLogger(QiYunCustomizedMqttDeviceMessageCodec.class);
 
     private final Transport         transport;
 
-    private final DeclarationHintStructMessageCodec  codec;
+    private final DeclarationHintStructMessageCodec backendCodec;
 
-    private final List<MqttRoute>   routes;
 
     public QiYunCustomizedMqttDeviceMessageCodec(@Nonnull Transport transport,
-                                                 @Nonnull String manufacturerCode,
-                                                 @Nonnull BinaryMessageCodec backendCodec,
-                                                 @Nonnull FunctionHandler funHandler) {
+                                                 @Nonnull DeclarationHintStructMessageCodec backendCodec) {
         this.transport = transport;
-
-        List<MessageCodecDeclaration<MqttRoute, MqttMessage>> dclList = new ArrayList<>();
-
-        dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
-                .route(MqttRoute.builder("tt_v1/+/+/+/uplink")
-                        .upstream(true)
-                        .group("定制的直连MQTT上行的消息")
-                        .description("通过MQTT协议通信，消息负载JSON编码")
-                        .build())
-                .upstreamRoutePredict((route, message, payload) -> {
-                    String topic = message.getTopic();
-                    return topic.startsWith("tt_v1") && topic.endsWith("/uplink");
-                })
-                .payloadContentType(MessageContentType.STRUCT)
-        );
-        dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
-                .route(MqttRoute.builder("tt_v1/+/+/+/downlink")
-                        .downstreamForFunctionHandleResponse(true)
-                        .group("定制的直连MQTT下行的消息")
-                        .description("通过MQTT协议通信，消息负载JSON编码")
-                        .build())
-                .thingMessageType(FunctionInvokeMessage.class)
-                .payloadContentType(MessageContentType.STRUCT)
-        );
-
-        this.routes = dclList.stream().map(MessageCodecDeclaration::getRoute).collect(Collectors.toList());
-        this.codec = new DeclarationHintStructMessageCodec(manufacturerCode, dclList, backendCodec, funHandler);
+        this.backendCodec = backendCodec;
     }
 
     @Override
     public Transport        getSupportTransport() {
         return transport;
-    }
-
-    public List<MqttRoute>  collectRoutes() {
-        return routes;
     }
 
     @Nonnull
@@ -98,7 +57,7 @@ public class QiYunCustomizedMqttDeviceMessageCodec implements DeviceMessageCodec
 
         Tuple2<DeviceMessage, Mono<MqttMessage>> decodeRst;
         try {
-            decodeRst = codec.decode(context, message);
+            decodeRst = backendCodec.decode(context, message);
             if (decodeRst != null) {
 
                 return decodeRst.getT2()
@@ -106,11 +65,11 @@ public class QiYunCustomizedMqttDeviceMessageCodec implements DeviceMessageCodec
                         .switchIfEmpty(Mono.just(Mono.just(false)))
                         .flatMap((flag) -> flag.map(f -> decodeRst.getT1()));
             } else {
-                log.warn("[QiYunOverMQTT]解码MQTT消息不成功：{}", message.print());
+                log.warn("[QiYunCustMQTT]解码MQTT消息不成功：{}", message.print());
                 return Mono.empty();
             }
         } catch (DecoderException e) {
-            log.error("[QiYunOverMQTT]解码MQTT消息负载异常失败：{}", message.print(), e);
+            log.error("[QiYunCustMQTT]解码MQTT消息负载异常失败：{}", message.print(), e);
             return Mono.empty();
         }
     }
@@ -122,16 +81,16 @@ public class QiYunCustomizedMqttDeviceMessageCodec implements DeviceMessageCodec
             Message message = context.getMessage();
 
             if (message instanceof DisconnectDeviceMessage) {
-                log.info("[QiYunOverMQTT]关闭MQTT会话：{}", (context.getDevice() != null ? context.getDevice() : "NO_DEVICE"));
+                log.info("[QiYunCustMQTT]关闭MQTT会话：{}", (context.getDevice() != null ? context.getDevice() : "NO_DEVICE"));
                 return ((ToDeviceMessageContext) context).disconnect().then(Mono.empty());
             }
 
             if (message instanceof DeviceMessage) {
                 DeviceMessage deviceMessage = ((DeviceMessage) message);
 
-                return codec.encode(context, deviceMessage);
+                return backendCodec.encode(context, deviceMessage);
             } else {
-                log.warn("[QiYunOverMQTT]不支持的类型，忽略该消息：{}", message.toJson());
+                log.warn("[QiYunCustMQTT]不支持的类型，忽略该消息：{}", message.toJson());
                 return Mono.empty();
             }
         });
@@ -140,7 +99,7 @@ public class QiYunCustomizedMqttDeviceMessageCodec implements DeviceMessageCodec
     private Mono<Boolean> doReply(MessageCodecContext context, MqttMessage reply) {
         if (context instanceof FromDeviceMessageContext) {
             if (log.isInfoEnabled()) {
-                log.debug("[QiYunOverMQTT]下发FunctionHandleResponse消息：{}", reply.print());
+                log.debug("[QiYunCustMQTT]下发FunctionHandleResponse消息：{}", reply.print());
             }
 
             return ((FromDeviceMessageContext) context)
@@ -148,7 +107,7 @@ public class QiYunCustomizedMqttDeviceMessageCodec implements DeviceMessageCodec
                     .send(reply);
         } else if (context instanceof ToDeviceMessageContext) {
             if (log.isInfoEnabled()) {
-                log.debug("[QiYunOverMQTT]下发FunctionHandleResponse消息：{}", reply.print());
+                log.debug("[QiYunCustMQTT]下发FunctionHandleResponse消息：{}", reply.print());
             }
 
             return ((ToDeviceMessageContext) context)

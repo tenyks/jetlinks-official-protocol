@@ -84,7 +84,7 @@ public class DeclarationHintStructMessageCodec {
     protected MessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>
     findUpstreamRoute(LwM2MUplinkMessage msg) {
         for (MessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage> dcl : dclList) {
-            if (dcl.isRouteAcceptable(msg, null)) {
+            if (dcl.isRouteAcceptableUpstream(msg, null)) {
                 return dcl;
             }
         }

@@ -109,7 +109,7 @@ public class RouteGuidedSimpleMessageCodec {
     protected MessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage>
     findUpstreamRoute(LwM2MUplinkMessage msg, JSONObject parseMsg) {
         for (MessageCodecDeclaration<LwM2MRoute, LwM2MUplinkMessage> dcl : dclList) {
-            if (dcl.isRouteAcceptable(msg, parseMsg)) {
+            if (dcl.isRouteAcceptableUpstream(msg, parseMsg)) {
                 return dcl;
             }
         }

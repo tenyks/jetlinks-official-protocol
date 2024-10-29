@@ -96,7 +96,7 @@ public class DeclarationHintStructMessageCodec {
     decode(MessageCodecContext context, MqttMessage message) throws DecoderException {
         MessageCodecDeclaration<MqttRoute, MqttMessage> dcl = findUpstreamRoute(message);
         if (dcl == null) {
-            log.warn("[QiYunOverMQTT]没有匹配的路由，忽略消息：{}", message);
+            log.warn("[QiYunMQTT]没有匹配的路由，忽略消息：{}", message);
             return null;
         }
 
@@ -107,7 +107,7 @@ public class DeclarationHintStructMessageCodec {
 
             if (log.isInfoEnabled()) {
                 String hexPayload = ByteUtils.toHexStrPretty(payloadBuf);
-                log.info("[QiYunOverMQTT]协议报文解码成功解码为物模型消息：protocol={}, thingMsg={}",
+                log.info("[QiYunMQTT]协议报文解码成功解码为物模型消息：protocol={}, thingMsg={}",
                         hexPayload, devMsg.toJson());
             }
 
@@ -118,7 +118,7 @@ public class DeclarationHintStructMessageCodec {
                         devMsg.getDeviceId(), responsePayload
                 ));
             } else {
-                log.warn("[QiYunOverMQTT]缺少FunctionHandleResponse消息的路由，不发送该消息");
+                log.warn("[QiYunMQTT]缺少FunctionHandleResponse消息的路由，不发送该消息");
                 return Tuples.of(devMsg, Mono.empty());
             }
         }
@@ -149,7 +149,7 @@ public class DeclarationHintStructMessageCodec {
     public Mono<MqttMessage> encode(MessageCodecContext context, DeviceMessage thingMsg) {
         MessageCodecDeclaration<MqttRoute, MqttMessage> dcl = findDownstreamRoute(thingMsg);
         if (dcl == null) {
-            log.warn("[QiYunOverMQTT]没有匹配的路由，忽略消息：{}", thingMsg);
+            log.warn("[QiYunMQTT]没有匹配的路由，忽略消息：{}", thingMsg);
             return Mono.empty();
         }
 
@@ -206,7 +206,7 @@ public class DeclarationHintStructMessageCodec {
     protected MessageCodecDeclaration<MqttRoute, MqttMessage> findUpstreamRoute(MqttMessage msg) {
         //TODO 优化性能
         for (MessageCodecDeclaration<MqttRoute, MqttMessage> dcl : dclList) {
-            if (dcl.isRouteAcceptable(msg, null)) {
+            if (dcl.getRoute().isUpstream() && dcl.isRouteAcceptableUpstream(msg, null)) {
                 return dcl;
             }
         }
@@ -215,6 +215,12 @@ public class DeclarationHintStructMessageCodec {
     }
 
     protected MessageCodecDeclaration<MqttRoute, MqttMessage> findDownstreamRoute(DeviceMessage thingMsg) {
+        for (MessageCodecDeclaration<MqttRoute, MqttMessage> dcl : dclList) {
+            if (dcl.getRoute().isDownstream() && dcl.isRouteAcceptableDownload(thingMsg)) {
+                return dcl;
+            }
+        }
+
         //TODO 优化性能
         return dclIdx.get(thingMsg.getClass());
     }
