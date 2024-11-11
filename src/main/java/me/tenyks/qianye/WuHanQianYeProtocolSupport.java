@@ -1,28 +1,26 @@
 package me.tenyks.qianye;
 
-import me.tenyks.qiyun.protocol.YKCV1APIBuilder;
-import me.tenyks.qiyun.protocol.YKCV1DictBookBuilder;
-import me.tenyks.qiyun.protocol.YKCV1ReplyResponderBuilder;
 import me.tenyks.qiyun.tcp.QiYunStrategyBaseTcpDeviceMessageCodec;
-import org.jetlinks.core.message.AcknowledgeDeviceMessage;
-import org.jetlinks.core.message.DeviceMessage;
-import org.jetlinks.core.message.event.EventMessage;
+import org.jetlinks.core.message.codec.mqtt.MqttMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
 import org.jetlinks.core.message.property.ReportPropertyMessage;
-import org.jetlinks.core.message.request.DefaultDeviceRequestMessage;
-import org.jetlinks.core.message.request.DefaultDeviceRequestMessageReply;
+import org.jetlinks.core.route.DownstreamRoutePredictBySvcId;
+import org.jetlinks.core.route.MqttRoute;
 import org.jetlinks.protocol.common.mapping.ThingAnnotation;
-import org.jetlinks.protocol.common.mapping.ThingItemMapping;
-import org.jetlinks.protocol.common.mapping.ThingValueNormalizations;
 import org.jetlinks.protocol.official.PluginConfig;
 import org.jetlinks.protocol.official.binary2.*;
-import org.jetlinks.protocol.official.common.AbstractIntercommunicateStrategy;
 import org.jetlinks.protocol.official.common.JsonPathFeatureCodeExtractor;
 import org.jetlinks.protocol.official.common.SimpleStructAndMessageMapper;
 import org.jetlinks.protocol.official.common.StructAndMessageMapper;
 import org.jetlinks.protocol.official.format.DeclarationBasedFormatMessageCodec;
 import org.jetlinks.protocol.official.format.FormatStructSuit;
+import org.jetlinks.supports.protocol.SimpleMessageCodecDeclaration;
+import org.jetlinks.supports.protocol.codec.MessageCodecDeclaration;
+import org.jetlinks.supports.protocol.codec.MessageContentType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 武汉千烨国标市电插座协议
@@ -58,9 +56,9 @@ public class WuHanQianYeProtocolSupport {
 
     public static FormatStructSuit buildStructSuitV1() {
         FormatStructSuit suit = new FormatStructSuit(
-                "云快充新能源汽车充电桩协议",
-                "V1.6",
-                "document-mqtt-YKCV1.md",
+                "武汉千烨国标市电插座控制协议",
+                "V1.17",
+                "document-mqtt-WuHan-QianYe.md",
                 new JsonPathFeatureCodeExtractor("method")
         );
 
@@ -72,6 +70,67 @@ public class WuHanQianYeProtocolSupport {
         suit.addStructDeclaration(buildSocketSwitchOnOffFunInvReplyStructDcl());
 
         return suit;
+    }
+
+    public static List<MessageCodecDeclaration<MqttRoute, MqttMessage>> buildRouteDeclaration() {
+        List<MessageCodecDeclaration<MqttRoute, MqttMessage>> dclList = new ArrayList<>();
+
+        dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
+                .route(MqttRoute.builder("qytech/+/+/thing/online/post")
+                        .upstream(true).group("上下线")
+                        .description("设备上下线消息，消息负载JSON编码").build())
+                .payloadContentType(MessageContentType.JSON)
+        );
+
+        dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
+                .route(MqttRoute.builder("qytech/+/+/thing/deviceinfo/post")
+                        .upstream(true).group("设备信息")
+                        .description("设备上报设备信息，消息负载JSON编码").build())
+                .payloadContentType(MessageContentType.JSON)
+        );
+
+        dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
+                .route(MqttRoute.builder("qytech/+/+/thing/property/set_reply")
+                        .upstream(true).group("属性")
+                        .description("应答设备属性设置指令，消息负载JSON编码").build())
+                .payloadContentType(MessageContentType.JSON)
+        );
+        dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
+                .route(MqttRoute.builder("qytech/+/+/thing/property/get_reply")
+                        .upstream(true).group("属性")
+                        .description("应答设备属性获取，消息负载JSON编码").build())
+                .payloadContentType(MessageContentType.JSON)
+        );
+        dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
+                .route(MqttRoute.builder("qytech/+/+/thing/property/post")
+                        .upstream(true).group("属性")
+                        .description("设备属性上报，消息负载JSON编码").build())
+                .payloadContentType(MessageContentType.JSON)
+        );
+
+        dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
+                .route(MqttRoute.builder("qytech/+/+/thing/event/post")
+                        .upstream(true).group("事件")
+                        .description("设备事件上报，消息负载JSON编码").build())
+                .payloadContentType(MessageContentType.JSON)
+        );
+
+        dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
+                .route(MqttRoute.builder("qytech/+/+/thing/property/set")
+                        .downstream(true).group("属性")
+                        .description("设备属性设置，消息负载JSON编码").build())
+                .downstreamRoutePredict(new DownstreamRoutePredictBySvcId<>("SocketSwitchOnOffFunInv"))
+                .payloadContentType(MessageContentType.JSON)
+        );
+        dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
+                .route(MqttRoute.builder("qytech/+/+/thing/property/get")
+                        .downstream(true).group("属性")
+                        .description("设备属性获取，消息负载JSON编码").build())
+                .downstreamRoutePredict(new DownstreamRoutePredictBySvcId<>("ReadSocketStateFunInv"))
+                .payloadContentType(MessageContentType.JSON)
+        );
+
+        return dclList;
     }
 
     public static StructAndMessageMapper        buildMapper(FormatStructSuit structSuit) {

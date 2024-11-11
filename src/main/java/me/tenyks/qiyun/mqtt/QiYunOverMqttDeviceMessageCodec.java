@@ -58,6 +58,7 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
 
         dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
                 .route(MqttRoute.builder("tt_v1/+/+/+/uplink")
+                        .manufacturerCode(manufacturerCode)
                         .upstream(true)
                         .group("OverMQTT上行的消息")
                         .description("通过MQTT协议封装上行传输的消息，消息负载HEX编码")
@@ -70,6 +71,7 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
         );
         dclList.add(new SimpleMessageCodecDeclaration<MqttRoute, MqttMessage>()
                 .route(MqttRoute.builder("tt_v1/+/+/+/downlink")
+                        .manufacturerCode(manufacturerCode)
                         .downstreamForFunctionHandleResponse(true)
                         .group("OverMQTT下行的消息")
                         .description("通过MQTT协议封装下行行传输的消息，消息负载HEX编码")
@@ -80,7 +82,7 @@ public class QiYunOverMqttDeviceMessageCodec implements DeviceMessageCodec {
         );
 
         this.routes = dclList.stream().map(MessageCodecDeclaration::getRoute).collect(Collectors.toList());
-        this.codec = new DeclarationHintStructMessageCodec(manufacturerCode, dclList, backendCodec, funHandler);
+        this.codec = new DeclarationHintStructMessageCodec(dclList, backendCodec, funHandler);
     }
 
     @Override

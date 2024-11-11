@@ -42,8 +42,6 @@ public class DeclarationHintStructMessageCodec {
 
     private final FormatMessageCodec    formatBackendCodec;
 
-    private final String                manufacturerCode;
-
     private final List<MessageCodecDeclaration<MqttRoute, MqttMessage>>    dclList;
 
     private MqttRoute     routeForFunctionHandleResponse;
@@ -52,10 +50,8 @@ public class DeclarationHintStructMessageCodec {
 
     private final FunctionHandler funHandler;
 
-    public DeclarationHintStructMessageCodec(String manufacturerCode,
-                                             List<MessageCodecDeclaration<MqttRoute, MqttMessage>> dclList,
+    public DeclarationHintStructMessageCodec(List<MessageCodecDeclaration<MqttRoute, MqttMessage>> dclList,
                                              BinaryMessageCodec backendCodec, FunctionHandler funHandler) {
-        this.manufacturerCode = manufacturerCode;
         this.dclList = dclList;
         this.backendCodec = backendCodec;
         this.formatBackendCodec = null;
@@ -72,10 +68,8 @@ public class DeclarationHintStructMessageCodec {
         dclList.forEach(item -> dclIdx.put(item.getThingMessageType(), item));
     }
 
-    public DeclarationHintStructMessageCodec(String manufacturerCode,
-                                             List<MessageCodecDeclaration<MqttRoute, MqttMessage>> dclList,
+    public DeclarationHintStructMessageCodec(List<MessageCodecDeclaration<MqttRoute, MqttMessage>> dclList,
                                              FormatMessageCodec backendCodec, FunctionHandler funHandler) {
-        this.manufacturerCode = manufacturerCode;
         this.dclList = dclList;
         this.backendCodec = null;
         this.formatBackendCodec = backendCodec;
@@ -195,7 +189,7 @@ public class DeclarationHintStructMessageCodec {
         return prodId.defaultIfEmpty("null")
                 .map(productId -> SimpleMqttMessage.builder()
                         .clientId(deviceId)
-                        .topic(route.getTopicTemplate().concreteTopic(manufacturerCode, productId, deviceId))
+                        .topic(route.getTopicTemplate().concreteTopic(productId, deviceId))
                         .payloadType(MessagePayloadType.HEX)
 //                        .payload(Unpooled.wrappedBuffer(ByteUtils.toHexStr(buf).getBytes(StandardCharsets.UTF_8)))
                         .payload(buf)
@@ -216,7 +210,7 @@ public class DeclarationHintStructMessageCodec {
 
     protected MessageCodecDeclaration<MqttRoute, MqttMessage> findDownstreamRoute(DeviceMessage thingMsg) {
         for (MessageCodecDeclaration<MqttRoute, MqttMessage> dcl : dclList) {
-            if (dcl.getRoute().isDownstream() && dcl.isRouteAcceptableDownload(thingMsg)) {
+            if (dcl.getRoute().isDownstream() && dcl.isRouteAcceptableDownstream(thingMsg)) {
                 return dcl;
             }
         }
