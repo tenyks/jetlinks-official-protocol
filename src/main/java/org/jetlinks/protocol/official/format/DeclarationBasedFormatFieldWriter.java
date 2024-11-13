@@ -21,18 +21,23 @@ public class DeclarationBasedFormatFieldWriter extends AbstractDeclarationBasedF
     public DeclarationBasedFormatFieldWriter(StructFieldDeclaration fieldDcl) {
         super(fieldDcl);
 
-        if (StringUtils.isEmpty(fieldDcl.getPathInStruct())) {
-            throw new IllegalArgumentException("字段定义中PathInStruct不能为空");
+        if (fieldDcl.getPathInStruct() != null) {
+            pathParts = fieldDcl.getPathInStruct().split("\\.");
+        } else {
+            pathParts = new String[]{fieldDcl.getCode()};
         }
 
-        pathParts = fieldDcl.getPathInStruct().split("\\.");
     }
 
     @Override
     public boolean write(FieldInstance instance, JsonNode outputBuf) {
+        Object value = instance.getValue();
+        if (value == null) value = instance.getDeclaration().getDefaultValue();
+        if (value == null) return true;
+
         JsonNode parent = ensurePathParent(pathParts, outputBuf);
 
-        JsonNode valNode = getDeclaration().getDataType().toJson(instance.getValue());
+        JsonNode valNode = getDeclaration().getDataType().toJson(value);
         ((ObjectNode) parent).set(pathParts[pathParts.length - 1], valNode);
 
         return true;

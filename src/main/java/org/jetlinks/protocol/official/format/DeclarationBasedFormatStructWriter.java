@@ -3,10 +3,7 @@ package org.jetlinks.protocol.official.format;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.jetlinks.protocol.official.binary2.FieldInstance;
-import org.jetlinks.protocol.official.binary2.StructDeclaration;
-import org.jetlinks.protocol.official.binary2.StructFieldDeclaration;
-import org.jetlinks.protocol.official.binary2.StructInstance;
+import org.jetlinks.protocol.official.binary2.*;
 import org.jetlinks.protocol.official.common.AbstractDeclarationBasedStructWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,8 +37,6 @@ public class DeclarationBasedFormatStructWriter extends AbstractDeclarationBased
         ObjectNode rst = new ObjectNode(JsonNodeFactory.instance);
 
         for (StructFieldDeclaration fDcl : getStructDeclaration().fields()) {
-            FieldInstance fInst = instance.getFieldInstance(fDcl);
-
             //TODO 支持N个字段组
 
             FormatFieldWriter writer = fieldWriters.get(fDcl);
@@ -50,6 +45,16 @@ public class DeclarationBasedFormatStructWriter extends AbstractDeclarationBased
                 continue;
             }
 
+            FieldInstance fInst = instance.getFieldInstance(fDcl);
+            if (fInst == null) {
+                Object defVal = fDcl.getDefaultValue();
+                if (defVal != null) {
+                    fInst = new SimpleFieldInstance(fDcl, fDcl.getDefaultValue());
+                    instance.addFieldInstance(fInst);
+                } else {
+                    continue;
+                }
+            }
             writer.write(fInst, rst);
         }
 

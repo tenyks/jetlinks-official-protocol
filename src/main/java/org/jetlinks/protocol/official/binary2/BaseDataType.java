@@ -840,7 +840,7 @@ public enum BaseDataType {
 
         @Override
         public Object fromJson(@Nonnull JsonNode buf) {
-            return buf.textValue();
+            return buf.asText();
         }
 
         @Override

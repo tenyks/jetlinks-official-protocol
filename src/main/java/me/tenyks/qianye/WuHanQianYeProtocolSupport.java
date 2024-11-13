@@ -1,6 +1,8 @@
 package me.tenyks.qianye;
 
-import me.tenyks.qiyun.tcp.QiYunStrategyBaseTcpDeviceMessageCodec;
+import me.tenyks.qiyun.mqtt.DeclarationHintStructMessageCodec;
+import me.tenyks.qiyun.mqtt.QiYunCustomizedMqttDeviceMessageCodec;
+import org.jetlinks.core.message.codec.DefaultTransport;
 import org.jetlinks.core.message.codec.mqtt.MqttMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessage;
 import org.jetlinks.core.message.function.FunctionInvokeMessageReply;
@@ -34,21 +36,22 @@ public class WuHanQianYeProtocolSupport {
 
     public static final String      NAME_AND_VER = "WHQY_V1.17";
 
-    private static final String     CODE_OF_REQ_METHOD_FIELD = "REQ_METHOD";
-    private static final String     CODE_OF_RST_CODE_FIELD = "RST_CODE";
-    private static final String     CODE_OF_RST_DESC_FIELD = "RST_DESC";
+    private static final String     CODE_OF_REQ_METHOD_FIELD = "method";
+    private static final String     CODE_OF_RST_CODE_FIELD = "code";
+    private static final String     CODE_OF_RST_DESC_FIELD = "message";
 
-    private static final String     CODE_OF_MSG_NO_FIELD = "MSG_NO";
+    private static final String     CODE_OF_MSG_NO_FIELD = "id";
 
-    public static QiYunStrategyBaseTcpDeviceMessageCodec    buildDeviceMessageCodec(PluginConfig config) {
-        DeclarationBasedBinaryMessageCodec bmCodec = buildBinaryMessageCodec(config);
+    public static QiYunCustomizedMqttDeviceMessageCodec buildDeviceMessageCodec(PluginConfig config) {
+        DeclarationBasedFormatMessageCodec  formatCodec = buildFormatMessageCodec(config);
+        DeclarationHintStructMessageCodec   hintCodec = new DeclarationHintStructMessageCodec(
+                buildRouteDeclaration(), formatCodec, null
+        );
 
-
-
-        return new QiYunStrategyBaseTcpDeviceMessageCodec(bmCodec, strategy);
+        return new QiYunCustomizedMqttDeviceMessageCodec(DefaultTransport.MQTT, hintCodec);
     }
 
-    public static DeclarationBasedFormatMessageCodec        buildBinaryMessageCodec(PluginConfig config) {
+    public static DeclarationBasedFormatMessageCodec buildFormatMessageCodec(PluginConfig config) {
         FormatStructSuit structSuit = buildStructSuitV1();
         StructAndMessageMapper mapper = buildMapper(structSuit);
         return new DeclarationBasedFormatMessageCodec(structSuit, mapper);
@@ -62,6 +65,7 @@ public class WuHanQianYeProtocolSupport {
                 new JsonPathFeatureCodeExtractor("method")
         );
 
+        suit.addStructDeclaration(buildCallOfDeviceInfoFunInvStructDcl());
         suit.addStructDeclaration(buildReportDeviceInfoStructDcl());
         suit.addStructDeclaration(buildReportSocketStateStructDcl());
         suit.addStructDeclaration(buildReadSocketStateFunInvStructDcl());
@@ -139,7 +143,7 @@ public class WuHanQianYeProtocolSupport {
         DefaultStructDeclaration target;
 
         target = (DefaultStructDeclaration) structSuit.getStructDeclaration("呼叫上报设备信息的指令[下行]");
-        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "CallOfDeviceInfo", target);
+        structAndThingMapping.addMapping(FunctionInvokeMessage.class, "CallOfDeviceInfoFunInv", target);
 
         target = (DefaultStructDeclaration) structSuit.getStructDeclaration("上报设备信息消息[上行]");
         structAndThingMapping.addMapping(target, ReportPropertyMessage.class);
@@ -169,19 +173,19 @@ public class WuHanQianYeProtocolSupport {
      * 呼叫上报设备信息的指令[下行]
      */
     private static DefaultStructDeclaration     buildCallOfDeviceInfoFunInvStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("呼叫上报设备信息的指令[下行]", "thing.deviceinfo.get");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("呼叫上报设备信息的指令[下行]", "thing.deviceinfo.get", true);
 
         structDcl.enableEncode();
-        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("CallOfDeviceInfo"));
+        structDcl.addThingAnnotation(ThingAnnotation.ServiceId("CallOfDeviceInfoFunInv"));
 
         structDcl.addField(buildVersionFieldDcl());
-        structDcl.addField(buildMsgNoFieldDcl());
+        structDcl.addField(buildMsgNoFieldDcl("581220"));
         structDcl.addField(buildRequestMethodFieldDcl("thing.deviceinfo.get"));
 
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = buildDataFieldDcl("协议报文格式", "params.format", BaseDataType.STRING);
-        structDcl.addField(fieldDcl.setDefaultValue("json"));
+        fieldDcl = buildDataFieldDcl("协议报文格式", "format","params.format", BaseDataType.STRING);
+        structDcl.addField(fieldDcl.setDefaultValue("json").addMeta(ThingAnnotation.FuncInput()));
 
         return structDcl;
     }
@@ -190,22 +194,36 @@ public class WuHanQianYeProtocolSupport {
      * 上报设备信息消息[上行]
      */
     private static DefaultStructDeclaration     buildReportDeviceInfoStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("上报设备信息消息[上行]", "thing.deviceinfo.post");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("上报设备信息消息[上行]", "thing.deviceinfo.post", true);
 
         structDcl.enableDecode();
         structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReportDeviceInfo"));
 
         structDcl.addField(buildVersionFieldDcl());
-        structDcl.addField(buildMsgNoFieldDcl());
+        structDcl.addField(buildMsgNoFieldDcl("581220"));
         structDcl.addField(buildRequestMethodFieldDcl("thing.deviceinfo.post"));
 
-        structDcl.addField(buildDataFieldDcl("设备固件版本", "params.version", BaseDataType.STRING));
-        structDcl.addField(buildDataFieldDcl("设备唯一标识", "params.deviceId", BaseDataType.STRING));
-        structDcl.addField(buildDataFieldDcl("WIFI的SSID", "params.ssid", BaseDataType.STRING));
-        structDcl.addField(buildDataFieldDcl("WIFI客户端的IP地址", "params.ip", BaseDataType.STRING));
-        structDcl.addField(buildDataFieldDcl("WIFI客户端的物理地址", "params.mac", BaseDataType.STRING));
-        structDcl.addField(buildDataFieldDcl("通断状态", "params.relay", BaseDataType.STRING));
-        structDcl.addField(buildDataFieldDcl("当前模式", "params.mode", BaseDataType.STRING));
+        DefaultFieldDeclaration fieldDcl;
+        fieldDcl = buildDataFieldDcl("设备固件版本", "firmwareVersion", "params.version", BaseDataType.STRING);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.Property()));
+
+        fieldDcl = buildDataFieldDcl("设备唯一标识", "deviceSN", "params.deviceId", BaseDataType.STRING);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.Property()));
+
+        fieldDcl = buildDataFieldDcl("WIFI的SSID", "wifiSSID", "params.ssid", BaseDataType.STRING);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.Property()));
+
+        fieldDcl = buildDataFieldDcl("WIFI客户端的IP地址", "wifiIP", "params.ip", BaseDataType.STRING);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.Property()));
+
+        fieldDcl = buildDataFieldDcl("WIFI客户端的物理地址", "wifiMAC", "params.mac", BaseDataType.STRING);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.Property()));
+
+        fieldDcl = buildDataFieldDcl("通断状态", "socketStatus", "params.relay", BaseDataType.INT32);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.Property(WuHanQianYeV1DictBookBuilder.buildSocketStatusDict())));
+
+        fieldDcl = buildDataFieldDcl("当前模式", "activeMode", "params.mode", BaseDataType.INT32);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.Property(WuHanQianYeV1DictBookBuilder.buildActiveModeDict())));
 
         return structDcl;
     }
@@ -214,30 +232,28 @@ public class WuHanQianYeProtocolSupport {
      * 上报插座状况消息[上行]
      */
     private static DefaultStructDeclaration     buildReportSocketStateStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("上报插座状况消息[上行]", "thing.property.get");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("上报插座状况消息[上行]", "thing.property.post", true);
 
-        structDcl.enableEncode();
+        structDcl.enableDecode();
         structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReportSocketState"));
 
         structDcl.addField(buildVersionFieldDcl());
-        structDcl.addField(buildMsgNoFieldDcl());
-        structDcl.addField(buildRequestMethodFieldDcl("thing.property.get"));
-        structDcl.addField(buildResultCodeFieldDcl());
-        structDcl.addField(buildResultDescFieldDcl());
+        structDcl.addField(buildMsgNoFieldDcl("581821"));
+        structDcl.addField(buildRequestMethodFieldDcl("thing.property.post"));
 
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = buildDataFieldDcl("当前电压", "params.Power.Vol", BaseDataType.FLOAT);
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput("socketVol")));
+        fieldDcl = buildDataFieldDcl("当前电压", "socketVol", "params.Power.Vol", BaseDataType.FLOAT);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.Property()));
 
-        fieldDcl = buildDataFieldDcl("当前电流", "params.Power.Current", BaseDataType.FLOAT);
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput("socketCurrent")));
+        fieldDcl = buildDataFieldDcl("当前电流", "socketCurrent", "params.Power.Current", BaseDataType.FLOAT);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.Property()));
 
-        fieldDcl = buildDataFieldDcl("当前电压", "params.Power.ActiveP", BaseDataType.FLOAT);
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput("socketPower")));
+        fieldDcl = buildDataFieldDcl("当前电压", "socketPower", "params.Power.ActiveP", BaseDataType.FLOAT);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.Property()));
 
-        fieldDcl = buildDataFieldDcl("通断标志", "params.Reply.value", BaseDataType.FLOAT);
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput("socketPower", WuHanQianYeV1DictBookBuilder.buildReplyStatusDict())));
+        fieldDcl = buildDataFieldDcl("通断标志", "socketStatus", "params.Reply.value", BaseDataType.INT32);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.Property(WuHanQianYeV1DictBookBuilder.buildSocketStatusDict())));
 
         return structDcl;
     }
@@ -246,19 +262,19 @@ public class WuHanQianYeProtocolSupport {
      * 读插座的状况指令[下行]
      */
     private static DefaultStructDeclaration     buildReadSocketStateFunInvStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("查询插座的状况指令[下行]", "thing.property.get");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("读插座的状况指令[下行]", "thing.property.get", true);
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReadSocketStateFunInv"));
 
         structDcl.addField(buildVersionFieldDcl());
-        structDcl.addField(buildMsgNoFieldDcl());
+        structDcl.addField(buildMsgNoFieldDcl("581821"));
         structDcl.addField(buildRequestMethodFieldDcl("thing.property.get"));
 
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = buildDataFieldDcl("查询选项", "params.value", BaseDataType.STRING);
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput("option", WuHanQianYeV1DictBookBuilder.buildReadPropertyDict())));
+        fieldDcl = buildDataFieldDcl("查询选项", "option", "params.value", BaseDataType.STRING);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput(WuHanQianYeV1DictBookBuilder.buildReadPropertyDict())));
 
         return structDcl;
     }
@@ -267,30 +283,30 @@ public class WuHanQianYeProtocolSupport {
      * 读插座的状况指令响应[上行]
      */
     private static DefaultStructDeclaration     buildReadSocketStateFunInvReplyStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("读插座的状况指令响应[上行]", "thing.property.get");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("读插座的状况指令响应[上行]", "thing.property.get", true);
 
-        structDcl.enableEncode();
+        structDcl.enableDecode();
         structDcl.addThingAnnotation(ThingAnnotation.ServiceId("ReadSocketStateFunInvReply"));
 
         structDcl.addField(buildVersionFieldDcl());
-        structDcl.addField(buildMsgNoFieldDcl());
+        structDcl.addField(buildMsgNoFieldDcl("581821"));
         structDcl.addField(buildRequestMethodFieldDcl("thing.property.get"));
         structDcl.addField(buildResultCodeFieldDcl());
         structDcl.addField(buildResultDescFieldDcl());
 
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = buildDataFieldDcl("当前电压", "params.Power.Vol", BaseDataType.FLOAT);
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput("socketVol")));
+        fieldDcl = buildDataFieldDcl("当前电压", "socketVol", "params.Power.Vol", BaseDataType.FLOAT);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput()));
 
-        fieldDcl = buildDataFieldDcl("当前电流", "params.Power.Current", BaseDataType.FLOAT);
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput("socketCurrent")));
+        fieldDcl = buildDataFieldDcl("当前电流", "socketCurrent", "params.Power.Current", BaseDataType.FLOAT);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput()));
 
-        fieldDcl = buildDataFieldDcl("当前电压", "params.Power.ActiveP", BaseDataType.FLOAT);
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput("socketPower")));
+        fieldDcl = buildDataFieldDcl("当前电压", "socketPower", "params.Power.ActiveP", BaseDataType.FLOAT);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput()));
 
-        fieldDcl = buildDataFieldDcl("通断标志", "params.Reply.value", BaseDataType.FLOAT);
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput("socketPower", WuHanQianYeV1DictBookBuilder.buildReplyStatusDict())));
+        fieldDcl = buildDataFieldDcl("通断标志", "replyFlag", "params.Reply.value", BaseDataType.FLOAT);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput(WuHanQianYeV1DictBookBuilder.buildRelayStatusDict())));
 
         return structDcl;
     }
@@ -299,19 +315,19 @@ public class WuHanQianYeProtocolSupport {
      * 插座通断指令[下行]
      */
     private static DefaultStructDeclaration     buildSocketSwitchOnOffFunInvStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("插座通断指令[下行]", "thing.property.set");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("插座通断指令[下行]", "thing.property.set", true);
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.ServiceId("SocketSwitchOnOffFunInv"));
 
         structDcl.addField(buildVersionFieldDcl());
-        structDcl.addField(buildMsgNoFieldDcl());
+        structDcl.addField(buildMsgNoFieldDcl("581811"));
         structDcl.addField(buildRequestMethodFieldDcl("thing.property.set"));
 
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = buildDataFieldDcl("通断选项", "params.Relay.value", BaseDataType.BOOLEAN);
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput("option")));
+        fieldDcl = buildDataFieldDcl("通断选项", "option", "params.Relay.value", BaseDataType.BOOLEAN);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput()));
 
         return structDcl;
     }
@@ -320,13 +336,13 @@ public class WuHanQianYeProtocolSupport {
      * 插座通断指令响应[上行]
      */
     private static DefaultStructDeclaration     buildSocketSwitchOnOffFunInvReplyStructDcl() {
-        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("插座通断指令响应[上行]", "thing.property.set");
+        DefaultStructDeclaration structDcl = new DefaultStructDeclaration("插座通断指令响应[上行]", "thing.property.set", true);
 
         structDcl.enableEncode();
         structDcl.addThingAnnotation(ThingAnnotation.ServiceId("SocketSwitchOnOffFunInvReply"));
 
         structDcl.addField(buildVersionFieldDcl());
-        structDcl.addField(buildMsgNoFieldDcl());
+        structDcl.addField(buildMsgNoFieldDcl("581811"));
         structDcl.addField(buildRequestMethodFieldDcl("thing.property.set"));
         structDcl.addField(buildResultCodeFieldDcl());
         structDcl.addField(buildResultDescFieldDcl());
@@ -337,43 +353,45 @@ public class WuHanQianYeProtocolSupport {
     /**
      * 公共字段：报文序号
      */
-    private static DefaultFieldDeclaration buildMsgNoFieldDcl() {
-        return new DefaultFieldDeclaration("公共字段：消息流水号", CODE_OF_MSG_NO_FIELD, BaseDataType.STRING)
-                .setDefaultValue(0);
+    private static DefaultFieldDeclaration      buildMsgNoFieldDcl(String defVal) {
+        return new DefaultFieldDeclaration("公共字段：消息流水号", CODE_OF_MSG_NO_FIELD, CODE_OF_MSG_NO_FIELD, BaseDataType.STRING)
+                .setDefaultValue(defVal);
     }
 
     /**
      * 公共字段：版本号
      */
-    private static DefaultFieldDeclaration buildVersionFieldDcl() {
-        return new DefaultFieldDeclaration("公共字段：版本号", "version", BaseDataType.STRING)
+    private static DefaultFieldDeclaration      buildVersionFieldDcl() {
+        return new DefaultFieldDeclaration("公共字段：版本号", "version", "version", BaseDataType.STRING)
                     .setDefaultValue("1.0");
     }
 
     /**
      * 公共字段：请求方法
      */
-    private static DefaultFieldDeclaration buildRequestMethodFieldDcl(String method) {
-        return new DefaultFieldDeclaration("公共字段：请求方法", CODE_OF_REQ_METHOD_FIELD, BaseDataType.STRING)
+    private static DefaultFieldDeclaration      buildRequestMethodFieldDcl(String method) {
+        return new DefaultFieldDeclaration("公共字段：请求方法", CODE_OF_REQ_METHOD_FIELD, CODE_OF_REQ_METHOD_FIELD, BaseDataType.STRING)
                 .setDefaultValue(method);
     }
 
     /**
      * 公共字段：结果状态码
      */
-    private static DefaultFieldDeclaration buildResultCodeFieldDcl() {
-        return new DefaultFieldDeclaration("公共字段：结果状态码", CODE_OF_RST_CODE_FIELD, BaseDataType.INT32);
+    private static DefaultFieldDeclaration      buildResultCodeFieldDcl() {
+        return new DefaultFieldDeclaration("公共字段：结果状态码", CODE_OF_RST_CODE_FIELD, CODE_OF_RST_CODE_FIELD, BaseDataType.INT32)
+                .addMeta(ThingAnnotation.FuncOutput());
     }
 
     /**
      * 公共字段：结果信息
      */
-    private static DefaultFieldDeclaration buildResultDescFieldDcl() {
-        return new DefaultFieldDeclaration("公共字段：结果信息", CODE_OF_RST_DESC_FIELD, BaseDataType.STRING);
+    private static DefaultFieldDeclaration      buildResultDescFieldDcl() {
+        return new DefaultFieldDeclaration("公共字段：结果信息", CODE_OF_RST_DESC_FIELD, CODE_OF_RST_DESC_FIELD, BaseDataType.STRING)
+                .addMeta(ThingAnnotation.FuncOutput());
     }
 
-    private static DefaultFieldDeclaration buildDataFieldDcl(String name, String code, BaseDataType dataType) {
-        return new DefaultFieldDeclaration(name, code, dataType);
+    private static DefaultFieldDeclaration      buildDataFieldDcl(String name, String code, String pathInStruct, BaseDataType dataType) {
+        return new DefaultFieldDeclaration(name, code, pathInStruct, dataType);
     }
 
 }

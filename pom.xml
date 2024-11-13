@@ -204,10 +204,11 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.ibm.jsonata4java/JSONata4Java -->
         <dependency>
             <groupId>com.ibm.jsonata4java</groupId>
             <artifactId>JSONata4Java</artifactId>
-            <version>2.4.9</version>
+            <version>2.2.9</version>
         </dependency>
 
         <dependency>

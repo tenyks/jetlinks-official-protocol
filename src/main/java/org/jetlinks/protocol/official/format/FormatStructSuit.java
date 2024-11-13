@@ -40,6 +40,8 @@ public class FormatStructSuit extends AbstractStructSuit {
     }
 
     public void addStructDeclaration(StructDeclaration structDcl) {
+        super.addStructDeclaration(structDcl);
+
         if (structDcl.isEnableDecode()) {
             idxByFcReaderMap.put(structDcl.getFeatureCode(), FormatStructReader.createInstance(structDcl));
         }
@@ -76,6 +78,11 @@ public class FormatStructSuit extends AbstractStructSuit {
     }
 
     public StructInstance deserialize(String buf) {
+        if (buf == null) {
+            log.warn("[FormatStructSuit]报文为空");
+            return null;
+        }
+
         JsonNode payload = JsonUtils.parse(buf);
 
         String fc = fcExtractor.extract(payload);

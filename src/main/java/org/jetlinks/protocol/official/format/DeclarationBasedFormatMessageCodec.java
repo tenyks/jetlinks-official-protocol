@@ -29,7 +29,7 @@ public class DeclarationBasedFormatMessageCodec extends AbstractMessageCodec imp
     @Override
     public DeviceMessage decode(MessageCodecContext context, String buf) {
         try {
-            StructInstance structInst = structSuit.deserialize(null);
+            StructInstance structInst = structSuit.deserialize(buf);
             if (structInst == null) return null;
 
             MapperContext mapperContext = getOrCreateContext(context);

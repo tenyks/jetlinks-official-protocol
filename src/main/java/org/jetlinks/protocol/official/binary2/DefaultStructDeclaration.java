@@ -15,6 +15,8 @@ public class DefaultStructDeclaration implements StructDeclaration {
     @NotNull
     private final String      featureCode;
 
+    private final boolean     isFormatStruct;
+
     private final List<ThingAnnotation> thingAnnotations;
 
     private final List<StructPartDeclaration>   parts;
@@ -38,6 +40,10 @@ public class DefaultStructDeclaration implements StructDeclaration {
     private transient String    _serviceIdOrFunctionId;
 
     public DefaultStructDeclaration(String name, String featureCode) {
+        this(name, featureCode, false);
+    }
+
+    public DefaultStructDeclaration(String name, String featureCode, boolean isFormatStruct) {
         if (name == null || featureCode == null) {
             throw new IllegalArgumentException("参数不全。[0x66DSD1564]");
         }
@@ -46,6 +52,12 @@ public class DefaultStructDeclaration implements StructDeclaration {
         this.parts = new ArrayList<>();
         this.idxByCodeMap = new HashMap<>();
         this.thingAnnotations = new ArrayList<>();
+        this.isFormatStruct = isFormatStruct;
+    }
+
+    @Override
+    public boolean isFormatStruct() {
+        return isFormatStruct;
     }
 
     public StructDeclaration addField(StructFieldDeclaration field) {

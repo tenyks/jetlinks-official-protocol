@@ -27,6 +27,10 @@ public class DeclarationBasedFormatFieldReader extends AbstractDeclarationBasedF
     public DeclarationBasedFormatFieldReader(StructFieldDeclaration fieldDcl) {
         super(fieldDcl);
 
+        if (fieldDcl.getPathInStruct() == null) {
+            throw new IllegalArgumentException(String.format("字段(%s)定义中的的pathInStruct属性不能是空值", fieldDcl.getCode()));
+        }
+
         try {
             this.expr = Expression.jsonata(fieldDcl.getPathInStruct());
         } catch (Exception e) {
