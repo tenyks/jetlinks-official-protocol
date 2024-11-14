@@ -74,4 +74,41 @@ public class WuHanQianYeProtocolSupportTest {
         System.out.println(msg);
     }
 
+    @Test
+    public void decodeReadSocketStateFunInvReply() throws DecoderException {
+        String payload = "{\"id\":\"123\",\"version\":\"1.0\",\"code\":200,\"message\":\"success\",\"data\":{\"Power\":{\"Vol\":230,\"Current\":5.35,\"ActiveP\":1230.5},\"Relay\":{\"value\":true}},\"method\":\"thing.property.get\"}";
+
+        StructInstance structInst;
+        structInst = suit.deserialize(payload);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, payload);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void encodeSocketSwitchOnOffFunInv() throws DecoderException {
+        FunctionInvokeMessage funInvMsg = new FunctionInvokeMessage();
+        funInvMsg.setDeviceId("devId-001");
+        funInvMsg.setFunctionId("SocketSwitchOnOffFunInv");
+        funInvMsg.setInputs(new ArrayList<>());
+
+        funInvMsg.getInputs().add(new FunctionParameter("option", "ON"));
+
+        String msg = codec.encode(encodeCtx, funInvMsg);
+        System.out.println(msg);
+    }
+
+    @Test
+    public void decodeSocketSwitchOnOffFunInvReply() throws DecoderException {
+        String payload = "{\"id\":\"123\",\"version\":\"1.0\",\"code\":200,\"message\":\"success\",\"data\":{\"Relay\":{\"value\":1}},\"method\":\"thing.property.set\"}";
+
+        StructInstance structInst;
+        structInst = suit.deserialize(payload);
+        System.out.println(structInst);
+
+        DeviceMessage msg = codec.decode(decodeCtx, payload);
+        System.out.println(msg);
+    }
+
 }

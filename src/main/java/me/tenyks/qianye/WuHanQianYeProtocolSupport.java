@@ -296,17 +296,17 @@ public class WuHanQianYeProtocolSupport {
 
         DefaultFieldDeclaration fieldDcl;
 
-        fieldDcl = buildDataFieldDcl("当前电压", "socketVol", "params.Power.Vol", BaseDataType.FLOAT);
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput()));
+        fieldDcl = buildDataFieldDcl("当前电压", "socketVol", "data.Power.Vol", BaseDataType.FLOAT);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncOutput()));
 
-        fieldDcl = buildDataFieldDcl("当前电流", "socketCurrent", "params.Power.Current", BaseDataType.FLOAT);
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput()));
+        fieldDcl = buildDataFieldDcl("当前电流", "socketCurrent", "data.Power.Current", BaseDataType.FLOAT);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncOutput()));
 
-        fieldDcl = buildDataFieldDcl("当前电压", "socketPower", "params.Power.ActiveP", BaseDataType.FLOAT);
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput()));
+        fieldDcl = buildDataFieldDcl("当前电压", "socketPower", "data.Power.ActiveP", BaseDataType.FLOAT);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncOutput()));
 
-        fieldDcl = buildDataFieldDcl("通断标志", "replyFlag", "params.Reply.value", BaseDataType.FLOAT);
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput(WuHanQianYeV1DictBookBuilder.buildRelayStatusDict())));
+        fieldDcl = buildDataFieldDcl("通断标志", "socketStatus", "data.Relay.value", BaseDataType.STRING);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncOutput(WuHanQianYeV1DictBookBuilder.buildRelayStatusDict())));
 
         return structDcl;
     }
@@ -327,7 +327,7 @@ public class WuHanQianYeProtocolSupport {
         DefaultFieldDeclaration fieldDcl;
 
         fieldDcl = buildDataFieldDcl("通断选项", "option", "params.Relay.value", BaseDataType.BOOLEAN);
-        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput()));
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncInput(WuHanQianYeV1DictBookBuilder.buildSocketSwitchOptionDict())));
 
         return structDcl;
     }
@@ -338,7 +338,7 @@ public class WuHanQianYeProtocolSupport {
     private static DefaultStructDeclaration     buildSocketSwitchOnOffFunInvReplyStructDcl() {
         DefaultStructDeclaration structDcl = new DefaultStructDeclaration("插座通断指令响应[上行]", "thing.property.set", true);
 
-        structDcl.enableEncode();
+        structDcl.enableDecode();
         structDcl.addThingAnnotation(ThingAnnotation.ServiceId("SocketSwitchOnOffFunInvReply"));
 
         structDcl.addField(buildVersionFieldDcl());
@@ -346,6 +346,10 @@ public class WuHanQianYeProtocolSupport {
         structDcl.addField(buildRequestMethodFieldDcl("thing.property.set"));
         structDcl.addField(buildResultCodeFieldDcl());
         structDcl.addField(buildResultDescFieldDcl());
+
+        DefaultFieldDeclaration fieldDcl;
+        fieldDcl = buildDataFieldDcl("通断标志", "socketStatus", "data.Relay.value", BaseDataType.STRING);
+        structDcl.addField(fieldDcl.addMeta(ThingAnnotation.FuncOutput(WuHanQianYeV1DictBookBuilder.buildRelayStatusDict())));
 
         return structDcl;
     }
@@ -378,15 +382,15 @@ public class WuHanQianYeProtocolSupport {
      * 公共字段：结果状态码
      */
     private static DefaultFieldDeclaration      buildResultCodeFieldDcl() {
-        return new DefaultFieldDeclaration("公共字段：结果状态码", CODE_OF_RST_CODE_FIELD, CODE_OF_RST_CODE_FIELD, BaseDataType.INT32)
-                .addMeta(ThingAnnotation.FuncOutput());
+        return new DefaultFieldDeclaration("公共字段：结果状态码", "rstCode", CODE_OF_RST_CODE_FIELD, BaseDataType.INT32)
+                .addMeta(ThingAnnotation.FuncOutput(WuHanQianYeV1DictBookBuilder.buildRstCodeDict()));
     }
 
     /**
      * 公共字段：结果信息
      */
     private static DefaultFieldDeclaration      buildResultDescFieldDcl() {
-        return new DefaultFieldDeclaration("公共字段：结果信息", CODE_OF_RST_DESC_FIELD, CODE_OF_RST_DESC_FIELD, BaseDataType.STRING)
+        return new DefaultFieldDeclaration("公共字段：结果信息", "message", CODE_OF_RST_DESC_FIELD, BaseDataType.STRING)
                 .addMeta(ThingAnnotation.FuncOutput());
     }
 

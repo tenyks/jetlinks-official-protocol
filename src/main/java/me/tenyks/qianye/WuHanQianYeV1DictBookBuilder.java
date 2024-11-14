@@ -26,6 +26,21 @@ public class WuHanQianYeV1DictBookBuilder {
     }
 
     /**
+     * @return  通断选项的枚举
+     */
+    public static ThingValueNormalization<Boolean> buildSocketSwitchOptionDict() {
+        DictBook<String, Boolean> rst = new DictBook<>();
+
+        rst.add("ON", Boolean.TRUE, "通电");
+        rst.add("1", Boolean.TRUE, "通电");
+
+        rst.add("OFF", Boolean.FALSE, "断电");
+        rst.add("0", Boolean.FALSE, "断电");
+
+        return ThingValueNormalizations.ofToDictVal(rst, Boolean.FALSE);
+    }
+
+    /**
      * @return  通断状态的枚举
      */
     public static ThingValueNormalization<String> buildRelayStatusDict() {
@@ -47,6 +62,23 @@ public class WuHanQianYeV1DictBookBuilder {
 
         rst.add(1, "ON", "通电");
         rst.add(0, "OFF", "断电");
+
+        return ThingValueNormalizations.ofToDictVal(rst, null);
+    }
+
+    public static ThingValueNormalization<String> buildRstCodeDict() {
+        DictBook<Integer, String> rst = new DictBook<>();
+
+        rst.add(200, "SUCCESS", "成功");
+
+        rst.add(0, "FAIL_OFFLINE", "失败：设备离线");
+        rst.add(6, "FAIL_UNACTIVATED", "失败：未激活");
+        rst.add(7, "FAIL_DISABLE", "失败：禁用");
+        rst.add(21, "FAIL_DESERIALIZE", "失败：序列化错误");
+        rst.add(22, "FAIL_FIELD_NOT_EXIST", "失败：缺少字段");
+        rst.add(23, "FAIL_FORMAT", "失败：格式错误");
+
+        rst.addOtherItemTemplate((code) -> "FAIL_" + code, "失败：未知");
 
         return ThingValueNormalizations.ofToDictVal(rst, null);
     }
