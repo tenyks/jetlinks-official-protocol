@@ -1,5 +1,7 @@
 package org.jetlinks.protocol.official;
 
+import me.tenyks.qianye.WuHanQianYeProtocolSupport;
+import me.tenyks.qiyun.mqtt.QiYunCustomizedMqttDeviceMessageCodec;
 import me.tenyks.qiyun.protocol.YKCV1ProtocolSupport;
 import org.jetlinks.core.defaults.CompositeProtocolSupport;
 import org.jetlinks.core.message.codec.DefaultTransport;
@@ -61,6 +63,16 @@ public class JetLinksProtocolSupportProvider implements ProtocolSupportProvider 
 
                 support.addRoutes(DefaultTransport.MQTT, codec.collectRoutes());
                 support.setDocument(DefaultTransport.MQTT, "document-mqtt-MiChong.md",
+                        JetLinksProtocolSupportProvider.class.getClassLoader());
+
+                support.addAuthenticator(DefaultTransport.MQTT, new QiYunMqttStaticCodeAuthenticator());
+                support.addConfigMetadata(DefaultTransport.MQTT, QiYunMqttStaticCodeAuthenticator.CONFIG);
+                support.addMessageCodecSupport(codec);
+            }else if (WuHanQianYeProtocolSupport.NAME_AND_VER.equals(pluginConfig.getMQTTCodec())) {
+                QiYunCustomizedMqttDeviceMessageCodec codec;
+                codec = WuHanQianYeProtocolSupport.buildDeviceMessageCodec(pluginConfig);
+
+                support.setDocument(DefaultTransport.MQTT, "document-mqtt-WuHanQianYe.md",
                         JetLinksProtocolSupportProvider.class.getClassLoader());
 
                 support.addAuthenticator(DefaultTransport.MQTT, new QiYunMqttStaticCodeAuthenticator());
