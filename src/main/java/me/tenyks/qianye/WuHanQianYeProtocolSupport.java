@@ -222,7 +222,7 @@ public class WuHanQianYeProtocolSupport {
         fieldDcl = buildDataFieldDcl("通断状态", "socketStatus", "params.relay", BaseDataType.INT32);
         structDcl.addField(fieldDcl.addMeta(ThingAnnotation.Property(WuHanQianYeV1DictBookBuilder.buildSocketStatusDict())));
 
-        fieldDcl = buildDataFieldDcl("当前模式", "activeMode", "params.mode", BaseDataType.INT32);
+        fieldDcl = buildDataFieldDcl("当前工作模式", "activeMode", "params.mode", BaseDataType.INT32);
         structDcl.addField(fieldDcl.addMeta(ThingAnnotation.Property(WuHanQianYeV1DictBookBuilder.buildActiveModeDict())));
 
         return structDcl;
@@ -249,7 +249,7 @@ public class WuHanQianYeProtocolSupport {
         fieldDcl = buildDataFieldDcl("当前电流", "socketCurrent", "params.Power.Current", BaseDataType.FLOAT);
         structDcl.addField(fieldDcl.addMeta(ThingAnnotation.Property()));
 
-        fieldDcl = buildDataFieldDcl("当前电压", "socketPower", "params.Power.ActiveP", BaseDataType.FLOAT);
+        fieldDcl = buildDataFieldDcl("当前功率", "socketPower", "params.Power.ActiveP", BaseDataType.FLOAT);
         structDcl.addField(fieldDcl.addMeta(ThingAnnotation.Property()));
 
         fieldDcl = buildDataFieldDcl("通断标志", "socketStatus", "params.Reply.value", BaseDataType.INT32);

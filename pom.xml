@@ -195,6 +195,12 @@
             <artifactId>californium-core</artifactId>
             <version>3.5.0</version>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -202,13 +208,6 @@
             <artifactId>lombok</artifactId>
             <version>1.18.24</version>
             <scope>provided</scope>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.ibm.jsonata4java/JSONata4Java -->
-        <dependency>
-            <groupId>com.ibm.jsonata4java</groupId>
-            <artifactId>JSONata4Java</artifactId>
-            <version>2.2.9</version>
         </dependency>
 
         <dependency>
